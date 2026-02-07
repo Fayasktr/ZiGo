@@ -1,0 +1,230 @@
+<style>
+    .otp-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--deep-black);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .otp-container::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255, 90, 31, 0.15) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+    }
+
+    .otp-card {
+        width: 100%;
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 32px;
+        padding: 3.5rem 3rem;
+        text-align: center;
+        z-index: 2;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .otp-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .otp-header .icon-box {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 90, 31, 0.1);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: var(--primary-orange);
+        font-size: 2rem;
+    }
+
+    .otp-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, var(--primary-orange));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .otp-header p {
+        opacity: 0.6;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .otp-inputs {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .otp-field {
+        width: 60px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        text-align: center;
+        outline: none;
+        transition: var(--transition);
+    }
+
+    .otp-field:focus {
+        border-color: var(--primary-orange);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.1);
+    }
+
+    .verify-btn {
+        width: 100%;
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        padding: 1.1rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-bottom: 1.5rem;
+    }
+
+    .verify-btn:hover {
+        background: var(--primary-orange-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 90, 31, 0.3);
+    }
+
+    .resend-text {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .resend-link {
+        color: var(--primary-orange);
+        text-decoration: none;
+        font-weight: 700;
+        margin-left: 0.25rem;
+    }
+
+    .resend-link.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    #timer {
+        font-weight: 700;
+        color: var(--primary-orange);
+    }
+</style>
+
+<div class="otp-container">
+    <div class="otp-card reveal">
+        <div class="otp-header">
+            <div class="icon-box">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>Verify Email</h2>
+            <p>We've sent a 4-digit code to your email.<br>Please enter it below to verify your account.</p>
+        </div>
+
+        <form action="/verify-otp" method="POST" id="otp-form">
+            <div class="otp-inputs">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
+                <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
+                <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
+                <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
+            </div>
+            <input type="hidden" name="otp" id="full-otp">
+
+            <button type="submit" class="verify-btn">Verify & Activate</button>
+        </form>
+
+        <p class="resend-text">
+            Didn't receive the code?
+            <span id="timer-box">Resend in <span id="timer">00:30s</span></span>
+            <a href="/resend-otp" class="resend-link disabled" id="resend-anchor">Resend New Code</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    // Reveal animation
+    window.addEventListener('load', () => {
+        document.querySelector('.otp-card').classList.add('active');
+    });
+
+    // OTP Input logic
+    const fields = document.querySelectorAll('.otp-field');
+    const fullOtpInput = document.getElementById('full-otp');
+    const form = document.getElementById('otp-form');
+
+    fields.forEach((field, index) => {
+        field.addEventListener('input', (e) => {
+            if (e.target.value.length === 1 && index < fields.length - 1) {
+                fields[index + 1].focus();
+            }
+            updateFullOtp();
+        });
+
+        field.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                fields[index - 1].focus();
+            }
+        });
+    });
+
+    function updateFullOtp() {
+        let otp = '';
+        fields.forEach(field => otp += field.value);
+        fullOtpInput.value = otp;
+    }
+
+    form.addEventListener('submit', (e) => {
+        updateFullOtp();
+        if (fullOtpInput.value.length !== fields.length) {
+            e.preventDefault();
+            alert('Please enter a valid 4-digit OTP');
+        }
+    });
+
+    // Timer logic
+    let timeLeft = 30;
+    const timerDisplay = document.getElementById('timer');
+    const timerBox = document.getElementById('timer-box');
+    const resendAnchor = document.getElementById('resend-anchor');
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}s`;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerBox.classList.add('hidden');
+            resendAnchor.classList.remove('disabled');
+        }
+    }, 1000);
+</script>
