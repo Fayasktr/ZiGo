@@ -22,7 +22,7 @@ export const login = asyncHandler(async (req, res) => {
             userName: existUser.userName,
             email: existUser.email
         }
-        res.render('/user/userAfterLogin/home');
+        res.redirect("ZiGo.com");
     } catch (e) {
         req.session.error = e.message;
         console.log(e.message)
@@ -31,6 +31,16 @@ export const login = asyncHandler(async (req, res) => {
 
 });
 
+
 export const logOut =asyncHandler(async (req,res)=>{
     req.session.destroy();
+})
+
+export const LoadHomePage =asyncHandler(async (req,res)=>{
+
+    res.render("user/userAfterLogin/ZiGo.com.ejs")
+})
+
+export const loadSignUp =asyncHandler(async (req,res)=>{
+    res.render("user/signup");
 })

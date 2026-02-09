@@ -1,4 +1,3 @@
-import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs"
 
@@ -15,7 +14,12 @@ export const userLogin = async (email, password) => {
     if (!existUser) {
         throw new Error("User not found");
     }
+
+    if(existUser.isBlocked== true){
+        throw new Error("User Blocked By Admin")
+    }
     const isMatch = await bcrypt.compare(password, existUser.password);
+
     if (!isMatch) {
         throw new Error("Invalid credentials");
     }

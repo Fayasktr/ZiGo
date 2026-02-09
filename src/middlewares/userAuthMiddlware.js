@@ -1,7 +1,7 @@
 
- const isLogin = (req,res, next)=>{
-    if(req.session.user){
-        return res.redirect("home");
+const isLogin = (req, res, next) => {
+    if (req.session.user) {
+        return res.redirect("ZiGo.com");
     }
     next()
 }

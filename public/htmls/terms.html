@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | ZiGo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--primary-orange);
+            font-weight: 800;
+        }
+
+        p {
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .orange-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 90, 31, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body class="p-6 md:p-20">
+    <div class="orange-glow top-[-300px] right-[-300px]"></div>
+    <div class="orange-glow bottom-[-300px] left-[-300px]"></div>
+
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-12 text-center md:text-left">
+            <a href="/" class="inline-block mb-8">
+                <img src="/public/public/logo-name.png" alt="ZiGo Logo" class="h-10">
+            </a>
+            <h1 class="text-4xl md:text-6xl mb-4">Terms of Service</h1>
+            <p class="text-xl opacity-60">Last updated: February 9, 2026</p>
+        </header>
+
+        <div class="content-card p-8 md:p-12 mb-12">
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">1. Acceptance of Terms</h2>
+                <p>Welcome to ZiGo. By accessing or using our website, services, or mobile applications, you agree to be
+                    bound by these Terms of Service. If you do not agree with any part of these terms, you must not use
+                    our platform.</p>
+            </section>
+
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">2. Account Registration</h2>
+                <p>To access certain features, you must create an account. You represent that the information you
+                    provide is accurate and that you will keep it updated. You are responsible for maintaining the
+                    confidentiality of your account credentials.</p>
+            </section>
+
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">3. Use of Services</h2>
+                <p>You agree to use ZiGo only for lawful purposes. You are prohibited from violating or attempting to
+                    violate the security of the site, including attempting to probe, scan, or test the vulnerability of
+                    a system or network.</p>
+            </section>
+
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">4. Intellectual Property</h2>
+                <p>All content on ZiGo, including text, graphics, logos, icons, and software, is the property of ZiGo or
+                    its content suppliers and is protected by international copyright laws.</p>
+            </section>
+
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">5. Limitation of Liability</h2>
+                <p>ZiGo shall not be liable for any direct, indirect, incidental, special, or consequential damages
+                    resulting from the use or inability to use our services.</p>
+            </section>
+
+            <section class="mb-10">
+                <h2 class="text-2xl mb-4">6. Product Information</h2>
+                <p>We attempt to be as accurate as possible. However, we do not warrant that product descriptions or
+                    other content are accurate, complete, reliable, current, or error-free.</p>
+            </section>
+
+            <section>
+                <h2 class="text-2xl mb-4">7. Termination</h2>
+                <p>We reserve the right to terminate or suspend your account and access to our services at our sole
+                    discretion, without notice, for conduct that we believe violates these Terms.</p>
+            </section>
+        </div>
+
+        <footer class="text-center opacity-50 text-sm">
+            <p>&copy; 2026 ZiGo Technologies. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
