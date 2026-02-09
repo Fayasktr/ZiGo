@@ -19,7 +19,7 @@ const userSchema =mongoose.Schema({
             type: String,
             required: true,
             minlength:6,
-            maxlength:25
+            maxlength:100
         },
         role:{
             type: String,
@@ -38,7 +38,7 @@ const userSchema =mongoose.Schema({
             type : Boolean,
             default :false
         },
-        isValid:{
+        isVerified:{
             type: Boolean,
             default:false
         }

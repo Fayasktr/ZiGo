@@ -31,5 +31,9 @@ app.use((req,res,next)=>{
 })
 
 app.use(userRoute);
+app.use((req, res) => {
+  res.status(404).render("user/404");
+});
+
 
 export default app;

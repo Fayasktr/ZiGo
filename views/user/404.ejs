@@ -37,94 +37,11 @@
             line-height: 1.6;
         }
 
-        /* --- Header --- */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 5%;
-            z-index: 1000;
-            transition: var(--transition);
-        }
 
-        header.scrolled {
-            background-color: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 5%;
-            box-shadow: 0 4px 40px rgba(255, 90, 31, 0.4);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .logo img.icon {
-            height: 72px;
-            width: auto;
-            transition: var(--transition);
-        }
-
-        .logo img.name {
-            height: 36px;
-            width: auto;
-            margin-top: 2px;
-            transition: var(--transition);
-        }
-
-        header.scrolled .logo img.icon {
-            height: 48px;
-        }
-
-        header.scrolled .logo img.name {
-            height: 24px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--white);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            opacity: 0.8;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover {
-            opacity: 1;
-            color: var(--primary-orange);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .profile-link {
-            background-color: var(--primary-orange);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
 
         /* --- 404 Section --- */
         .error-section {
+            margin-top: 70px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -237,79 +154,60 @@
 </head>
 
 <body>
-    <header id="header">
-        <a href="/" class="logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon">
-            <img src="/public/public/logo-name.png" alt="ZiGo" class="name">
-        </a>
-        <ul class="nav-links hidden lg:flex">
-            <li><a href="/">Home</a></li>
-            <li><a href="/shop">Shop</a></li>
-            <li><a href="/categories">Categories</a></li>
-            <li><a href="/orders">Orders</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-        </ul>
-        <div class="header-actions">
-            <a href="/login" class="profile-link">Login</a>
-        </div>
-    </header>
+    <%- include('../partials/headerBeforeLogin') %>
 
-    <main class="error-section">
-        <div class="error-code">404</div>
-        <div class="error-message">
-            <p>The page you're searching for seems to have vanished into the digital void. Let's get you back on track.
-            </p>
-            <a href="/" class="btn btn-primary">Back to Home</a>
-        </div>
-    </main>
+        <main class="error-section">
+            <div class="error-code">404</div>
+            <div class="error-message">
+                <p>The page you're searching for seems to have vanished into the digital void. Let's get you back on
+                    track.
+                </p>
+                <a href="/" class="btn btn-primary">Back to Home</a>
+            </div>
+        </main>
 
-    <footer>
-        <div class="footer-grid max-w-7xl mx-auto">
-            <div class="footer-col">
-                <a href="/" class="logo mb-8 block">
-                    <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon" style="height: 60px;">
-                    <img src="/public/public/logo-name.png" alt="ZiGo" class="name" style="height: 30px;">
-                </a>
-                <p class="text-white/60 text-sm">Premium electronics, lightning-fast delivery, and prices that make
-                    sense.</p>
+        <footer>
+            <div class="footer-grid max-w-7xl mx-auto">
+                <div class="footer-col">
+                    <a href="/" class="logo mb-8 block">
+                        <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon" style="height: 60px;">
+                        <img src="/public/public/logo-name.png" alt="ZiGo" class="name" style="height: 30px;">
+                    </a>
+                    <p class="text-white/60 text-sm">Premium electronics, lightning-fast delivery, and prices that make
+                        sense.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul class="footer-links">
+                        <li><a href="/shop?category=smartphones">Smartphones</a></li>
+                        <li><a href="/shop?category=watches">Watches</a></li>
+                        <li><a href="/shop?category=audio">Audio</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-col">
-                <h4>Shop</h4>
-                <ul class="footer-links">
-                    <li><a href="/shop?category=smartphones">Smartphones</a></li>
-                    <li><a href="/shop?category=watches">Watches</a></li>
-                    <li><a href="/shop?category=audio">Audio</a></li>
-                </ul>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ZiGo. All rights reserved.</p>
             </div>
-            <div class="footer-col">
-                <h4>Support</h4>
-                <ul class="footer-links">
-                    <li><a href="/about">About Us</a></li>
-                    <li><a href="/contact">Contact Us</a></li>
-                    <li><a href="#">FAQs</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <ul class="footer-links">
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 ZiGo. All rights reserved.</p>
-        </div>
-    </footer>
+        </footer>
 
-    <script>
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (window.scrollY > 50) header.classList.add('scrolled');
-            else header.classList.remove('scrolled');
-        });
-    </script>
+        <script>
+
+        </script>
 </body>
 
 </html>
