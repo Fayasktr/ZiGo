@@ -1,22 +1,21 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import * as userServises from "../services/uLoginService.js"
+import { error } from "console";
 
 export const landingBeforeLogin = asyncHandler(async (req, res) => {
     res.render("user/landing")
 })
 
 export const loginPage = asyncHandler(async (req, res) => {
-    const error = req.session.error || "";
-    req.session.error = "";
-    res.render("user/login", { error });
+
+    res.render("user/login");
 })
 
 export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     try {
         const existUser = await userServises.userLogin(email, password);
-        req.session.error =existUser.message;
         req.session.user = {
             id: existUser._id,
             userName: existUser.userName,
@@ -24,8 +23,7 @@ export const login = asyncHandler(async (req, res) => {
         }
         res.redirect("ZiGo.com");
     } catch (e) {
-        req.session.error = e.message;
-        console.log(e.message)
+        req.flash("error",error.message);
         res.redirect("/login");
     }
 
@@ -43,4 +41,20 @@ export const LoadHomePage =asyncHandler(async (req,res)=>{
 
 export const loadSignUp =asyncHandler(async (req,res)=>{
     res.render("user/signup");
+})
+
+export const signup = asyncHandler(async (req,res)=>{
+    const {userName,email,password,confirmPassword} =req.body;
+    console.log(userName,email,password);
+    if(password !=confirmPassword){
+        req.flash("error","conform password is not equal");
+        return res.redirect("signUp")
+    }
+    if(!userName || !email || !password){
+        req.flash("error","invalid credentials")
+        return res.redirect("signUp")
+    }
+    let userResult = await userServises.userSignUp(userName,email,password);
+    console.log(userResult)
+    res.send("done")
 })

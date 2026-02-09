@@ -4,6 +4,7 @@ import userRoute from "./routes/userRoute.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
+import flash from "connect-flash";
 
 const app = express()
 
@@ -21,7 +22,14 @@ app.use("/public", express.static(path.join(__dirname, "../public")));
 
 console.log('hello reached to app.js')
 
-app.use(sessionMiddleware)
-app.use(userRoute)
+app.use(sessionMiddleware);
+app.use(flash());
+app.use((req,res,next)=>{
+    res.locals.errorMessage= req.flash("error");
+    res.locals.successMessage= req.flash("success");
+    next();
+})
+
+app.use(userRoute);
 
 export default app;
