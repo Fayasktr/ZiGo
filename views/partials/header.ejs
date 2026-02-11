@@ -19,7 +19,10 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.02rem 5%;
+        padding: 0.92rem 5%;
+        /* Main header padding recalibrated */
+        /* Final calibration (+5% more) */
+        /* Increased by 10% */
         z-index: 1000;
         transition: var(--transition);
         background-color: rgba(15, 15, 15, 0.7);
@@ -29,7 +32,10 @@
     header.scrolled {
         background-color: rgba(15, 15, 15, 0.95);
         backdrop-filter: blur(10px);
-        padding: 0.68rem 5%;
+        padding: 0.81rem 5%;
+        /* Scrolled header padding recalibrated */
+        /* Final calibration (+5% more) */
+        /* Increased by 10% from 0.7rem */
         box-shadow: 0 4px 40px rgba(255, 90, 31, 0.4);
     }
 
@@ -41,12 +47,16 @@
     }
 
     .logo img.icon {
-        height: 122px;
+        height: 76px;
+        /* Final calibration (+5% more) */
+        /* Increased by 10% from 65px */
         width: auto;
     }
 
     .logo img.name {
-        height: 86px;
+        height: 33px;
+        /* Final calibration (+5% more) */
+        /* Increased by 10% from 28px */
         width: auto;
         margin-top: 2px;
         mix-blend-mode: screen;
@@ -122,8 +132,9 @@
     }
 
     .profile-avatar {
-        width: 42px;
-        height: 42px;
+        width: 38px;
+        /* Increased from 30px */
+        height: 38px;
         border-radius: 50%;
         border: 2px solid var(--primary-orange);
         cursor: pointer;
@@ -194,7 +205,7 @@
 
         <!-- Profile and Logout -->
         <div class="hidden sm:flex items-center gap-4">
-            <a href="/profile" class="profile-avatar">
+            <a href="/user/profile" class="profile-avatar">
                 <img src="https://ui-avatars.com/api/?name=Fayas&background=FF5A1F&color=fff" alt="User">
             </a>
             <a href="/logout" class="logout-btn">Logout</a>

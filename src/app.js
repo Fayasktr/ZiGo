@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express from "express";
+import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
-import path from "path";
+import path from 'path';
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
 import flash from "connect-flash";
@@ -30,10 +31,17 @@ app.use((req,res,next)=>{
     next();
 })
 
+app.use(authRoute);
 app.use(userRoute);
 app.use((req, res) => {
   res.status(404).render("user/404");
 });
 
-
+app.use((err,req,res,next)=>{
+  if(err){
+    console.log(err.message)
+    res.send(err.message)
+  }
+  next()
+})
 export default app;

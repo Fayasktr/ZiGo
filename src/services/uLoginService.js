@@ -6,7 +6,7 @@ import OTPModel from "../models/otpModel.js";
 import { hashPassword } from "../utils/hashPassword.js"
 
 export const userLogin = async (email, password) => {
-  email = email.trim();
+  email = email.trim().toLowerCase();
   password = password.trim();
 
   if (!email || !password) {

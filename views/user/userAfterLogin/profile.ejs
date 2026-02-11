@@ -219,44 +219,6 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
         }
-
-        /* --- Modal Overlays --- */
-        .wallet-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 1.5rem;
-        }
-
-        .wallet-modal {
-            background: white;
-            width: 100%;
-            max-width: 450px;
-            border-radius: 32px;
-            padding: 2.5rem;
-            position: relative;
-            animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes modalPop {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
     </style>
 </head>
 
@@ -293,7 +255,7 @@
                         <a href="/wishlist" class="sidebar-link">
                             <i class="fas fa-heart"></i> Wishlist
                         </a>
-                        <a href="/addresses" class="sidebar-link">
+                        <a href="/user/addresses" class="sidebar-link">
                             <i class="fas fa-map-marker-alt"></i> Addresses
                         </a>
                         <a href="/cart" class="sidebar-link">
@@ -323,8 +285,8 @@
                                 <p class="opacity-60 mb-6">
                                     <%= user.email %>
                                 </p>
-                                <button onclick="openEditProfileModal()"
-                                    class="text-orange-500 font-bold text-sm hover:underline">Edit Profile</button>
+                                <a href="/user/profile/edit" class="text-orange-500 font-bold text-sm hover:underline">Edit
+                                    Profile</a>
                             </div>
                             <div class="bg-white p-8 rounded-[32px] border border-gray-100">
                                 <h3 class="text-lg font-bold mb-4 opacity-40 uppercase tracking-widest">Default Address
@@ -339,7 +301,7 @@
                                     <% } else { %>
                                         <p class="opacity-60 text-sm mb-6">No default address set.</p>
                                         <% } %>
-                                            <a href="/addresses"
+                                            <a href="/user/addresses"
                                                 class="text-orange-500 font-bold text-sm hover:underline">Manage
                                                 Addresses</a>
                             </div>
@@ -351,40 +313,9 @@
 
         <%- include('../../partials/footer') %>
 
-            <!-- Edit Profile Modal -->
-            <div id="editProfileModal" class="wallet-modal-overlay">
-                <div class="wallet-modal">
-                    <button onclick="closeModal('editProfileModal')"
-                        class="absolute top-6 right-6 text-gray-400 hover:text-black">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                    <h2 class="text-2xl font-black mb-1">Edit Profile</h2>
-                    <p class="text-sm opacity-50 mb-8">Update your personal information</p>
-
-                    <form action="/profile/edit" method="POST">
-                        <div class="form-group">
-                            <label class="form-label">User Name</label>
-                            <input type="text" name="userName" class="form-input" value="<%= user.userName %>">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-input" value="<%= user.email %>" readonly>
-                            <p class="text-[10px] opacity-40 mt-1">Email cannot be changed directly.</p>
-                        </div>
-                        <!-- Add other fields as needed matching your User model -->
-                        <button type="submit" class="save-btn mt-4">Save Changes</button>
-                    </form>
-                </div>
-            </div>
 
             <script>
-                function openEditProfileModal() {
-                    document.getElementById('editProfileModal').style.display = 'flex';
-                }
 
-                function closeModal(id) {
-                    document.getElementById(id).style.display = 'none';
-                }
             </script>
 </body>
 

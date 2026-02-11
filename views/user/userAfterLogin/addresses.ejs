@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | My Addresses</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--off-white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Profile Container --- */
+        .profile-container {
+            padding: 140px 5% 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 3rem;
+        }
+
+        @media (max-width: 1024px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Sidebar --- */
+        .profile-sidebar {
+            background: white;
+            border-radius: 32px;
+            padding: 2.5rem;
+            border: 1px solid var(--gray-light);
+            height: min-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .user-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-orange);
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.15);
+        }
+
+        .user-avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.1rem 1.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--dark-navy);
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .sidebar-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            opacity: 0.4;
+            transition: var(--transition);
+        }
+
+        .sidebar-link:hover {
+            background: var(--off-white);
+            color: var(--primary-orange);
+        }
+
+        .sidebar-link:hover i {
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+
+        .sidebar-link.active {
+            background: var(--primary-orange);
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .sidebar-link.active i {
+            opacity: 1;
+            color: white;
+        }
+
+        .logout-link {
+            margin-top: 1rem;
+            color: #ff4757;
+        }
+
+        .logout-link:hover {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+        }
+
+        /* --- Content Panels --- */
+        .panel-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .panel-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+
+        /* --- Address Grid --- */
+        .address-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .address-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--gray-light);
+            position: relative;
+        }
+
+        .address-card.default {
+            border-color: var(--primary-orange);
+        }
+
+        .default-badge {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: var(--primary-orange);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/header') %>
+
+        <main class="profile-container">
+            <div class="profile-layout">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="user-info">
+                        <div class="user-avatar-large">
+                            <img src="<%= (user.profileImage) ? user.profileImage : 'https://ui-avatars.com/api/?name=' + user.userName + '&background=FF5A1F&color=fff' %>"
+                                alt="User">
+                        </div>
+                        <h2 class="user-name">
+                            <%= user.userName %>
+                        </h2>
+                        <p class="user-email">
+                            <%= user.email %>
+                        </p>
+                    </div>
+
+                    <nav class="sidebar-nav">
+                        <a href="/user/profile" class="sidebar-link">
+                            <i class="fas fa-th-large"></i> Overview
+                        </a>
+                        <a href="/orders" class="sidebar-link">
+                            <i class="fas fa-shopping-bag"></i> Order History
+                        </a>
+                        <a href="/wallet" class="sidebar-link">
+                            <i class="fas fa-wallet"></i> My Wallet
+                        </a>
+                        <a href="/wishlist" class="sidebar-link">
+                            <i class="fas fa-heart"></i> Wishlist
+                        </a>
+                        <a href="/user/addresses" class="sidebar-link active">
+                            <i class="fas fa-map-marker-alt"></i> Addresses
+                        </a>
+                        <a href="/cart" class="sidebar-link">
+                            <i class="fas fa-shopping-cart"></i> My Cart
+                        </a>
+                        <a href="/logout" class="sidebar-link logout-link">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content Area -->
+                <div class="profile-content">
+
+                    <!-- Addresses Panel -->
+                    <div id="addresses-panel">
+                        <div class="panel-header flex justify-between items-end">
+                            <h1 class="panel-title">My <span class="text-orange-500">Addresses</span></h1>
+                            <a href="/user/addresses/addEditAddress"
+                                class="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl text-sm mb-2 inline-block"><i
+                                    class="fas fa-plus mr-2"></i> Add New</a>
+                        </div>
+
+                        <% if (typeof addresses !=='undefined' && addresses.length> 0) { %>
+                            <div class="address-grid">
+                                <% addresses.forEach(addr=> { %>
+                                    <div class="address-card <%= addr.isDefault ? 'default' : '' %>">
+                                        <% if (addr.isDefault) { %>
+                                            <span class="default-badge">DEFAULT</span>
+                                            <% } %>
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div
+                                                        class="w-10 h-10 rounded-full <%= addr.type === 'Home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
+                                                        <i
+                                                            class="fas <%= addr.type === 'Home' ? 'fa-home' : 'fa-briefcase' %>"></i>
+                                                    </div>
+                                                    <h4 class="font-bold text-xl">
+                                                        <%= addr.type %>
+                                                    </h4>
+                                                </div>
+                                                <p class="opacity-60 mb-6 text-sm">
+                                                    <%= addr.houseName %>, <%= addr.street %>,<br>
+                                                            <%= addr.city %>, <%= addr.state %>
+                                                                    <%= addr.pincode %>
+                                                </p>
+                                                <div class="flex gap-4 border-t pt-4">
+                                                    <a href="/user/profile/addEditAddress/<%= addr._id %>"
+                                                        class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
+                                                    <form
+                                                        action="/user/profile/deleteAddress/<%= addr._id %>?_method=DELETE"
+                                                        method="POST" class="inline">
+                                                        <button type="submit"
+                                                            class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
+                                                    </form>
+                                                </div>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                            <% } else { %>
+                                <!-- Placeholder static addresses if no database data yet (to match your design) -->
+                                <div class="address-grid">
+                                    <div class="address-card default">
+                                        <span class="default-badge">DEFAULT</span>
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <h4 class="font-bold text-xl">Home</h4>
+                                        </div>
+                                        <p class="opacity-60 mb-6 text-sm">Tech Hub Plaza, 4th Floor,<br>Electronic
+                                            City, Bangalore, KA 560100</p>
+                                        <div class="flex gap-4 border-t pt-4">
+                                            <a href="#"
+                                                class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
+                                            <button
+                                                class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="address-card">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                                                <i class="fas fa-briefcase"></i>
+                                            </div>
+                                            <h4 class="font-bold text-xl">Office</h4>
+                                        </div>
+                                        <p class="opacity-60 mb-6 text-sm">Sky Tower, Level 12,<br>Indiranagar,
+                                            Bangalore, KA 560038</p>
+                                        <div class="flex gap-4 border-t pt-4">
+                                            <a href="#"
+                                                class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
+                                            <button
+                                                class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% } %>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <%- include('../../partials/footer') %>
+</body>
+
+</html>

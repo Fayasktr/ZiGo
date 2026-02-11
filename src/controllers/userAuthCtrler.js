@@ -27,7 +27,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const logOut = asyncHandler(async (req, res) => {
   delete req.session.user;
-  res.redirect("user/landing");
+  res.redirect("/");
 });
 
 export const LoadHomePage = asyncHandler(async (req, res) => {

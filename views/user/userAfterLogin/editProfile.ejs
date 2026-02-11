@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | Edit Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--off-white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Container --- */
+        .edit-container {
+            padding: 140px 5% 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+
+        .breadcrumb a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-orange);
+            opacity: 1;
+        }
+
+        /* --- Section Cards --- */
+        .edit-card {
+            background: white;
+            border-radius: 40px;
+            padding: 3rem;
+            border: 1px solid var(--gray-light);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2.5rem;
+        }
+
+        .card-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--off-white);
+            padding-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+
+        /* --- Avatar Upload --- */
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .avatar-preview-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-orange);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.15);
+        }
+
+        .upload-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--deep-black);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid white;
+            transition: var(--transition);
+        }
+
+        .upload-badge:hover {
+            background: var(--primary-orange);
+            transform: scale(1.1);
+        }
+
+        /* --- Form Styling --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.6rem;
+            color: var(--dark-navy);
+            opacity: 0.4;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.1rem 1.5rem;
+            border-radius: 20px;
+            border: 2px solid var(--gray-light);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            background: var(--off-white);
+        }
+
+        .form-input:focus {
+            background: white;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 5px rgba(255, 90, 31, 0.1);
+        }
+
+        .verified-badge {
+            position: absolute;
+            right: 20px;
+            top: 42px;
+            color: #2ED573;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- Buttons --- */
+        .save-btn {
+            width: 100%;
+            background: var(--deep-black);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-orange);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .cancel-btn {
+            display: block;
+            text-align: center;
+            margin-top: 2rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--dark-navy);
+            opacity: 0.5;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .cancel-btn:hover {
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/header') %>
+
+        <main class="edit-container">
+            <nav class="breadcrumb">
+                <a href="/ZiGo.com">Home</a>
+                <i class="fas fa-chevron-right text-[10px]"></i>
+                <a href="/profile">My Account</a>
+                <i class="fas fa-chevron-right text-[10px]"></i>
+                <span class="opacity-100 font-bold text-black">Edit Profile</span>
+            </nav>
+
+            <!-- Section 1: Personal Information -->
+            <section class="edit-card">
+                <div class="card-header">
+                    <h1 class="section-title">Personal <span class="text-orange-500">Information</span></h1>
+                </div>
+
+                <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                    <div class="avatar-section">
+                        <div class="avatar-preview-wrapper">
+                            <img src="<%= (user.profileImage) ? user.profileImage : 'https://ui-avatars.com/api/?name=' + user.userName + '&background=FF5A1F&color=fff' %>"
+                                alt="Profile Preview" class="avatar-preview" id="profileImage">
+                            <label for="imageUpload" class="upload-badge">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" name="profileImage" id="imageUpload" class="hidden" accept="image/*"
+                                    onchange="previewAvatar(this)">
+                            </label>
+                        </div>
+                        <p class="text-xs font-bold opacity-30">UPLOAD NEW PHOTO</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="userName" class="form-input" placeholder="e.g. fayas_kp"
+                                value="<%= user.userName %>">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div class="relative">
+                                <span class="absolute left-6 top-[1.2rem] font-bold opacity-30">+91</span>
+                                <input type="tel" name="phone" class="form-input pl-16" placeholder="9876543210"
+                                    value="<%= user.phone || '' %>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" placeholder="e.g. personal@fayas.com"
+                            value="<%= user.email %>" readonly>
+                        <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                    </div>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-user-check"></i> Save Personal Details
+                    </button>
+                </form>
+            </section>
+
+            <!-- Section 2: Security Settings (Optional/Future) -->
+            <section class="edit-card">
+                <div class="card-header">
+                    <h1 class="section-title">Security <span class="text-orange-500">Settings</span></h1>
+                </div>
+
+                <form action="/profile/password" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="currentPassword" class="form-input"
+                            placeholder="Enter current password">
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="newPassword" class="form-input"
+                                placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirmPassword" class="form-input"
+                                placeholder="Confirm new password">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-key"></i> Update Password
+                    </button>
+                </form>
+            </section>
+
+            <a href="/profile" class="cancel-btn">
+                <i class="fas fa-arrow-left mr-2"></i> Back to My Account
+            </a>
+        </main>
+
+        <%- include('../../partials/footer') %>
+
+            <script>
+                function previewAvatar(input) {
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            document.getElementById('profileImage').src = e.target.result;
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+            </script>
+</body>
+
+</html>
