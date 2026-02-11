@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { GenerateOTP } from "../utils/otp.js";
 import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
-import {hashPassword} from "../utils/hashPassword.js"
+import { hashPassword } from "../utils/hashPassword.js"
 
 export const userLogin = async (email, password) => {
   email = email.trim();
@@ -31,7 +31,7 @@ export const userLogin = async (email, password) => {
 };
 
 export const userSignUp = async (userName, email, password) => {
-  const existUser = await User.findOne({ email ,isVerified:true});
+  const existUser = await User.findOne({ email, isVerified: true });
   if (existUser) {
     throw new Error("Email already taken...");
   }
@@ -39,8 +39,8 @@ export const userSignUp = async (userName, email, password) => {
   const OTP = await GenerateOTP();
   console.log(OTP);
 
-  const hashedPassword= await hashPassword(password);
-  console.log("hashpass"+hashedPassword)
+  const hashedPassword = await hashPassword(password);
+  console.log("hashpass" + hashedPassword)
 
   let newUser = await User.create({
     userName: userName,
@@ -59,16 +59,28 @@ export const userSignUp = async (userName, email, password) => {
   return newUser;
 };
 
-export const verifyOtp = async(entredOtp,userId)=>{
+export const verifyOtp = async (entredOtp, userId) => {
 
-  let otpFromDB = await OTPModel.findOne({userId})
-  console.log("generated otp  "+otpFromDB)
+  let otpFromDB = await OTPModel.findOne({ userId })
+  console.log("generated otp  " + otpFromDB)
 
-  if(!otpFromDB || otpFromDB.otp != entredOtp){
-    throw new Error ("Invalid OTP or expired..")
+  if (!otpFromDB || otpFromDB.otp != entredOtp) {
+    throw new Error("Invalid OTP or expired..")
   }
 
-  await OTPModel.deleteOne({userId});
+  await OTPModel.deleteOne({ userId });
+}
 
-  return {success:true};
+export const resendOtp = async (userId) => {
+  const OTP = await GenerateOTP();
+  const user = await User.findById(userId);
+  const subjectForMail = "SignUp OTP verification Code";
+  console.log(`latest otp is ${OTP}`)
+
+  await OTPModel.findOneAndUpdate(
+    { userId },
+    { otp: OTP, createdAt: new Date() ,isUsed:false },
+    { upsert: true }
+  )
+  const mailSend = await otpSendToMail(OTP, user.email, subjectForMail);
 }

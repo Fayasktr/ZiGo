@@ -1,0 +1,62 @@
+<style>
+    :root {
+        --primary-orange: #FF5A1F;
+        --deep-black: #0F0F0F;
+        --white: #FFFFFF;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* --- Minimal Header --- */
+    header.minimal-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        /* Center the logo for a professional look on utility pages */
+        align-items: center;
+        padding: 1.5rem 5%;
+        z-index: 1000;
+        transition: var(--transition);
+        background-color: rgba(15, 15, 15, 0.7);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+    }
+
+    .logo img.icon {
+        height: 80px;
+        width: auto;
+    }
+
+    .logo img.name {
+        height: 40px;
+        width: auto;
+        margin-top: 2px;
+        mix-blend-mode: screen;
+    }
+
+    @media (max-width: 640px) {
+        .logo img.icon {
+            height: 60px;
+        }
+
+        .logo img.name {
+            height: 30px;
+        }
+    }
+</style>
+
+<header class="minimal-header">
+    <a href="/" class="logo">
+        <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon">
+        <img src="/public/public/logo-name.png" alt="ZiGo" class="name">
+    </a>
+</header>

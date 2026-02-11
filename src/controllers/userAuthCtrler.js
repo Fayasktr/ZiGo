@@ -26,7 +26,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logOut = asyncHandler(async (req, res) => {
-  req.session.destroy();
+  delete req.session.user;
   res.redirect("user/landing");
 });
 
@@ -56,11 +56,11 @@ export const signUp = asyncHandler(async (req, res) => {
       return res.redirect("signUp");
     }
     let newUser = await userServises.userSignUp(userName, email, password);
-    console.log("resut print " + newUser);
 
     req.session.tempUserId = newUser._id;
     res.redirect("/verifyOtp");
-  } catch (error) {
+  }
+  catch (error) {
     req.flash("error", "OTP not send to mail, please verify the mail..");
     res.redirect("signUp");
   }
@@ -82,13 +82,26 @@ export const otpVerify = asyncHandler(async (req, res) => {
     console.log(entredOtp);
     console.log(userId);
 
-    let result = await userServises.verifyOtp(entredOtp, userId);
-    console.log(result);
-    console.log("session detailse :"+req.session);
+    await userServises.verifyOtp(entredOtp, userId);
+
+    console.log("session detailse :" + req.session);
     delete req.session.tempUserId;
+
     res.redirect("/login");
-  } catch (error) {
-    req.flash("error", error);
+  }
+  catch (error) {
+    req.flash("error", error.message);
     res.redirect("/verifyOtp");
   }
 });
+
+export const resendOtp = asyncHandler(async (req, res) => {
+  try {
+    let userId = req.session.tempUserId;
+    const result =await userServises.resendOtp(userId)
+    res.redirect("/verifyOtp");
+  } catch (error) {
+    req.flash("error",error.message);
+    res.redirect("/verifyOtp");
+  }
+})

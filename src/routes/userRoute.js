@@ -11,8 +11,9 @@ router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 
 router.get("/signUp", userAuth.isLogin, userCntrl.loadSignUp);
 router.post("/signUp", userCntrl.signUp);
-router.get("/verifyotp", userAuth.isOtpPending,userCntrl.loadOtpPage);
+router.get("/verifyotp", userAuth.isOtpPending, userCntrl.loadOtpPage);
 router.post("/verifyOtp", userCntrl.otpVerify);
+router.get("/resendOtp", userCntrl.resendOtp);
 
 const userRoute = router;
 

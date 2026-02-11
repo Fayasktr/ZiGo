@@ -264,21 +264,36 @@
             <p class="resend-text">
                 Didn't receive the code?
                 <span id="timerBox">Resend in <span id="timer">01:00s</span></span>
-                <a href="/resend-otp" class="resend-link disabled" id="resendBtn">Resend New Code</a>
+                <a href="/resendOtp" class="resend-link disabled" id="resendBtn">Resend New Code</a>
             </p>
         </div>
     </div>
 
     <script>
-        window.onload = () => {
-            document.getElementById('otpCard').classList.add('active');
-            // Focus first field
-            fields[0].focus();
-        }
-
         const fields = document.querySelectorAll('.otp-field');
         const form = document.getElementById('otpForm');
         const fullOtpInput = document.getElementById('full-otp');
+        const timerDisplay = document.getElementById('timer');
+        const resendBtn = document.getElementById('resendBtn');
+        let timeLeft = 60;
+        let countdown;
+
+        function startTimer() {
+            resendBtn.classList.add('disabled');
+            timeLeft = 60;
+            clearInterval(countdown);
+            countdown = setInterval(() => {
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    timerDisplay.textContent = "00:00s";
+                    resendBtn.classList.remove('disabled');
+                }
+            }, 1000);
+        }
 
         fields.forEach((field, index) => {
             field.addEventListener('input', (e) => {
@@ -287,7 +302,6 @@
                 }
                 updateFullOtp();
             });
-
             field.addEventListener('keydown', (e) => {
                 if (e.key === 'Backspace' && !e.target.value && index > 0) {
                     fields[index - 1].focus();
@@ -309,24 +323,19 @@
             }
         });
 
-        // Timer logic
-        let timeLeft = 300;
-        const timerDisplay = document.getElementById('timer');
-        const timerBox = document.getElementById('timerBox');
-        const resendBtn = document.getElementById('resendBtn');
-
-        const countdown = setInterval(() => {
-            timeLeft--;
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}s`;
-
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                timerBox.classList.add('hidden');
-                resendBtn.classList.remove('disabled');
+        resendBtn.addEventListener('click', (e) => {
+            if (timeLeft > 0) {
+                e.preventDefault();
+            } else {
+                startTimer();
             }
-        }, 1000);
+        });
+
+        window.onload = () => {
+            document.getElementById('otpCard').classList.add('active');
+            fields[0].focus();
+            startTimer();
+        };
     </script>
 </body>
 

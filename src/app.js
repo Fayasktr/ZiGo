@@ -25,8 +25,8 @@ console.log('hello reached to app.js')
 app.use(sessionMiddleware);
 app.use(flash());
 app.use((req,res,next)=>{
-    res.locals.errorMessage= req.flash("error");
-    res.locals.successMessage= req.flash("success");
+    res.locals.error= req.flash("error");
+    res.locals.success= req.flash("success");
     next();
 })
 
