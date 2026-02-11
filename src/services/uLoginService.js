@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { GenerateOTP } from "../utils/otp.js";
-import { otpSendToMail } from "./nodemailer.js";
+import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
 import {hashPassword} from "../utils/hashPassword.js"
 
@@ -31,7 +31,7 @@ export const userLogin = async (email, password) => {
 };
 
 export const userSignUp = async (userName, email, password) => {
-  const existUser = await User.findOne({ email });
+  const existUser = await User.findOne({ email ,isVerified:true});
   if (existUser) {
     throw new Error("Email already taken...");
   }
@@ -41,13 +41,14 @@ export const userSignUp = async (userName, email, password) => {
 
   const hashedPassword= await hashPassword(password);
   console.log("hashpass"+hashedPassword)
+
   let newUser = await User.create({
     userName: userName,
     email: email,
     password: hashedPassword,
   });
 
-  let NewOTP = await OTPModel({
+  await OTPModel.create({
     userId: newUser._id,
     otp: OTP,
   });
@@ -55,5 +56,19 @@ export const userSignUp = async (userName, email, password) => {
   const subjectForMail = "SignUp OTP verification Code";
   let otpSend = await otpSendToMail(OTP, email, subjectForMail);
 
-  return otpSend;
+  return {success:otpSend, userId:newUser._id};
 };
+
+export const verifyOtp = async(entredOtp,userId)=>{
+
+  let otpFromDB = await OTPModel.findOne({userId})
+  console.log("generated otp  "+otpFromDB)
+  
+  if(!otpFromDB || otpFromDB.otp != entredOtp){
+    return {success:false,message:"Invalid OTP or expired.."};
+  }
+
+  // await OTPModel.deleteOne({userId});
+
+  return {success:true};
+}

@@ -1,7 +1,5 @@
 import asyncHandler from "express-async-handler";
-import User from "../models/userModel.js";
 import * as userServises from "../services/uLoginService.js";
-import { error } from "console";
 
 export const landingBeforeLogin = asyncHandler(async (req, res) => {
   res.render("user/landing");
@@ -29,6 +27,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const logOut = asyncHandler(async (req, res) => {
   req.session.destroy();
+  res.redirect("user/landing");
 });
 
 export const LoadHomePage = asyncHandler(async (req, res) => {
@@ -36,10 +35,19 @@ export const LoadHomePage = asyncHandler(async (req, res) => {
 });
 
 export const loadSignUp = asyncHandler(async (req, res) => {
-  res.render("user/signup");
+  res.render("user/signUp");
 });
 
-export const signup = asyncHandler(async (req, res) => {
+export const loadOtpPage = asyncHandler(async (req, res) => {
+  const userId = req.session.tempUserId;
+  if (!userId) {
+    req.flash("error", "Session expired, please sign up again.");
+    return res.redirect("/signUp");
+  }
+  res.render("user/otp", { userId });
+});
+
+export const signUp = asyncHandler(async (req, res) => {
   let { userName, email, password, confirmPassword } = req.body;
   console.log(userName, email, password);
   if (password != confirmPassword) {
@@ -54,7 +62,32 @@ export const signup = asyncHandler(async (req, res) => {
     req.flash("error", "invalid credentials");
     return res.redirect("signUp");
   }
-  let userResult = await userServises.userSignUp(userName, email, password);
-  console.log(userResult);
-  res.send("done");
+  let signUpResult = await userServises.userSignUp(userName, email, password);
+  console.log("resut print " + signUpResult.newUser);
+  if (signUpResult.success) {
+    req.session.tempUserId = signUpResult.userId;
+    res.redirect("/verifyOtp");
+  } else {
+    req.flash("error", "OTP not send to mail, please verify the mail..");
+    res.redirect("signUp");
+  }
+});
+
+export const otpVerify = asyncHandler(async (req, res) => {
+  delete req.session.tempUserId;
+  
+  const entredOtp = req.body.otp;
+  const userId = req.body.userId;
+  console.log(entredOtp);
+  console.log(req.body.userId);
+
+  let result = await userServises.verifyOtp(entredOtp, userId);
+  console.log(result);
+
+  if (result.success) {
+    res.redirect("/login");
+  } else {
+    req.flash("error", "Invalid OTP");
+    res.redirect("/verifyOtp");
+  }
 });

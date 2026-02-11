@@ -13,4 +13,11 @@ const isLogin = (req, res, next) => {
     next()
 }
 
-export default {isLogin, isLogout}
+const isOtpPending = (req,res,next)=>{
+    if(req.session.tempUserId){
+        return next();
+    }
+    res.redirect("signUp");
+}
+
+export default {isLogin, isLogout, isOtpPending}

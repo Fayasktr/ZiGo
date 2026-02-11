@@ -10,7 +10,9 @@ router.get("/logout", userAuth.isLogout, userCntrl.logOut)
 router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 
 router.get("/signUp", userAuth.isLogin, userCntrl.loadSignUp);
-router.post("/signUp",userCntrl.signup)
+router.post("/signUp", userCntrl.signUp);
+router.get("/verifyotp", userAuth.isOtpPending,userCntrl.loadOtpPage);
+router.post("/verifyOtp", userCntrl.otpVerify);
 
 const userRoute = router;
 
