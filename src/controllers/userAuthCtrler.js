@@ -38,6 +38,34 @@ export const loadSignUp = asyncHandler(async (req, res) => {
   res.render("user/signUp");
 });
 
+export const signUp = asyncHandler(async (req, res) => {
+  try {
+    let { userName, email, password, confirmPassword } = req.body;
+    console.log(userName, email, password);
+
+    if (password != confirmPassword) {
+      req.flash("error", "conform password is not equal");
+      return res.redirect("signUp");
+    }
+    userName = userName.trim();
+    email = email.trim().toLowerCase();
+    password = password.trim();
+
+    if (!userName || !email || !password) {
+      req.flash("error", "invalid credentials");
+      return res.redirect("signUp");
+    }
+    let newUser = await userServises.userSignUp(userName, email, password);
+    console.log("resut print " + newUser);
+
+    req.session.tempUserId = newUser._id;
+    res.redirect("/verifyOtp");
+  } catch (error) {
+    req.flash("error", "OTP not send to mail, please verify the mail..");
+    res.redirect("signUp");
+  }
+});
+
 export const loadOtpPage = asyncHandler(async (req, res) => {
   const userId = req.session.tempUserId;
   if (!userId) {
@@ -47,47 +75,20 @@ export const loadOtpPage = asyncHandler(async (req, res) => {
   res.render("user/otp", { userId });
 });
 
-export const signUp = asyncHandler(async (req, res) => {
-  let { userName, email, password, confirmPassword } = req.body;
-  console.log(userName, email, password);
-  if (password != confirmPassword) {
-    req.flash("error", "conform password is not equal");
-    return res.redirect("signUp");
-  }
-  userName = userName.trim();
-  email = email.trim().toLowerCase();
-  password = password.trim();
-
-  if (!userName || !email || !password) {
-    req.flash("error", "invalid credentials");
-    return res.redirect("signUp");
-  }
-  let signUpResult = await userServises.userSignUp(userName, email, password);
-  console.log("resut print " + signUpResult.newUser);
-  if (signUpResult.success) {
-    req.session.tempUserId = signUpResult.userId;
-    res.redirect("/verifyOtp");
-  } else {
-    req.flash("error", "OTP not send to mail, please verify the mail..");
-    res.redirect("signUp");
-  }
-});
-
 export const otpVerify = asyncHandler(async (req, res) => {
-  delete req.session.tempUserId;
-  
-  const entredOtp = req.body.otp;
-  const userId = req.body.userId;
-  console.log(entredOtp);
-  console.log(req.body.userId);
+  try {
+    const entredOtp = req.body.otp;
+    const userId = req.body.userId;
+    console.log(entredOtp);
+    console.log(userId);
 
-  let result = await userServises.verifyOtp(entredOtp, userId);
-  console.log(result);
-
-  if (result.success) {
+    let result = await userServises.verifyOtp(entredOtp, userId);
+    console.log(result);
+    console.log("session detailse :"+req.session);
+    delete req.session.tempUserId;
     res.redirect("/login");
-  } else {
-    req.flash("error", "Invalid OTP");
+  } catch (error) {
+    req.flash("error", error);
     res.redirect("/verifyOtp");
   }
 });

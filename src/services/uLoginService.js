@@ -54,21 +54,21 @@ export const userSignUp = async (userName, email, password) => {
   });
 
   const subjectForMail = "SignUp OTP verification Code";
-  let otpSend = await otpSendToMail(OTP, email, subjectForMail);
 
-  return {success:otpSend, userId:newUser._id};
+  await otpSendToMail(OTP, email, subjectForMail);
+  return newUser;
 };
 
 export const verifyOtp = async(entredOtp,userId)=>{
 
   let otpFromDB = await OTPModel.findOne({userId})
   console.log("generated otp  "+otpFromDB)
-  
+
   if(!otpFromDB || otpFromDB.otp != entredOtp){
-    return {success:false,message:"Invalid OTP or expired.."};
+    throw new Error ("Invalid OTP or expired..")
   }
 
-  // await OTPModel.deleteOne({userId});
+  await OTPModel.deleteOne({userId});
 
   return {success:true};
 }

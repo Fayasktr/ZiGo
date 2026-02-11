@@ -25,7 +25,7 @@ export const otpSendToMail = async (OTP, userEmail, subjectForMail) => {
 
                 <p>If you didn’t request this, please ignore.</p>
             </div>
-            `,
+            `
     };
 
     const returInfo = await transporter.sendMail(mailOptions);
@@ -34,6 +34,6 @@ export const otpSendToMail = async (OTP, userEmail, subjectForMail) => {
     return true;
   } catch (error) {
     console.log(error.message);
-    return false;
+    throw new Error(error.message);
   }
 };
