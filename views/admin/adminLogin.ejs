@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient Background Glows */
+        .glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 90, 31, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .glow-1 {
+            top: -200px;
+            left: -200px;
+        }
+
+        .glow-2 {
+            bottom: -200px;
+            right: -200px;
+        }
+
+        .login-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 3.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 1.25rem 1.5rem 1.25rem 3.5rem;
+            color: white;
+            font-weight: 500;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.1);
+        }
+
+        .form-input:focus+i {
+            color: var(--primary-orange);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            margin-top: 1rem;
+            box-shadow: 0 10px 20px -5px rgba(255, 90, 31, 0.3);
+        }
+
+        .btn-login:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(255, 90, 31, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-section img {
+            height: 60px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            transition: var(--transition);
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .forgot-link:hover {
+            color: var(--primary-orange);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="login-card">
+        <div class="logo-section">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <h1 class="text-3xl font-extrabold">Admin <span class="text-orange-500">Access</span></h1>
+            <p class="text-white/40 text-sm mt-2">Enter your credentials to manage the ecosystem</p>
+        </div>
+
+        <form action="/admin" method="POST">
+            <div class="input-group">
+                <input type="text" name="adminMail" class="form-input" placeholder="Admin Email" required>
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="input-group">
+                <input type="password" name="password" class="form-input" placeholder="Password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <a href="/admin/forgotPassword" class="forgot-link">Forgot Password?</a>
+
+            <button type="submit" class="btn-login">
+                SECURE LOGIN <i class="fas fa-arrow-right ml-2 text-xs"></i>
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-white/5 text-center">
+            <p class="text-xs text-white/20 uppercase tracking-widest">Authorized Personnel Only</p>
+        </div>
+    </div>
+</body>
+
+</html>

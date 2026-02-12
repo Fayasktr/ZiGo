@@ -14,28 +14,29 @@ export const loadEditProfile = asynchandler(async (req, res) => {
 });
 
 
-export const loadAddressPage = asynchandler(async (req,res)=>{
+export const loadAddressPage = asynchandler(async (req, res) => {
 
     const user = req.session.user;
-    res.render("user/userAfterLogin/addresses",{user})
+    res.render("user/userAfterLogin/addresses", { user })
 })
 
-export const loadEditAddressPage = asynchandler(async (req,res)=>{
-    const user =req.session.user;
-    res.render("user/userAfterLogin/addEditAddress");
+export const loadEditAddressPage = asynchandler(async (req, res) => {
+    const user = req.session.user;
+
+    res.render("user/userAfterLogin/addEditAddress", { user });
 })
 
-export const addEditAddress = asynchandler (async (req,res)=>{
-    try{
+export const addEditAddress = asynchandler(async (req, res) => {
+    try {
         const addressData = req.body;
-        if(addressData){
+        if (addressData) {
             //edit will do later
-        }else{
+        } else {
             const newAddressCreate = await addressService.newAddress(addressData);
             res.redirect("/user/addresses");
         }
-    }catch (error) {
-        req.flash("error",error);
+    } catch (error) {
+        req.flash("error", error);
         res.redirect("addEditAddress")
     }
 })

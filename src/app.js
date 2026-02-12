@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import path from 'path';
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
@@ -31,6 +32,7 @@ app.use((req,res,next)=>{
     next();
 })
 
+app.use(adminRoute);
 app.use(authRoute);
 app.use(userRoute);
 app.use((req, res) => {

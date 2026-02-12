@@ -169,91 +169,105 @@
             <a href="/user/addresses" class="back-btn">
                 <i class="fas fa-arrow-left"></i> Back to Addresses
             </a>
-<!-- hiddern area to set address id  -->
-<% if (typeof address !== 'undefined') { %>
-    <input type="hidden" name="addressId" value="<%= address._id %>">
-<%   } %>
-            <div class="form-card">
-                <div class="form-header">
-                    <h1 class="form-title">
-                        <%= (typeof address !=='undefined' ) ? 'Edit' : 'Add New' %> <span
-                                class="text-orange-500">Address</span>
-                    </h1>
-                    <p class="form-subtitle">Please provide your delivery details below.</p>
-                </div>
+            <!-- hiddern area to set address id  -->
+            <% if (typeof address !=='undefined' ) { %>
+                <input type="hidden" name="addressId" value="<%= address._id %>">
+                <% } %>
+                    <div class="form-card">
+                        <div class="form-header">
+                            <h1 class="form-title">
+                                <%= (typeof address !=='undefined' ) ? 'Edit' : 'Add New' %> <span
+                                        class="text-orange-500">Address</span>
+                            </h1>
+                            <p class="form-subtitle">Please provide your delivery details below.</p>
+                        </div>
 
-                <form id="addressForm"
-                    action="<%= (typeof address !== 'undefined') ? '/user/addresses/Eidt' + address._id + '?_method=PATCH' : '/user/addresses/Edit' %>"
-                    method="POST">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="fullName" class="form-input" placeholder=""
-                                value="<%= (typeof address !== 'undefined') ? address.fullName : '' %>" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">Address Type</label>
-                            <input type="text" name="type" class="form-input" placeholder="e.g. Home, Office, Studio"
-                                value="<%= (typeof address !== 'undefined') ? address.type : '' %>" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">Detailed Address</label>
-                            <textarea name="street" class="form-input" rows="3"
-                                placeholder="Street, Apartment, Locality..." style="resize:none;"
-                                required><%= (typeof address !== 'undefined') ? address.street : '' %></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Country</label>
-                            <input type="text" name="country" class="form-input"
-                                value="<%= (typeof address !== 'undefined') ? address.country : 'India' %>" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">City</label>
-                            <input type="text" name="city" class="form-input" placeholder=""
-                                value="<%= (typeof address !== 'undefined') ? address.city : '' %>" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">State</label>
-                            <input type="text" name="state" class="form-input" placeholder=""
-                                value="<%= (typeof address !== 'undefined') ? address.state : '' %>" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Pin Code</label>
-                            <input type="text" name="pincode" class="form-input" placeholder=""
-                                value="<%= (typeof address !== 'undefined') ? address.pincode : '' %>" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" name="phone" class="form-input" placeholder="+91 "
-                                value="<%= (typeof address !== 'undefined') ? address.phone : '' %>" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email Address </label>
-                            <input type="email" name="email" class="form-input" placeholder=""
-                                value="<%= (typeof address !== 'undefined') ? address.email : '' %>">
-                        </div>
+                        <form id="addressForm"
+                            action="<%= (typeof address !== 'undefined') ? '/user/addresses/Edit/' + address._id : '/user/addresses/Edit' %>"
+                            method="POST">
+
+                            <% if (typeof address !=='undefined' ) { %>
+                                <input type="hidden" name="addressId" value="<%= address._id %>">
+                                <% } %>
+
+                                    <div class="form-grid">
+                                        <div class="form-group full-width">
+                                            <label class="form-label">Full Name</label>
+                                            <input type="text" name="fullName" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.fullName : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label class="form-label">Address Type</label>
+                                            <input type="text" name="type" class="form-input"
+                                                placeholder="e.g. Home, Office, Studio"
+                                                value="<%= (typeof address !== 'undefined') ? address.type : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label class="form-label">Detailed Address</label>
+                                            <textarea name="street" class="form-input" rows="3"
+                                                placeholder="Street, Apartment, Locality..." style="resize:none;"
+                                                required><%= (typeof address !== 'undefined') ? address.street : '' %></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Country</label>
+                                            <input type="text" name="country" class="form-input"
+                                                value="<%= (typeof address !== 'undefined') ? address.country : 'India' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">City</label>
+                                            <input type="text" name="city" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.city : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">State</label>
+                                            <input type="text" name="state" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.state : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Pin Code</label>
+                                            <input type="text" name="pincode" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.pincode : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Phone Number</label>
+                                            <input type="tel" name="phone" class="form-input" placeholder="+91 "
+                                                value="<%= (typeof address !== 'undefined') ? address.phone : '' %>"
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Email Address </label>
+                                            <input type="email" name="email" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.email : '' %>">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-3 mt-4 mb-8">
+                                        <input type="checkbox" name="isDefault" id="setAsDefault"
+                                            class="w-5 h-5 accent-orange-500" <%=(typeof address !=='undefined' &&
+                                            address.isDefault) ? 'checked' : '' %>>
+                                        <label for="setAsDefault" class="text-sm font-bold opacity-60">Set as default
+                                            delivery
+                                            address</label>
+                                    </div>
+
+                                    <button type="submit" class="save-btn">
+                                        <i class="fas fa-save"></i>
+                                        <%= (typeof address !=='undefined' ) ? 'Update Address' : 'Save Address' %>
+                                    </button>
+                        </form>
                     </div>
-
-                    <div class="flex items-center gap-3 mt-4 mb-8">
-                        <input type="checkbox" name="isDefault" id="setAsDefault" class="w-5 h-5 accent-orange-500"
-                            <%=(typeof address !=='undefined' && address.isDefault) ? 'checked' : '' %>>
-                        <label for="setAsDefault" class="text-sm font-bold opacity-60">Set as default delivery
-                            address</label>
-                    </div>
-
-                    <button type="submit" class="save-btn">
-                        <i class="fas fa-save"></i>
-                        <%= (typeof address !=='undefined' ) ? 'Update Address' : 'Save Address' %>
-                    </button>
-                </form>
-            </div>
         </main>
 
         <%- include('../../partials/footer') %>
 
             <script>
-                // Optional: Client-side validation or submission handling can be added here
-                // The user provided a simulation script, but for a real backend, we'll let the form submit normally.
+                
             </script>
 </body>
 

@@ -8,10 +8,13 @@ router.use(userAuth.isLogout)
 
 router.get("/user/profile", userProfile.showProfile);
 router.get("/user/profile/edit", userProfile.loadEditProfile);
-router.get("/user/addresses", userProfile.loadAddressPage)
 
-router.get("/user/addresses/Edit",userProfile.loadEditAddressPage)
-router.post("/user/addresses/Edit/:id",userProfile.addEditAddress);
+
+router.get("/user/addresses", userProfile.loadAddressPage)
+router.get("/user/addresses/Edit", userProfile.loadEditAddressPage)       
+router.get("/user/addresses/Edit/:id", userProfile.loadEditAddressPage)   
+router.post("/user/addresses/Edit", userProfile.addEditAddress)           
+router.post("/user/addresses/Edit/:id", userProfile.addEditAddress)      
 
 
 

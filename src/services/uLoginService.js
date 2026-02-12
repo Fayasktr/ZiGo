@@ -1,6 +1,6 @@
 import User from "../models/userModel.js";
-import bcrypt from "bcryptjs";
 import { GenerateOTP } from "../utils/otp.js";
+import checkPass from '../utils/checkPassword.js';
 import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
 import { hashPassword } from "../utils/hashPassword.js"
@@ -21,8 +21,7 @@ export const userLogin = async (email, password) => {
   if (existUser.isBlocked == true) {
     throw new Error("User Blocked By Admin");
   }
-  const isMatch = await bcrypt.compare(password, existUser.password);
-
+  const isMatch = await checkPass(password,existUser.password);
   if (!isMatch) {
     throw new Error("Invalid credentials");
   }
