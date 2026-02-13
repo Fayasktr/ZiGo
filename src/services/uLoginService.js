@@ -21,7 +21,7 @@ export const userLogin = async (email, password) => {
   if (existUser.isBlocked == true) {
     throw new Error("User Blocked By Admin");
   }
-  const isMatch = await checkPass(password,existUser.password);
+  const isMatch = await checkPass(password, existUser.password);
   if (!isMatch) {
     throw new Error("Invalid credentials");
   }
@@ -78,8 +78,14 @@ export const resendOtp = async (userId) => {
 
   await OTPModel.findOneAndUpdate(
     { userId },
-    { otp: OTP, createdAt: new Date() ,isUsed:false },
+    { otp: OTP, createdAt: new Date(), isUsed: false },
     { upsert: true }
   )
   const mailSend = await otpSendToMail(OTP, user.email, subjectForMail);
+}
+
+export const sendOtpToMail = async (email) => {
+  const OTP = await GenerateOTP()
+  const subjectForMail = "Forget Password verification Code";
+  await otpSendToMail(OTP, email, subjectForMail);
 }

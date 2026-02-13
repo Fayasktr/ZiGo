@@ -98,10 +98,22 @@ export const otpVerify = asyncHandler(async (req, res) => {
 export const resendOtp = asyncHandler(async (req, res) => {
   try {
     let userId = req.session.tempUserId;
-    const result =await userServises.resendOtp(userId)
+    const result = await userServises.resendOtp(userId)
     res.redirect("/verifyOtp");
   } catch (error) {
-    req.flash("error",error.message);
+    req.flash("error", error.message);
     res.redirect("/verifyOtp");
+  }
+})
+
+
+export const sendOTPForForgotPass = asyncHandler(async (req, res) => {
+  try {
+    const mail = req.body.email;
+    await userServises.sendOtpToMail(mail);
+
+  } catch (error) {
+    req.flash("error", error);
+    res.redirect("login")
   }
 })
