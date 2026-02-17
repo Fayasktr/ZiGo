@@ -1,4 +1,18 @@
 import addressModel from "../models/addressModel.js";
+import User from '../models/userModel.js';
+
+export const showProfileData =async (email)=>{
+    const userId =await User.findOne({email});
+    console.log("userId..:"+userId._id)
+    const defaultAddres= await addressModel.findOne({userId:userId._id,isDefault:true});
+    console.log("address Data :"+defaultAddres);
+    return defaultAddres;
+}
+
+export const allAddresses= async(user)=>{
+    const allAddresses =await addressModel.find({userId:user._id});
+    return allAddresses;
+}
 
 export const addAddress = async (addressData)=>{
     if(!addressData.userId){

@@ -252,7 +252,7 @@
 
                 <!-- Main Content Area -->
                 <div class="profile-content">
-                            
+
                     <!-- Addresses Panel -->
                     <div id="addresses-panel">
                         <div class="panel-header flex justify-between items-end">
@@ -271,18 +271,19 @@
                                             <% } %>
                                                 <div class="flex items-center gap-3 mb-4">
                                                     <div
-                                                        class="w-10 h-10 rounded-full <%= addr.type === 'Home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
+                                                        class="w-10 h-10 rounded-full <%= addr.addressType.toLowerCase() === 'home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
                                                         <i
-                                                            class="fas <%= addr.type === 'Home' ? 'fa-home' : 'fa-briefcase' %>"></i>
+                                                            class="fas <%= addr.addressType.toLowerCase() === 'home' ? 'fa-home' : 'fa-briefcase' %>"></i>
                                                     </div>
                                                     <h4 class="font-bold text-xl">
-                                                        <%= addr.type %>
+                                                        <%= addr.addressType.charAt(0).toUpperCase() +
+                                                            addr.addressType.slice(1) %>
                                                     </h4>
                                                 </div>
                                                 <p class="opacity-60 mb-6 text-sm">
-                                                    <%= addr.houseName %>, <%= addr.street %>,<br>
-                                                            <%= addr.city %>, <%= addr.state %>
-                                                                    <%= addr.pincode %>
+                                                    <%= addr.detailedAddress %>,<br>
+                                                        <%= addr.city %>, <%= addr.country %>
+                                                                <%= addr.pincode %>
                                                 </p>
                                                 <div class="flex gap-4 border-t pt-4">
                                                     <a href="/user/addresses/Edit/<%= addr._id %>"
@@ -298,43 +299,21 @@
                                     <% }) %>
                             </div>
                             <% } else { %>
-                                <!-- Placeholder static addresses if no database data yet (to match your design) -->
+                                <!-- Empty State Card -->
                                 <div class="address-grid">
-                                    <div class="address-card default">
-                                        <span class="default-badge">DEFAULT</span>
-                                        <div class="flex items-center gap-3 mb-4">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-                                                <i class="fas fa-home"></i>
-                                            </div>
-                                            <h4 class="font-bold text-xl">Home</h4>
+                                    <div
+                                        class="address-card flex flex-col items-center justify-center text-center py-12 border-dashed">
+                                        <div
+                                            class="w-16 h-16 bg-orange-50 text-orange-200 rounded-full flex items-center justify-center mb-4">
+                                            <i class="fas fa-map-marker-alt text-2xl"></i>
                                         </div>
-                                        <p class="opacity-60 mb-6 text-sm">Tech Hub Plaza, 4th Floor,<br>Electronic
-                                            City, Bangalore, KA 560100</p>
-                                        <div class="flex gap-4 border-t pt-4">
-                                            <a href="#"
-                                                class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
-                                            <button
-                                                class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="address-card">
-                                        <div class="flex items-center gap-3 mb-4">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-                                                <i class="fas fa-briefcase"></i>
-                                            </div>
-                                            <h4 class="font-bold text-xl">Office</h4>
-                                        </div>
-                                        <p class="opacity-60 mb-6 text-sm">Sky Tower, Level 12,<br>Indiranagar,
-                                            Bangalore, KA 560038</p>
-                                        <div class="flex gap-4 border-t pt-4">
-                                            <a href="#"
-                                                class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
-                                            <button
-                                                class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
-                                        </div>
+                                        <h4 class="font-bold text-lg mb-1">No Addresses Yet</h4>
+                                        <p class="opacity-40 text-sm mb-6">You haven't saved any addresses to your
+                                            account.</p>
+                                        <a href="/user/addresses/Edit"
+                                            class="bg-orange-500 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-orange-600 transition-all">
+                                            Add Your First Address
+                                        </a>
                                     </div>
                                 </div>
                                 <% } %>

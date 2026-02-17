@@ -3,7 +3,7 @@ import mongoose, { mongo } from "mongoose";
 const addressesSchema = mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: false
     },
     userName: {
         type: String,
@@ -42,7 +42,8 @@ const addressesSchema = mongoose.Schema({
     },
     isDefault: {
         type: Boolean,
-        default: false
+        default: false,
+        unique:true
     },
     createdAt: {
         type: Date

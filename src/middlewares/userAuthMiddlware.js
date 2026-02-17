@@ -7,7 +7,6 @@ const isLogin = (req, res, next) => {
 }
 
  const isLogout = (req,res,next) => {
-    console.log("the user",req.user)
     if(!req.session.user && !req.isAuthenticated()){
         return res.redirect("/");
     }

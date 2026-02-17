@@ -285,25 +285,38 @@
                                 <p class="opacity-60 mb-6">
                                     <%= user.email %>
                                 </p>
-                                <a href="/user/profile/edit" class="text-orange-500 font-bold text-sm hover:underline">Edit
+                                <a href="/user/profile/edit"
+                                    class="text-orange-500 font-bold text-sm hover:underline">Edit
                                     Profile</a>
                             </div>
                             <div class="bg-white p-8 rounded-[32px] border border-gray-100">
                                 <h3 class="text-lg font-bold mb-4 opacity-40 uppercase tracking-widest">Default Address
                                 </h3>
-                                <% if (typeof address !=='undefined' && address) { %>
-                                    <p class="font-bold">
-                                        <%= address.label %>
-                                    </p>
-                                    <p class="opacity-60 text-sm mb-6">
-                                        <%= address.fullAddress %>
-                                    </p>
-                                    <% } else { %>
-                                        <p class="opacity-60 text-sm mb-6">No default address set.</p>
-                                        <% } %>
-                                            <a href="/user/addresses"
-                                                class="text-orange-500 font-bold text-sm hover:underline">Manage
-                                                Addresses</a>
+                                <% // Robust check: handles both a single object or an array of addresses let
+                                    primaryAddr=null; if (typeof defaultAddres !=='undefined' && defaultAddres) { if
+                                    (Array.isArray(defaultAddres)) { primaryAddr=defaultAddres.find(a=> a.isDefault);
+                                    } else {
+                                    // It's a single object from showProfileData findOne()
+                                    primaryAddr = defaultAddres;
+                                    }
+                                    }
+                                    %>
+
+                                    <% if (primaryAddr) { %>
+                                        <p class="font-bold">
+                                            <%= primaryAddr.addressType.charAt(0).toUpperCase() +
+                                                primaryAddr.addressType.slice(1) %>
+                                        </p>
+                                        <p class="opacity-60 text-sm mb-6">
+                                            <%= primaryAddr.detailedAddress %>,<br>
+                                                <%= primaryAddr.city %>, <%= primaryAddr.pincode %>
+                                        </p>
+                                        <% } else { %>
+                                            <p class="opacity-60 text-sm mb-6">No default address set.</p>
+                                            <% } %>
+                                                <a href="/user/addresses"
+                                                    class="text-orange-500 font-bold text-sm hover:underline">Manage
+                                                    Addresses</a>
                             </div>
                         </div>
                     </div>
