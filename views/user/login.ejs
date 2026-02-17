@@ -353,12 +353,6 @@
                         </div>
                         <div id="passwordError" style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;">
                         </div>
-                        <% if (locals.error && (error.includes('Invalid credentials') || error.includes('password'))) {
-                            %>
-                            <div style="color: red; font-size: 0.8rem; margin-top: 5px;">
-                                <%= error %>
-                            </div>
-                            <% } %>
 
                                 <a href="/forgotPassword" class="forgot-pass">Forgot Password?</a>
                     </div>
@@ -369,7 +363,7 @@
                 <div class="social-divider">Or continue with</div>
 
                 <div class="flex justify-center">
-                    <button class="social-btn w-full">
+                    <a href="/auth/google" class="social-btn w-full">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -385,7 +379,7 @@
                                 fill="#EA4335" />
                         </svg>
                         Google
-                    </button>
+                    </a>
                 </div>
 
                 <p class="signup-link">

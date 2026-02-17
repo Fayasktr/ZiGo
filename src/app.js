@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
 import flash from "connect-flash";
+import passport from "./config/passport.js";
 
 const app = express()
 
@@ -21,16 +22,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 app.use("/public", express.static(path.join(__dirname, "../public")));
 
-
-console.log('hello reached to app.js')
-
 app.use(sessionMiddleware);
 app.use(flash());
-app.use((req,res,next)=>{
-    res.locals.error= req.flash("error");
-    res.locals.success= req.flash("success");
-    next();
+app.use((req, res, next) => {
+  res.locals.error = req.flash("error");
+  res.locals.success = req.flash("success");
+  next();
 })
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(adminRoute);
 app.use(authRoute);
@@ -39,11 +39,12 @@ app.use((req, res) => {
   res.status(404).render("user/404");
 });
 
-app.use((err,req,res,next)=>{
-  if(err){
+app.use((err, req, res, next) => {
+  if (err) {
     console.log(err.message)
     res.send(err.message)
   }
   next()
 })
+
 export default app;

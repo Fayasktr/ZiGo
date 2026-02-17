@@ -4,6 +4,7 @@ import checkPass from '../utils/checkPassword.js';
 import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
 import { hashPassword } from "../utils/hashPassword.js"
+import { hash } from "bcryptjs";
 
 export const userLogin = async (email, password) => {
   email = email.trim().toLowerCase();
@@ -84,8 +85,28 @@ export const resendOtp = async (userId) => {
   const mailSend = await otpSendToMail(OTP, user.email, subjectForMail);
 }
 
-export const sendOtpToMail = async (email) => {
+export const forgettPass = async (email) => {
+  let user=await User.findOne({email});
+  if(!user){
+    throw new Error("this user doesn't exist")
+  }
   const OTP = await GenerateOTP()
+  let userId=user._id;
+  await OTPModel.findOneAndUpdate(
+    { userId },
+    { otp: OTP, createdAt: new Date(), isUsed: false },
+    { upsert: true }
+  )
+  console.log(`forgetpass otp :${OTP}`);
   const subjectForMail = "Forget Password verification Code";
   await otpSendToMail(OTP, email, subjectForMail);
+  return userId;
+}
+
+export const updatePassword = async(newPass,email)=>{
+  const hashedPassword =await hashPassword(newPass);
+  const savePass =await User.findOneAndUpdate({email},{password:hashedPassword});
+
+  console.log("password saved" +hashedPassword);
+  
 }
