@@ -10,28 +10,35 @@ export const showProfileData =async (email)=>{
 }
 
 export const allAddresses= async(user)=>{
-    const allAddresses =await addressModel.find({userId:user._id});
+    const userId= await User.findOne({email:user.email});
+    const allAddresses =await addressModel.find({userId});
     return allAddresses;
 }
 
-export const addAddress = async (addressData)=>{
-    if(!addressData.userId){
-        throw new Error("Address not have user");
+export const addAddress = async (userEmail,addressData)=>{
+    const user= await User.findOne({email:userEmail});
+    if(!user){
+        throw new Error("there is now user found ");
     }
-    if(!addressData.pincode){
-        throw new Error ("pincode must required");
-    }
-
-    const newAddress = await addressModel.create({
-        userId:addressData.userId,
+    const defaultAddres =await addressModel.findOne({userId:user._id,isDefault:true});
+    const isDefault= !defaultAddres
+    
+    return await addressModel.create({
+        userId:user._id,
         userName:addressData.userName,
-        addressType:addressData.addressType,
+        addressType:addressData.type,
         detailedAddress:addressData.detailedAddress,
         country:addressData.country,
         city:addressData.city,
         pincode:addressData.pincode,
         phoneNumber:addressData.phoneNumber,
         email:addressData.email,
+        isDefault:isDefault
     })
-    return newAddress;
 }
+
+export const setDefaultService =async(userId,addressId)=>{
+    await addressModel.updateMany({userId},{isDefault:false});
+    return await addressModel.findByIdAndUpdate({addressId},{isDefault:true});
+}
+

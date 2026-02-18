@@ -48,7 +48,7 @@ export const otpSendToMail = async (OTP, userEmail, subjectForMail) => {
             </p>
 
             <p style="font-size:12px;color:#aaa;margin-top:15px;">
-              © ${new Date().getFullYear()} Your App Name 
+              © ${new Date().getFullYear()} ZiGo.com 
             </p>
 
           </div>

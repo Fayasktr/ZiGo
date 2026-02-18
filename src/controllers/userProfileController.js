@@ -17,16 +17,34 @@ export const loadEditProfile = asynchandler(async (req, res) => {
 
 
 export const loadAddressPage = asynchandler(async (req, res) => {
-
     const user = req.session.user || req.user;
     const addresses = await addressService.allAddresses(user);
     res.render("user/userAfterLogin/addresses", { user, addresses })
 })
 
-export const loadEditAddressPage = asynchandler(async (req, res) => {
-    const user = req.session.user;
+export const loadAddAddressPage = asynchandler(async (req, res) => {
+    res.render("user/userAfterLogin/addEditAddress",{address:undefined});
+})
 
-    res.render("user/userAfterLogin/addEditAddress", { user });
+
+export const addNewAddress =asynchandler (async(req,res)=>{
+    try {
+        const user =req.session.user || req.user;
+        const addressData= req.body;
+        console.log("req.body: "+addressData.addressType+addressData.detailedAddress)
+        let userEmail=user.email
+        console.log("user email for address add "+userEmail);
+        const address=await addressService.addAddress(userEmail,addressData);
+        return res.redirect("/user/addresses");
+    } catch (error) {
+        req.flash("error",error);
+        res.redirect("/user/addresses");
+    }
+})
+
+
+export const loadEditAddressPage = asynchandler(async(req,res)=>{
+    const userEmail =""
 })
 
 export const addEditAddress = asynchandler(async (req, res) => {
@@ -42,5 +60,16 @@ export const addEditAddress = asynchandler(async (req, res) => {
     } catch (error) {
         req.flash("error", error);
         res.redirect("addEditAddress")
+    }
+})
+
+export const setDefault= asynchandler(async (req,res)=>{
+    try {
+        const user=req.session.user || req.user;
+        await addressService.setDefaultService(user._id,req.params.id);
+        res.redirect("/user/addresses");
+    } catch (error) {
+        req.flash("error",error);
+        res.redirect("/user/addresses");
     }
 })

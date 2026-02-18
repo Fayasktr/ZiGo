@@ -15,19 +15,25 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ googleId: profile.id });
-
+        let user = await User.findOne({ googleId:profile.id });
+        let email= profile.emails[0].value;
         if (user) {
-            user.googleId = profile.id;
             user.isVerified = true;
             await user.save();
         }else{
+          user=await User.findOne({email:email});
+          if(user){
+            user.googleId = profile.id;
+            user.isVerified = true;
+            await user.save();
+          }else{
             user = await User.create({
             userName: profile.displayName,      
             email: profile.emails[0].value,
             profileImage: profile.photos[0].value,   
             googleId: profile.id              
-          });
+           });
+          }
         }
         return done(null, user);
 

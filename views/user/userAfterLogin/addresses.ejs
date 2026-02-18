@@ -257,18 +257,19 @@
                     <div id="addresses-panel">
                         <div class="panel-header flex justify-between items-end">
                             <h1 class="panel-title">My <span class="text-orange-500">Addresses</span></h1>
-                            <a href="/user/addresses/Edit"
+                            <a href="/user/addresses/add"
                                 class="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl text-sm mb-2 inline-block"><i
                                     class="fas fa-plus mr-2"></i> Add New</a>
                         </div>
-
                         <% if (typeof addresses !=='undefined' && addresses.length> 0) { %>
                             <div class="address-grid">
                                 <% addresses.forEach(addr=> { %>
                                     <div class="address-card <%= addr.isDefault ? 'default' : '' %>">
                                         <% if (addr.isDefault) { %>
-                                            <span class="default-badge">DEFAULT</span>
-                                            <% } %>
+                                            <button class="default-badge">DEFAULT</button>
+                                            <% }else{ %>
+                                            <a class="default-badge" href="/user/address/<%=addr._id%>/setDefault">SET AS DEFAULT</a>
+                                                <%}%>
                                                 <div class="flex items-center gap-3 mb-4">
                                                     <div
                                                         class="w-10 h-10 rounded-full <%= addr.addressType.toLowerCase() === 'home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
@@ -285,14 +286,20 @@
                                                         <%= addr.city %>, <%= addr.country %>
                                                                 <%= addr.pincode %>
                                                 </p>
-                                                <div class="flex gap-4 border-t pt-4">
+                                                <div class="flex justify-end gap-5 border-t pt-4 mt-auto">
                                                     <a href="/user/addresses/Edit/<%= addr._id %>"
-                                                        class="text-xs font-bold uppercase tracking-wider opacity-40 hover:opacity-100 transition-all">Edit</a>
+                                                        class="text-gray-400 hover:text-orange-500 transition-all duration-300"
+                                                        title="Edit Address">
+                                                        <i class="fas fa-edit text-lg"></i>
+                                                    </a>
                                                     <form
                                                         action="/user/profile/deleteAddress/<%= addr._id %>?_method=DELETE"
                                                         method="POST" class="inline">
                                                         <button type="submit"
-                                                            class="text-xs font-bold uppercase tracking-wider text-red-500">Delete</button>
+                                                            class="text-gray-400 hover:text-red-500 transition-all duration-300"
+                                                            title="Delete Address">
+                                                            <i class="fas fa-trash-alt text-lg"></i>
+                                                        </button>
                                                     </form>
                                                 </div>
                                     </div>

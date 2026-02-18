@@ -183,7 +183,7 @@
                         </div>
 
                         <form id="addressForm"
-                            action="<%= (typeof address !== 'undefined') ? '/user/addresses/Edit/' + address._id : '/user/addresses/Edit' %>"
+                            action="<%= (typeof address !== 'undefined') ? '/user/addresses/Edit' + address._id : '/user/addresses/add' %>"
                             method="POST">
 
                             <% if (typeof address !=='undefined' ) { %>
@@ -193,7 +193,7 @@
                                     <div class="form-grid">
                                         <div class="form-group full-width">
                                             <label class="form-label">Full Name</label>
-                                            <input type="text" name="fullName" class="form-input" placeholder=""
+                                            <input type="text" name="userName" class="form-input" placeholder=""
                                                 value="<%= (typeof address !== 'undefined') ? address.fullName : '' %>"
                                                 required>
                                         </div>
@@ -206,7 +206,7 @@
                                         </div>
                                         <div class="form-group full-width">
                                             <label class="form-label">Detailed Address</label>
-                                            <textarea name="street" class="form-input" rows="3"
+                                            <textarea name="detailedAddress" class="form-input" rows="3"
                                                 placeholder="Street, Apartment, Locality..." style="resize:none;"
                                                 required><%= (typeof address !== 'undefined') ? address.street : '' %></textarea>
                                         </div>
@@ -236,7 +236,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label">Phone Number</label>
-                                            <input type="tel" name="phone" class="form-input" placeholder="+91 "
+                                            <input type="tel" name="phoneNumber" class="form-input" placeholder="+91 "
                                                 value="<%= (typeof address !== 'undefined') ? address.phone : '' %>"
                                                 required>
                                         </div>
@@ -247,14 +247,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center gap-3 mt-4 mb-8">
+                                    <!-- <div class="flex items-center gap-3 mt-4 mb-8">
                                         <input type="checkbox" name="isDefault" id="setAsDefault"
                                             class="w-5 h-5 accent-orange-500" <%=(typeof address !=='undefined' &&
                                             address.isDefault) ? 'checked' : '' %>>
                                         <label for="setAsDefault" class="text-sm font-bold opacity-60">Set as default
                                             delivery
                                             address</label>
-                                    </div>
+                                    </div> -->
 
                                     <button type="submit" class="save-btn">
                                         <i class="fas fa-save"></i>
