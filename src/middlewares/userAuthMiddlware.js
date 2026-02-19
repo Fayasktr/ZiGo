@@ -21,4 +21,11 @@ const isOtpPending = (req,res,next)=>{
     res.redirect("signUp");
 }
 
-export default {isLogin, isLogout, isOtpPending}
+const preventCache = (req, res, next) => {
+    res.set('Cache-Control', 'no-store, private, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+};
+
+export default {isLogin, isLogout, isOtpPending, preventCache}

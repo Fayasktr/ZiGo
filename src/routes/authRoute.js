@@ -22,14 +22,14 @@ router.get("/auth/google/callback",passport.authenticate("google",{
     }
 );
 
+
 router.get("/", userCntrl.landingBeforeLogin)
-router.get("/login", userAuth.isLogin, userCntrl.loginPage);
+router.get("/login",userAuth.preventCache, userAuth.isLogin, userCntrl.loginPage);
 router.post("/login", userCntrl.login);
 router.get("/logout", userAuth.isLogout, userCntrl.logOut)
-router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 
 router.route("/signUp")
-    .get(userAuth.isLogin, userCntrl.loadSignUp)
+    .get(userAuth.preventCache,userAuth.isLogin, userCntrl.loadSignUp)
     .post(userCntrl.signUp);
 
 router.route("/verifyOtp")

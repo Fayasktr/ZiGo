@@ -12,6 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -327,8 +329,45 @@
         <%- include('../../partials/footer') %>
 
 
-            <script>
+            <!-- Hidden data for flash messages -->
+            <div id="flash-data"
+                data-error="<%= (typeof error !== 'undefined' && error && error.length > 0) ? error : '' %>"
+                data-success="<%= (typeof success !== 'undefined' && success && success.length > 0) ? success : '' %>"
+                style="display: none;">
+            </div>
 
+            <script>
+                // SweetAlert2 Toast configuration
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+
+                // Get messages from data attributes
+                const flashData = document.getElementById('flash-data');
+                const errorMsg = flashData.dataset.error;
+                const successMsg = flashData.dataset.success;
+
+                if (errorMsg && errorMsg.trim().length > 0) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: errorMsg
+                    });
+                }
+
+                if (successMsg && successMsg.trim().length > 0) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: successMsg
+                    });
+                }
             </script>
 </body>
 

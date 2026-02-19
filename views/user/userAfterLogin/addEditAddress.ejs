@@ -13,6 +13,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom Address JS -->
+    <script src="/public/frendend.js/addressEdit.js"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -159,6 +163,18 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
         }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
     </style>
 </head>
 
@@ -183,80 +199,91 @@
                         </div>
 
                         <form id="addressForm"
-                            action="<%= (typeof address !== 'undefined') ? '/user/addresses/Edit' + address._id : '/user/addresses/add' %>"
+                            action="<%= (typeof address !== 'undefined') ? '/user/addresses/' + address._id + '/edit' : '/user/addresses/add' %>"
                             method="POST">
 
                             <% if (typeof address !=='undefined' ) { %>
-                                <input type="hidden" name="addressId" value="<%= address._id %>">
+                                <input type="hidden" name="id" value="<%= address._id %>">
                                 <% } %>
 
                                     <div class="form-grid">
                                         <div class="form-group full-width">
                                             <label class="form-label">Full Name</label>
-                                            <input type="text" name="userName" class="form-input" placeholder=""
-                                                value="<%= (typeof address !== 'undefined') ? address.fullName : '' %>"
-                                                required>
+                                            <input type="text" name="userName" id="userName" class="form-input"
+                                                placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.userName : '' %>">
+                                            <span class="error-msg" id="error-userName">Name must be at least 3
+                                                characters and only contain letters.</span>
                                         </div>
                                         <div class="form-group full-width">
                                             <label class="form-label">Address Type</label>
-                                            <input type="text" name="type" class="form-input"
-                                                placeholder="e.g. Home, Office, Studio"
-                                                value="<%= (typeof address !== 'undefined') ? address.type : '' %>"
-                                                required>
+                                            <select name="type" id="type" class="form-input">
+                                                <option value="" disabled <%=(typeof address==='undefined' ||
+                                                    !address.addressType) ? 'selected' : '' %>>
+                                                    Select Type
+                                                </option>
+
+                                                <option value="Home" <%=(typeof address !=='undefined' &&
+                                                    address.addressType==='Home' ) ? 'selected' : '' %>>
+                                                    Home
+                                                </option>
+                                                <option value="Office" <%=(typeof address !=='undefined' &&
+                                                    address.addressType==='Office' ) ? 'selected' : '' %>>
+                                                    Office
+                                                </option>
+
+                                                <option value="Other" <%=(typeof address !=='undefined' &&
+                                                    address.addressType==='Other' ) ? 'selected' : '' %>>
+                                                    Other
+                                                </option>
+                                            </select>
+                                            <span class="error-msg" id="error-type">Please select an address
+                                                type.</span>
                                         </div>
                                         <div class="form-group full-width">
                                             <label class="form-label">Detailed Address</label>
-                                            <textarea name="detailedAddress" class="form-input" rows="3"
-                                                placeholder="Street, Apartment, Locality..." style="resize:none;"
-                                                required><%= (typeof address !== 'undefined') ? address.street : '' %></textarea>
+                                            <textarea name="detailedAddress" id="detailedAddress" class="form-input"
+                                                rows="3" placeholder="Street, Apartment, Locality..."
+                                                style="resize:none;"><%= (typeof address !== 'undefined') ? address.detailedAddress : '' %></textarea>
+                                            <span class="error-msg" id="error-detailedAddress">Address must be at least
+                                                10 characters long.</span>
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label">Country</label>
-                                            <input type="text" name="country" class="form-input"
-                                                value="<%= (typeof address !== 'undefined') ? address.country : 'India' %>"
-                                                required>
+                                            <input type="text" name="country" id="country" class="form-input"
+                                                value="<%= (typeof address !== 'undefined') ? address.country : 'India' %>">
+                                            <span class="error-msg" id="error-country">Country must contain only
+                                                letters.</span>
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label">City</label>
-                                            <input type="text" name="city" class="form-input" placeholder=""
-                                                value="<%= (typeof address !== 'undefined') ? address.city : '' %>"
-                                                required>
+                                            <input type="text" name="city" id="city" class="form-input" placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.city : '' %>">
+                                            <span class="error-msg" id="error-city">City must contain only
+                                                letters.</span>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="form-label">State</label>
-                                            <input type="text" name="state" class="form-input" placeholder=""
-                                                value="<%= (typeof address !== 'undefined') ? address.state : '' %>"
-                                                required>
-                                        </div>
+
                                         <div class="form-group">
                                             <label class="form-label">Pin Code</label>
-                                            <input type="text" name="pincode" class="form-input" placeholder=""
-                                                value="<%= (typeof address !== 'undefined') ? address.pincode : '' %>"
-                                                required>
+                                            <input type="text" name="pincode" id="pincode" class="form-input"
+                                                placeholder=""
+                                                value="<%= (typeof address !== 'undefined') ? address.pincode : '' %>">
+                                            <span class="error-msg" id="error-pincode">Please enter a valid numeric pin
+                                                code.</span>
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label">Phone Number</label>
-                                            <input type="tel" name="phoneNumber" class="form-input" placeholder="+91 "
-                                                value="<%= (typeof address !== 'undefined') ? address.phone : '' %>"
-                                                required>
+                                            <input type="tel" name="phoneNumber" id="phoneNumber" class="form-input"
+                                                placeholder="+91 "
+                                                value="<%= (typeof address !== 'undefined') ? address.phoneNumber : '' %>">
+                                            <span class="error-msg" id="error-phoneNumber">Please enter a valid numeric
+                                                phone number.</span>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Email Address </label>
-                                            <input type="email" name="email" class="form-input" placeholder=""
-                                                value="<%= (typeof address !== 'undefined') ? address.email : '' %>">
-                                        </div>
+
                                     </div>
 
-                                    <!-- <div class="flex items-center gap-3 mt-4 mb-8">
-                                        <input type="checkbox" name="isDefault" id="setAsDefault"
-                                            class="w-5 h-5 accent-orange-500" <%=(typeof address !=='undefined' &&
-                                            address.isDefault) ? 'checked' : '' %>>
-                                        <label for="setAsDefault" class="text-sm font-bold opacity-60">Set as default
-                                            delivery
-                                            address</label>
-                                    </div> -->
 
-                                    <button type="submit" class="save-btn">
+                                    <button type="button" onclick="submitAddressFormForEditAddress()" class="save-btn">
                                         <i class="fas fa-save"></i>
                                         <%= (typeof address !=='undefined' ) ? 'Update Address' : 'Save Address' %>
                                     </button>

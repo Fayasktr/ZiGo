@@ -36,14 +36,9 @@ const addressesSchema = mongoose.Schema({
         required: true,
         match: /^[0-9]{10}$/
     },
-    email: {
-        type: String,
-        required: true
-    },
     isDefault: {
         type: Boolean,
-        default: false,
-        unique:true
+        default: false
     },
     createdAt: {
         type: Date

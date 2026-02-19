@@ -12,6 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -256,7 +258,8 @@
                     <!-- Addresses Panel -->
                     <div id="addresses-panel">
                         <div class="panel-header flex justify-between items-end">
-                            <h1 class="panel-title">My <span class="text-orange-500">Addresses</span></h1>
+                            <h1 class="panel-title">My <span class="text-orange-500">Addresses</span>
+                            </h1>
                             <a href="/user/addresses/add"
                                 class="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl text-sm mb-2 inline-block"><i
                                     class="fas fa-plus mr-2"></i> Add New</a>
@@ -268,40 +271,42 @@
                                         <% if (addr.isDefault) { %>
                                             <button class="default-badge">DEFAULT</button>
                                             <% }else{ %>
-                                            <a class="default-badge" href="/user/address/<%=addr._id%>/setDefault">SET AS DEFAULT</a>
+                                                <a class="default-badge" style="background-color: #747577;"
+                                                    href="/user/addresses/<%=addr._id%>/setDefault">SET
+                                                    AS DEFAULT</a>
                                                 <%}%>
-                                                <div class="flex items-center gap-3 mb-4">
-                                                    <div
-                                                        class="w-10 h-10 rounded-full <%= addr.addressType.toLowerCase() === 'home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
-                                                        <i
-                                                            class="fas <%= addr.addressType.toLowerCase() === 'home' ? 'fa-home' : 'fa-briefcase' %>"></i>
+                                                    <div class="flex items-center gap-3 mb-4">
+                                                        <div
+                                                            class="w-10 h-10 rounded-full <%= addr.addressType.toLowerCase() === 'home' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500' %> flex items-center justify-center">
+                                                            <i
+                                                                class="fas <%= addr.addressType.toLowerCase() === 'home' ? 'fa-home' : 'fa-briefcase' %>"></i>
+                                                        </div>
+                                                        <h4 class="font-bold text-xl">
+                                                            <%= addr.addressType.charAt(0).toUpperCase() +
+                                                                addr.addressType.slice(1) %>
+                                                        </h4>
                                                     </div>
-                                                    <h4 class="font-bold text-xl">
-                                                        <%= addr.addressType.charAt(0).toUpperCase() +
-                                                            addr.addressType.slice(1) %>
-                                                    </h4>
-                                                </div>
-                                                <p class="opacity-60 mb-6 text-sm">
-                                                    <%= addr.detailedAddress %>,<br>
-                                                        <%= addr.city %>, <%= addr.country %>
-                                                                <%= addr.pincode %>
-                                                </p>
-                                                <div class="flex justify-end gap-5 border-t pt-4 mt-auto">
-                                                    <a href="/user/addresses/Edit/<%= addr._id %>"
-                                                        class="text-gray-400 hover:text-orange-500 transition-all duration-300"
-                                                        title="Edit Address">
-                                                        <i class="fas fa-edit text-lg"></i>
-                                                    </a>
-                                                    <form
-                                                        action="/user/profile/deleteAddress/<%= addr._id %>?_method=DELETE"
-                                                        method="POST" class="inline">
-                                                        <button type="submit"
-                                                            class="text-gray-400 hover:text-red-500 transition-all duration-300"
-                                                            title="Delete Address">
-                                                            <i class="fas fa-trash-alt text-lg"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                                    <p class="opacity-60 mb-6 text-sm">
+                                                        <%= addr.detailedAddress %>,<br>
+                                                            <%= addr.city %>, <%= addr.country %>
+                                                                    <%= addr.pincode %>
+                                                    </p>
+
+                                                    <div class="flex justify-end gap-5 border-t pt-4 mt-auto">
+                                                        <a href="/user/addresses/<%= addr._id %>/edit"
+                                                            class="text-gray-400 hover:text-orange-500 transition-all duration-300"
+                                                            title="Edit Address">
+                                                            <i class="fas fa-edit text-lg"></i>
+                                                        </a>
+                                                        <form action="/user/addresses/<%= addr._id %>/delete"
+                                                            method="POST" class="inline">
+                                                            <button type="submit"
+                                                                class="text-gray-400 hover:text-red-500 transition-all duration-300"
+                                                                title="Delete Address">
+                                                                <i class="fas fa-trash-alt text-lg"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                     </div>
                                     <% }) %>
                             </div>
@@ -315,7 +320,8 @@
                                             <i class="fas fa-map-marker-alt text-2xl"></i>
                                         </div>
                                         <h4 class="font-bold text-lg mb-1">No Addresses Yet</h4>
-                                        <p class="opacity-40 text-sm mb-6">You haven't saved any addresses to your
+                                        <p class="opacity-40 text-sm mb-6">You haven't saved any
+                                            addresses to your
                                             account.</p>
                                         <a href="/user/addresses/Edit"
                                             class="bg-orange-500 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-orange-600 transition-all">
@@ -331,6 +337,46 @@
         </main>
 
         <%- include('../../partials/footer') %>
+
+            <%- include('../../partials/footer') %>
+
+                <!-- Hidden data for flash messages -->
+                <div id="flash-data" data-error="<%= (error && error.length > 0) ? error : '' %>"
+                    data-success="<%= (success && success.length > 0) ? success : '' %>" style="display: none;"></div>
+
+                <script>
+                    // SweetAlert2 Toast configuration
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+
+                    // Get messages from data attributes
+                    const flashData = document.getElementById('flash-data');
+                    const errorMsg = flashData.dataset.error;
+                    const successMsg = flashData.dataset.success;
+
+                    if (errorMsg && errorMsg.trim().length > 0) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: errorMsg
+                        });
+                    }
+
+                    if (successMsg && successMsg.trim().length > 0) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: successMsg
+                        });
+                    }
+                </script>
 </body>
 
 </html>
