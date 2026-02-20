@@ -28,8 +28,23 @@ export const adminLogout = asynchandler(async (req, res) => {
 
 export const userManagementPage = asynchandler(async (req, res) => {
     try {
-        const users = await adminService.usersList();
-        res.render("admin/userManagement", { users });
+        let page = parseInt(req.query.page) || 1;
+        if (page < 1) page = 1;
+
+        const limit = 10;
+        const { users, totalCountOfUsers } = await adminService.usersList(page, limit);
+        const totalPages = Math.ceil(totalCountOfUsers / limit);
+
+        if (page > totalPages) {
+            return res.redirect(`/admin/users?page=${totalPages}`);
+        }
+        res.render("admin/userManagement", {
+            users,
+            totalCountOfUsers,
+            currentPage: page,
+            totalPages,
+            limit
+        });
     } catch (error) {
         req.flash("error", error.message);
         res.redirect("/admin/adminDashbord");
@@ -37,5 +52,12 @@ export const userManagementPage = asynchandler(async (req, res) => {
 })
 
 export const blockAndUnblock = asynchandler(async (req, res) => {
-
+    try {
+        const action = req.params.action;
+        const userId = req.params.id;
+        await adminService.blockOrUnblock(userId, action);
+        return res.status(200).json({ success: true, message: "update Successfully" });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message })
+    }
 })
