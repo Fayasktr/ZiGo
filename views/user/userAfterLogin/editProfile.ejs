@@ -12,7 +12,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/public/frendend.js/profileEdit.js" defer></script>
     <style>
@@ -41,7 +40,6 @@
             line-height: 1.6;
         }
 
-        /* --- Container --- */
         .edit-container {
             padding: 140px 5% 80px;
             max-width: 900px;
@@ -68,7 +66,6 @@
             opacity: 1;
         }
 
-        /* --- Section Cards --- */
         .edit-card {
             background: white;
             border-radius: 40px;
@@ -90,7 +87,6 @@
             color: var(--dark-navy);
         }
 
-        /* --- Avatar Upload --- */
         .avatar-section {
             display: flex;
             flex-direction: column;
@@ -136,7 +132,6 @@
             transform: scale(1.1);
         }
 
-        /* --- Form Styling --- */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -195,7 +190,6 @@
             gap: 5px;
         }
 
-        /* --- Buttons --- */
         .save-btn {
             width: 100%;
             background: var(--deep-black);
@@ -264,7 +258,6 @@
                 <span class="opacity-100 font-bold text-black">Edit Profile</span>
             </nav>
 
-            <!-- Section 1: Personal Information -->
             <section class="edit-card">
                 <div class="card-header">
                     <h1 class="section-title">Personal <span class="text-orange-500">Information</span></h1>
@@ -362,7 +355,6 @@
 
         <%- include('../../partials/footer') %>
 
-            <!-- Hidden data for flash messages -->
             <div id="flash-data"
                 data-error="<%= (typeof error !== 'undefined' && error && error.length > 0) ? error : '' %>"
                 data-success="<%= (typeof success !== 'undefined' && success && success.length > 0) ? success : '' %>"
@@ -380,7 +372,6 @@
                     }
                 }
 
-                // SweetAlert2 Toast configuration
                 const Toast = Swal.mixin({
                     toast: true,
                     position: 'top',
@@ -393,7 +384,6 @@
                     }
                 });
 
-                // Get messages from data attributes
                 const flashData = document.getElementById('flash-data');
                 const errorMsg = flashData.dataset.error;
                 const successMsg = flashData.dataset.success;
@@ -412,7 +402,6 @@
                     });
                 }
             </script>
-            <!-- Hidden div for data if needed, but for simplicity here I used EJS tags -->
 </body>
 
 </html>

@@ -12,39 +12,41 @@ export const showProfile = asynchandler(async (req, res) => {
 export const loadEditProfile = asynchandler(async (req, res) => {
     try {
         const user = req.session.user || req.user;
-        const userData =await addressService.editProfilePage(user.email);
+        const userData = await addressService.editProfilePage(user.email);
         res.render("user/userAfterLogin/editProfile", { userData });
     } catch (error) {
-        
+
     }
 });
 
-export const editProfile =asynchandler (async (req,res)=>{
+export const editProfile = asynchandler(async (req, res) => {
     try {
-        const editData= req.session.editData;
-        const userId=req.session.user._id||req.user.id;
-        await addressService.editProfile(editData,userId);
+        const editData = req.session.editData;
+        const userId = req.session.user._id || req.user.id;
+        await addressService.editProfile(editData, userId);
+        return res.status(200).json({ success: true, message: "Address added successfully", address });
 
     } catch (error) {
-        
+        return res.status(400).json({ success: false, message: error.message });
+
     }
 })
-export const otpSend =asynchandler (async (req,res)=>{
-    const editData=req.body;
-    if(editData.email || editData.password){
-            req.session.editData=editData;
-            await addressService.optSend(req.session.user.email||req.user.email);
-            res.render("user/otp");
+export const otpSend = asynchandler(async (req, res) => {
+    const editData = req.body;
+    if (editData.email || editData.password) {
+        req.session.editData = editData;
+        await addressService.optSend(req.session.user.email || req.user.email);
+        res.render("user/otp");
     }
 })
-export const otpCheck=asynchandler(async(req,res)=>{
+export const otpCheck = asynchandler(async (req, res) => {
     try {
-        const otp =req.body;
-        const userId=req.session.user._id||req.user.id;
-        await addressService.otpCheck(otp,userId);
+        const otp = req.body;
+        const userId = req.session.user._id || req.user.id;
+        await addressService.otpCheck(otp, userId);
         editProfile();
     } catch (error) {
-        
+
     }
 
 })
@@ -55,7 +57,7 @@ export const loadAddressPage = asynchandler(async (req, res) => {
         const addresses = await addressService.allAddresses(user);
         res.render("user/userAfterLogin/addresses", { user, addresses })
     } catch (error) {
-        
+
     }
 })
 
@@ -79,11 +81,11 @@ export const addNewAddress = asynchandler(async (req, res) => {
 
 export const loadEditAddressPage = asynchandler(async (req, res) => {
     try {
-        const addressId=req.params.id;
-        const updateData= await addressService.editAddressPage(addressId);
-        res.render("user/userAfterLogin/addEditAddress",{address:updateData});
+        const addressId = req.params.id;
+        const updateData = await addressService.editAddressPage(addressId);
+        res.render("user/userAfterLogin/addEditAddress", { address: updateData });
     } catch (error) {
-        req.flash("error",error.message);
+        req.flash("error", error.message);
         res.redirect("/user/addresses");
     }
 })

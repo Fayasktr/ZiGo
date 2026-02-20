@@ -13,7 +13,7 @@ router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 
 router.get("/user/profile", userProfile.showProfile);
 router.get("/user/profile/edit", userProfile.loadEditProfile);
-
+router.put("user/profile/edit",userProfile.editProfile);
 router.post("/user/otp",userProfile.otpCheck);
 
 router.get("/user/addresses", userProfile.loadAddressPage)

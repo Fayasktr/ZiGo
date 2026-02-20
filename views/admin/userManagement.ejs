@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | User Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        .users-container {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .search-icon {
+            left: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            border-radius: 14px;
+            color: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-input:focus~.search-icon {
+            color: var(--primary-orange);
+        }
+
+        select.search-input {
+            padding-left: 1.25rem;
+        }
+
+        select.search-input option {
+            background: #FFFFFF;
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .btn-search-panel {
+            padding: 0.85rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search-submit {
+            background: var(--primary-orange);
+            color: white;
+        }
+
+        .btn-search-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-search-clear {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-search-clear:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-table th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.4;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 90, 31, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--primary-orange);
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-active {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ED573;
+        }
+
+        .status-blocked {
+            background: rgba(255, 71, 87, 0.1);
+            color: #FF4757;
+        }
+
+        .btn-action {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            transition: 0.3s;
+        }
+
+        .btn-block {
+            background: rgba(255, 71, 87, 0.1);
+            color: #FF4757;
+        }
+
+        .btn-block:hover {
+            background: #FF4757;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item active">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/categories" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="page-header">
+            <div>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">CRM</p>
+                <h1 class="text-3xl font-extrabold">User <span class="text-orange-500">Database</span></h1>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-black">
+                    <%= users.length %>
+                </p>
+                <p class="text-[10px] opacity-40 font-bold uppercase">Total Customers</p>
+            </div>
+        </header>
+
+        <div class="users-container">
+            <div class="search-row">
+                <div class="search-wrapper">
+                    <input type="text" id="userSearch" placeholder="Search customer..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+
+                <select id="statusFilter" class="search-input !flex-none !w-40">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="blocked">Blocked</option>
+                </select>
+
+                <button id="searchBtn" class="btn-search-panel btn-search-submit">
+                    <i class="fas fa-search"></i> SEARCH
+                </button>
+
+                <button id="clearSearch" class="btn-search-panel btn-search-clear">
+                    <i class="fas fa-redo"></i> CLEAR
+                </button>
+            </div>
+
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Join Date</th>
+                        <th>Status</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (users && users.length> 0) { %>
+                        <% users.forEach(user=> { %>
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-4">
+                                        <div class="user-avatar">
+                                            <%= user.userName.substring(0, 2).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold">
+                                                <%= user.userName %>
+                                            </p>
+                                            <p class="text-[10px] opacity-40">
+                                                <%= user.phoneNumber || 'N/A' %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="text-sm opacity-60">
+                                        <%= user.email %>
+                                    </span></td>
+                                <td><span class="text-sm opacity-60">
+                                        <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short' ,
+                                            day: 'numeric' , year: 'numeric' }) %>
+                                    </span></td>
+                                <td>
+                                    <% if (!user.isBlocked) { %>
+                                        <span class="status-pill status-active">Active</span>
+                                        <% } else { %>
+                                            <span class="status-pill status-blocked">Blocked</span>
+                                            <% } %>
+                                </td>
+                                <td class="text-right">
+                                    <% if (!user.isBlocked) { %>
+                                        <button id="blockButton" onclick="toggleUserStatus('<%= user._id %>', true)"
+                                            class="btn-action btn-block">Block Access</button>
+                                        <% } else { %>
+                                            <button id="blockButton" onclick="toggleUserStatus('<%= user._id %>', false)"
+                                                class="btn-action bg-white/5 hover:bg-white/10">Unblock</button>
+                                            <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-10 opacity-40">No users found in database.
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Search functionality logic
+        const userSearch = document.getElementById('userSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearBtn = document.getElementById('clearSearch');
+        const blockButton = document.getElementById("blockButton");
+
+        
+        function triggerSearch() {
+            const query = userSearch.value.trim();
+            const status = statusFilter.value;
+            console.log(`Searching for: ${query} with status: ${status}`);
+            // In a real implementation, you would redirect or fetch data:
+            // window.location.href = `/admin/users?search=${query}&status=${status}`;
+        }
+
+        searchBtn.addEventListener('click', triggerSearch);
+
+        clearBtn.addEventListener('click', () => {
+            userSearch.value = '';
+            statusFilter.selectedIndex = 0;
+            userSearch.focus();
+            // triggerSearch(); // Optional: Trigger search to reset results
+        });
+
+        // Allow pressing Enter in search field
+        userSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') triggerSearch();
+        });
+
+        async function toggleUserStatus(userId, block) {
+            const action = block ? 'block' : 'unblock';
+            const confirmation = await confirm(`Are you sure you want to ${action} this user?`);
+
+            if (confirmation) {
+                try {
+                    const response = await fetch(`/admin/users/${userId}/${action}`, { method: 'PATCH' });
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert(`Failed to ${action} user`);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

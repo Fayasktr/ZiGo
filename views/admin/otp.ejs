@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | OTP Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 90, 31, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .glow-1 {
+            top: -200px;
+            left: -200px;
+        }
+
+        .glow-2 {
+            bottom: -200px;
+            right: -200px;
+        }
+
+        .otp-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 3.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .otp-field {
+            width: 60px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .otp-field:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.1);
+        }
+
+        .btn-verify {
+            width: 100%;
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 20px -5px rgba(255, 90, 31, 0.3);
+        }
+
+        .btn-verify:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+        }
+
+        .resend-link {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .resend-link a {
+            color: var(--primary-orange);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .resend-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--white);
+        }
+
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="otp-card">
+        <div class="icon-box">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h1 class="text-3xl font-extrabold mb-2">Two-Step <span class="text-orange-500">Verify</span></h1>
+        <p class="text-white/40 text-sm mb-8">We've sent a 4-digit code to <br><span
+                class="text-white/60">admin@zigo.com</span></p>
+
+        <form action="/admin/otp-verify" method="POST">
+            <div class="otp-inputs">
+                <input type="text" name="otp1" maxlength="1" class="otp-field" autofocus>
+                <input type="text" name="otp2" maxlength="1" class="otp-field">
+                <input type="text" name="otp3" maxlength="1" class="otp-field">
+                <input type="text" name="otp4" maxlength="1" class="otp-field">
+            </div>
+
+            <button type="submit" class="btn-verify">
+                VERIFY & CONTINUE
+            </button>
+        </form>
+
+        <p class="resend-link">
+            Didn't receive code? <a href="/admin/resend-otp">Resend Code</a>
+        </p>
+
+        <a href="/admin/login" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Login
+        </a>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.otp-field');
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

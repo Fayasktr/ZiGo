@@ -2,28 +2,24 @@ async function updateProfile() {
     const form = document.getElementById('profileForm');
     const formData = new FormData(form);
 
-    // Reset errors
     document.querySelectorAll('.error-msg').forEach(msg => msg.style.display = 'none');
     document.querySelectorAll('.form-input').forEach(input => input.classList.remove('error'));
 
     let isValid = true;
 
-    // 1. Username Validation (> 3 chars)
     const userName = document.getElementById('userName').value.trim();
     if (userName.length <= 3) {
         showError('userName');
         isValid = false;
     }
 
-    // 2. Phone Validation (Numeric)
     const phone = document.getElementById('phone').value.trim();
-    const phoneRegex = /^[0-9]{10}$/; // Assuming 10 digits
+    const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
         showError('phone');
         isValid = false;
     }
 
-    // 3. Email Validation (if visible/editable)
     const emailInput = document.getElementById('email');
     if (emailInput) {
         const email = emailInput.value.trim();
@@ -45,22 +41,34 @@ async function updateProfile() {
 
         const response = await fetch('/user/profile/edit', {
             method: 'POST',
-            body: formData // Use FormData for multipart/form-data (image)
+            body: formData
         });
 
-        // If the controller doesn't send JSON, we handle the status
+        const result = await response.json();
+
         if (response.ok) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Profile updated successfully',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                window.location.reload();
-            });
+            if (result.status === "otp_required") {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Verification Needed',
+                    text: result.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = '/user/otp';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message || 'Profile updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
         } else {
-            const result = await response.json().catch(() => ({ message: 'Update failed' }));
             throw new Error(result.message || 'Failed to update profile');
         }
     } catch (error) {
@@ -73,25 +81,21 @@ async function updatePassword() {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    // Reset errors
     document.querySelectorAll('.error-msg').forEach(msg => msg.style.display = 'none');
     document.querySelectorAll('.form-input').forEach(input => input.classList.remove('error'));
 
     let isValid = true;
 
-    // 1. Current Password Validation
     if (!data.currentPassword) {
         showError('currentPassword');
         isValid = false;
     }
 
-    // 2. New Password Validation (> 6 digits/chars)
     if (data.newPassword.length < 6) {
         showError('newPassword');
         isValid = false;
     }
 
-    // 3. Confirm Password Match
     if (data.newPassword !== data.confirmPassword) {
         showError('confirmPassword');
         isValid = false;
