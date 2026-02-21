@@ -394,6 +394,10 @@
                             </label>
                         </div>
                         <p class="text-xs font-bold opacity-30">UPLOAD NEW PHOTO</p>
+                        <button type="button" onclick="uploadProfileImage()"
+                            class="mt-4 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black tracking-widest py-2 px-6 rounded-xl transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 uppercase">
+                            Save Profile Photo
+                        </button>
                     </div>
 
                     <div class="form-grid">
@@ -429,7 +433,7 @@
                                 <button type="button" onclick="openEmailModal()" class="edit-email-btn">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
-                            <% } %>
+                                <% } %>
                         </div>
                     </div>
 
@@ -513,6 +517,49 @@
             </div>
 
             <script>
+                async function uploadProfileImage() {
+                    const fileInput = document.getElementById('imageUpload');
+                    if (!fileInput.files[0]) return;
+
+                    const formData = new FormData();
+                    formData.append('profileImage', fileInput.files[0]);
+
+                    try {
+                        Swal.fire({
+                            title: 'Uploading...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch('/user/profile/image', {
+                            method: 'PATCH',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            // Update images on the page instantly
+                            if (result.imageUrl) {
+                                document.getElementById('profileImage').src = result.imageUrl;
+                                const headerAvatar = document.getElementById('headerProfileImage');
+                                if (headerAvatar) headerAvatar.src = result.imageUrl;
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: result.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', error.message, 'error');
+                    }
+                }
+
                 function previewAvatar(input) {
                     if (input.files && input.files[0]) {
                         const reader = new FileReader();

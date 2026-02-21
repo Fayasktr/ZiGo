@@ -233,8 +233,12 @@
                 <aside class="profile-sidebar">
                     <div class="user-info">
                         <div class="user-avatar-large">
-                            <img src="<%= (user.profileImage) ? user.profileImage : 'https://ui-avatars.com/api/?name=' + user.userName + '&background=FF5A1F&color=fff' %>"
-                                alt="User Avatar">
+                            <% if (user && user.profileImage) { %>
+                                <img src="<%= user.profileImage %>" alt="User Avatar">
+                                <% } else { %>
+                                    <img src="https://ui-avatars.com/api/?name=<%= user.userName %>&background=FF5A1F&color=fff"
+                                        alt="User Avatar">
+                                    <% } %>
                         </div>
                         <h2 class="user-name">
                             <%= user.userName %>
@@ -279,8 +283,19 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                             <div class="bg-white p-8 rounded-[32px] border border-gray-100">
-                                <h3 class="text-lg font-bold mb-4 opacity-40 uppercase tracking-widest">Personal Details
-                                </h3>
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-bold opacity-40 uppercase tracking-widest">Personal Details
+                                    </h3>
+                                    <div class="w-10 h-10 rounded-full border-2 border-orange-500 overflow-hidden">
+                                        <% if (user && user.profileImage) { %>
+                                            <img src="<%= user.profileImage %>" alt="User"
+                                                class="w-full h-full object-cover">
+                                            <% } else { %>
+                                                <img src="https://ui-avatars.com/api/?name=<%= user.userName %>&background=FF5A1F&color=fff"
+                                                    alt="User" class="w-full h-full object-cover">
+                                                <% } %>
+                                    </div>
+                                </div>
                                 <p class="text-xl font-bold">
                                     <%= user.userName %>
                                 </p>

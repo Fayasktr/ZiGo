@@ -60,6 +60,26 @@ export const otpVerify = asynchandler(async (req, res) => {
 
 })
 
+export const updateProfileImage= asynchandler( async (req,res)=>{
+    try {
+        if(!req.file){
+            throw new Error("no files to upload");
+        }
+        const userId= req.session.user._id|| req.user._id;
+        const imageUrl = req.file.path;
+
+        await addressService.updateProfileImage(userId, imageUrl);
+        req.session.user.profileImage=imageUrl;
+        return res.status(200).json({
+            success:true,
+            message:"profile Image Updated..",
+            imageUrl
+        })
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+})
+
 export const loadAddressPage = asynchandler(async (req, res) => {
     try {
         const user = req.session.user || req.user;

@@ -206,7 +206,14 @@
         <!-- Profile and Logout -->
         <div class="hidden sm:flex items-center gap-4">
             <a href="/user/profile" class="profile-avatar">
-                <img src="https://ui-avatars.com/api/?name=Fayas&background=FF5A1F&color=fff" alt="User">
+                <% if (user && user.profileImage) { %>
+                    <img src="<%= user.profileImage %>" alt="User" id="headerProfileImage">
+                    <% } else if (user) { %>
+                        <img src="https://ui-avatars.com/api/?name=<%= user.userName %>&background=FF5A1F&color=fff"
+                            alt="User" id="headerProfileImage">
+                        <% } else { %>
+                            <img src="https://ui-avatars.com/api/?name=Guest&background=FF5A1F&color=fff" alt="User">
+                            <% } %>
             </a>
             <a href="/logout" class="logout-btn">Logout</a>
         </div>

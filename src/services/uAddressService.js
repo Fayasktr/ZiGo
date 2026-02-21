@@ -14,21 +14,21 @@ export const showProfileData = async (email) => {
 }
 
 export const editProfilePage = async (email) => {
-    const user = await User.findOne({ email});
+    const user = await User.findOne({ email });
     const address = await addressModel.findOne({ userId: user._id, isDefault: true });
-    return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password ,googleId:user.googleId};
+    return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password, googleId: user.googleId };
 }
 
-export const otpSend=async (email,currentMail)=>{
-    const OTP =await GenerateOTP();
-    const user=await User.findOne({email:currentMail});
-    const subject="change Email..!";
-    await otpSendToMail(OTP,email,subject);
+export const otpSend = async (email, currentMail) => {
+    const OTP = await GenerateOTP();
+    const user = await User.findOne({ email: currentMail });
+    const subject = "change Email..!";
+    await otpSendToMail(OTP, email, subject);
     await OTPModel.findOneAndUpdate(
-    {userId: user._id},
-    {otp: OTP},
-    {upsert:true}
-  );
+        { userId: user._id },
+        { otp: OTP },
+        { upsert: true }
+    );
 }
 
 export const otpCheck = async (entredOtp, userId) => {
@@ -58,8 +58,12 @@ export const editProfile = async (editData, userId) => {
     await addressModel.findOneAndUpdate({ userId: userId, isDefault: true }, { $set: { phoneNumber: editData.phoneNumber } })
 }
 
-export const editEmail =async(email)=>{
-    
+export const editEmail = async (email) => {
+
+}
+
+export const updateProfileImage =async(userId,imageUrl)=>{
+    return await User.findByIdAndUpdate(userId,{profileImage:imageUrl},{new:true})
 }
 
 export const allAddresses = async (user) => {

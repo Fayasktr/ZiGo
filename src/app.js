@@ -26,6 +26,7 @@ app.use(express.json());
 app.use(sessionMiddleware);
 app.use(flash());
 app.use((req, res, next) => {
+  res.locals.user = req.session.user || req.user;
   res.locals.error = req.flash("error");
   res.locals.success = req.flash("success");
   next();
