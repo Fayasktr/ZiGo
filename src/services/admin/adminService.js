@@ -16,10 +16,13 @@ export const accessToAdmin = async (adminMail, password) => {
     return adminData
 }
 
-export const usersList = async (page, limit) => {
+export const usersList = async (page, limit ,search) => {
     const skip = (page - 1) * limit;
-    const users = await userModel.find({ email: { $nin: "admin@gmail.com" } }).sort({ createdAt: -1 })
-        .skip(skip).limit(limit);
+    const users = await userModel.find({ email: { $nin: "admin@gmail.com" },userName:{$regex:search,$options:"i"} })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+    console.log("hello")
     const totalCountOfUsers = await userModel.countDocuments({ email: { $nin: "admin@gmail.com" } });
     return { users, totalCountOfUsers };
 }

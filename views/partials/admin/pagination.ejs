@@ -79,26 +79,18 @@
                 <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
                 <% } %>
 
-                    <!-- Page Numbers -->
-                    <% let startPage=Math.max(1, currentPage - 1); let endPage=Math.min(totalPages, startPage + 2); if
-                        (endPage - startPage < 2) { startPage=Math.max(1, endPage - 2); if(startPage < 1) startPage=1; }
-                        %>
+                    <!-- Simplified Current Page Number -->
+                    <a href="#" class="page-btn active">
+                        <%= currentPage %>
+                    </a>
 
-                        <% for(let i=startPage; i <=endPage; i++) { %>
-                            <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>"
-                                class="page-btn <%= currentPage === i ? 'active' : '' %>">
-                                <%= i %>
-                            </a>
+                    <!-- Next Page -->
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <% } else { %>
+                            <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
                             <% } %>
-
-                                <!-- Next Page -->
-                                <% if (currentPage < totalPages) { %>
-                                    <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>"
-                                        class="page-btn">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                    <% } else { %>
-                                        <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
-                                        <% } %>
     </div>
 </div>

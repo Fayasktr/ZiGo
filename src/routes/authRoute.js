@@ -5,17 +5,17 @@ import passport from "../config/passport.js";
 const router = express.Router();
 
 router.get("/auth/google",
-  passport.authenticate("google", 
-    { scope: ["profile", "email"] },
-    // {prompt: 'select_account'}
+    passport.authenticate("google",
+        { scope: ["profile", "email"] },
+        // {prompt: 'select_account'}
     )
 );
 
-router.get("/auth/google/callback",passport.authenticate("google",{
-    failureRedirect:"/login",
-    keepSessionInfo:true
-    }),
-    (req,res)=>{
+router.get("/auth/google/callback", passport.authenticate("google", {
+    failureRedirect: "/login",
+    keepSessionInfo: true
+}),
+    (req, res) => {
         req.session.user = {
             id: req.user._id,
             userName: req.user.userName,
@@ -27,12 +27,12 @@ router.get("/auth/google/callback",passport.authenticate("google",{
 
 
 router.get("/", userCntrl.landingBeforeLogin)
-router.get("/login",userAuth.preventCache, userAuth.isLogin, userCntrl.loginPage);
-router.post("/login", userCntrl.login);
+router.get("/login", userAuth.preventCache, userAuth.isLogin, userCntrl.loginPage);
+router.post("/login", userAuth.isLogin, userCntrl.login);
 router.get("/logout", userAuth.isLogout, userCntrl.logOut)
 
 router.route("/signUp")
-    .get(userAuth.preventCache,userAuth.isLogin, userCntrl.loadSignUp)
+    .get(userAuth.preventCache, userAuth.isLogin, userCntrl.loadSignUp)
     .post(userCntrl.signUp);
 
 router.route("/verifyOtp")

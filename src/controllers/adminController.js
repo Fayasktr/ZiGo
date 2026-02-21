@@ -30,9 +30,9 @@ export const userManagementPage = asynchandler(async (req, res) => {
     try {
         let page = parseInt(req.query.page) || 1;
         if (page < 1) page = 1;
-
+        const search=req.query.search ||"";
         const limit = 10;
-        const { users, totalCountOfUsers } = await adminService.usersList(page, limit);
+        const { users, totalCountOfUsers } = await adminService.usersList(page, limit,search);
         const totalPages = Math.ceil(totalCountOfUsers / limit);
 
         if (page > totalPages) {
@@ -43,9 +43,11 @@ export const userManagementPage = asynchandler(async (req, res) => {
             totalCountOfUsers,
             currentPage: page,
             totalPages,
-            limit
+            limit,
+            search
         });
     } catch (error) {
+        console.log(error)
         req.flash("error", error.message);
         res.redirect("/admin/adminDashbord");
     }

@@ -10,6 +10,9 @@ router.get("/admin/logout", adminControl.adminLogout);
 
 router.get("/admin/users", adminControl.userManagementPage);
 router.patch("/admin/users/:id/:action", adminControl.blockAndUnblock);
+
+
+
 const adminRoute = router;
 
 export default adminRoute;

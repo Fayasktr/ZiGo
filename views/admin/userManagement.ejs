@@ -430,8 +430,7 @@
 
         function triggerSearch() {
             const query = userSearch.value.trim();
-            const status = statusFilter.value;
-            console.log(`Searching for: ${query} with status: ${status}`);
+            console.log(`Searching for: ${query} `);
             window.location.href = `/admin/users?page=1&search=${query}`;
         }
 
@@ -440,9 +439,14 @@
         });
 
         clearBtn.addEventListener('click', () => {
-            userSearch.value = '';
-            statusFilter.selectedIndex = 0;
-            userSearch.focus();
+
+            const URL=new URLSearchParams(window.location.search)
+
+            URL.delete("search")
+
+            window.location.search = URL.toString()
+
+            
         });
 
         userSearch.addEventListener('keypress', (e) => {

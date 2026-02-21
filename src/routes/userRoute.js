@@ -8,7 +8,7 @@ const router = express.Router()
 router.use(userAuth.preventCache);
 router.use(userAuth.isLogout)
 
-router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
+router.get("/ZiGo.com", userAuth.isLogout,userAuth.checkBlocked, userCntrl.LoadHomePage);
 
 
 router.get("/user/profile", userProfile.showProfile);
