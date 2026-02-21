@@ -105,7 +105,12 @@ export const otpVerify = asyncHandler(async (req, res) => {
     }else{
       delete req.session.otpUserId;
       delete req.session.otpMode;
-      res.redirect("/login");
+      req.session.user = {
+      id: existUser._id,
+      userName: existUser.userName,
+      email: existUser.email,
+      };
+      res.redirect("ZiGo.com");
     }
   }
   catch (error) {

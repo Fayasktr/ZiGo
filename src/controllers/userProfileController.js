@@ -39,6 +39,7 @@ export const otpSend = asynchandler(async (req, res) => {
         res.render("user/otp");
     }
 })
+
 export const otpCheck = asynchandler(async (req, res) => {
     try {
         const otp = req.body;

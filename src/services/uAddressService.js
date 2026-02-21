@@ -19,17 +19,6 @@ export const editProfilePage = async (email) => {
     return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password };
 }
 
-export const optSend = async (email) => {
-    const OTP = await GenerateOTP();
-    const subject = "Verification OTP - ZiGo";
-    await otpSendToMail(OTP, email, subject);
-    await OTPModel.findOneAndUpdate(
-        { userId: user._id },
-        { otp: OTP, createdAt: new Date() },
-        { upsert: true, new: true }
-    );
-}
-
 export const otpCheck = async (entredOtp, userId) => {
     let otpFromDB = await OTPModel.findOne({ userId })
     console.log("generated otp  " + otpFromDB)
@@ -49,6 +38,14 @@ export const editProfile = async (editData, userId) => {
             throw new Error("current password is not matching");
         }
         const hashedPass = await hashPassword(editData.password)
+        const OTP = await GenerateOTP();
+        const subject = "Verification OTP - ZiGo";
+        await otpSendToMail(OTP, email, subject);
+        await OTPModel.findOneAndUpdate(
+        { userId: user._id },
+        { otp: OTP, createdAt: new Date() },
+        { upsert: true, new: true }
+    );
         await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, email: editData.email, password: hashedPass } });
     } else if (editData.email) {
         await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, email: editData.email } });
@@ -56,6 +53,10 @@ export const editProfile = async (editData, userId) => {
         await User.updateOne({ _id: userId }, { $set: { userName: editData.userName } });
     }
     await addressModel.findOneAndUpdate({ userId: userId, isDefault: true }, { $set: { phoneNumber: editData.phoneNumber } })
+}
+
+export const editEmailOrPassword =async(email)=>{
+    
 }
 
 export const allAddresses = async (user) => {
