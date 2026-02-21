@@ -11,11 +11,11 @@ router.get("/auth/google",
     )
 );
 
-router.get("/auth/google/callback", passport.authenticate("google", {
-    failureRedirect: "/login",
-    keepSessionInfo: true
+router.get("/auth/google/callback",passport.authenticate("google",{
+    failureRedirect:"/login",
+    keepSessionInfo:true
 }),
-    (req, res) => {
+    (req,res)=>{
         req.session.user = {
             id: req.user._id,
             userName: req.user.userName,

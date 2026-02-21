@@ -6,15 +6,15 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router()
 router.use(userAuth.preventCache);
-router.use(userAuth.isLogout)
+router.use("/user",userAuth.isLogout)
 
 router.get("/ZiGo.com", userAuth.isLogout,userAuth.checkBlocked, userCntrl.LoadHomePage);
 
 
 router.get("/user/profile", userProfile.showProfile);
 router.get("/user/profile/edit", userProfile.loadEditProfile);
-router.put("user/profile/edit",userProfile.editProfile);
-router.post("/user/otp",userProfile.otpCheck);
+router.put("/user/profile/edit", upload.single('profileImage'), userProfile.editProfile);
+router.post("/user/otp", userProfile.otpCheck);
 
 router.get("/user/addresses", userProfile.loadAddressPage)
 router.get("/user/addresses/add", userProfile.loadAddAddressPage)

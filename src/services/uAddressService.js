@@ -14,7 +14,7 @@ export const showProfileData = async (email) => {
 }
 
 export const editProfilePage = async (email) => {
-    const user = await User.findOne({ email});
+    const user = await User.findOne({ email });
     const address = await addressModel.findOne({ userId: user._id, isDefault: true });
     return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password };
 }
