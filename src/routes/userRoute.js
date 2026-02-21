@@ -14,8 +14,11 @@ router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 router.get("/user/profile", userProfile.showProfile);
 router.get("/user/profile/edit", userProfile.loadEditProfile);
 router.post("/user/profile/edit", upload.single('profileImage'), userProfile.editProfile);
-router.get("/user/otp",userProfile.otpSend);
-router.post("/user/otp", userProfile.otpCheck);
+router.post("/user/profile/edit/email",userProfile.otpSendForEmailEdit);
+router.route("/verifyOtp")
+    .get(userAuth.isOtpPending, userCntrl.loadOtpPage)
+    .post(userCntrl.otpVerify)
+
 
 router.get("/user/addresses", userProfile.loadAddressPage)
 router.get("/user/addresses/add", userProfile.loadAddAddressPage)

@@ -48,10 +48,11 @@ export const userSignUp = async (userName, email, password) => {
     password: hashedPassword,
   });
 
-  await OTPModel.create({
-    userId: newUser._id,
-    otp: OTP,
-  });
+  await OTPModel.findOneAndUpdate(
+    {userId: newUser._id},
+    {otp: OTP},
+    {upsert:true}
+  );
 
   const subjectForMail = "SignUp OTP verification Code";
 

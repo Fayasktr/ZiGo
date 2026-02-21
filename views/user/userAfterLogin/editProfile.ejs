@@ -243,6 +243,125 @@
             border-color: #ef4444;
             background: #fef2f2;
         }
+
+        /* --- Email Display & Modal --- */
+        .email-display-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--off-white);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            border: 2px solid var(--gray-light);
+        }
+
+        .email-text-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .email-text {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-navy);
+        }
+
+        .verified-badge-inline {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #2ed573;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .edit-email-btn {
+            background: var(--deep-black);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-email-btn:hover {
+            background: var(--primary-orange);
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            transform: scale(0.9);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+        }
     </style>
 </head>
 
@@ -295,19 +414,28 @@
                         </div>
                     </div>
 
-                    <% if(userData.googleId===null) {%>
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" name="email" id="email" class="form-input"
-                                placeholder="e.g. personal@fayas.com" value="<%= userData.email %>" readonly>
-                            <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
-                            <span class="error-msg" id="error-email">Please enter a valid email address.</span>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <div class="email-display-container">
+                            <div class="email-text-box">
+                                <span class="email-text">
+                                    <%= userData.email %>
+                                </span>
+                                <span class="verified-badge-inline"><i class="fas fa-check-circle"></i>
+                                    Verified
+                                </span>
+                            </div>
+                            <% if(userData.googleId==null) { %>
+                                <button type="button" onclick="openEmailModal()" class="edit-email-btn">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            <% } %>
                         </div>
-                        <%}%>
+                    </div>
 
-                            <button type="button" onclick="updateProfile()" class="save-btn">
-                                <i class="fas fa-user-check"></i> Save Personal Details
-                            </button>
+                    <button type="button" onclick="updateProfile()" class="save-btn">
+                        <i class="fas fa-user-check"></i> Save Personal Details
+                    </button>
                 </form>
             </section>
 
@@ -352,6 +480,29 @@
                         <i class="fas fa-arrow-left mr-2"></i> Back to My Account
                     </a>
         </main>
+
+        <!-- Email Edit Modal -->
+        <div id="emailModal" class="modal-overlay">
+            <div class="modal-content">
+                <button type="button" onclick="closeEmailModal()" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h3>Update <span class="text-orange-500">Email</span></h3>
+                </div>
+                <p class="modal-subtitle">Enter your new email address. We'll send an OTP to verify it.</p>
+                <form id="emailEditForm">
+                    <div class="form-group">
+                        <label class="form-label">New Email Address</label>
+                        <input type="email" id="newEmailInput" class="form-input" placeholder="e.g. personal@fayas.com">
+                        <span class="error-msg" id="error-newEmail">Please enter a valid email.</span>
+                    </div>
+                    <button type="button" onclick="submitEmailChange()" class="save-btn">
+                        <i class="fas fa-paper-plane"></i> Send Verification OTP
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <%- include('../../partials/footer') %>
 
@@ -400,6 +551,61 @@
                         icon: 'success',
                         title: successMsg
                     });
+                }
+
+                function openEmailModal() {
+                    document.getElementById('emailModal').classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeEmailModal() {
+                    document.getElementById('emailModal').classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+
+                async function submitEmailChange() {
+                    const newEmail = document.getElementById('newEmailInput').value.trim();
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                    if (!emailRegex.test(newEmail)) {
+                        const errorMsg = document.getElementById('error-newEmail');
+                        const input = document.getElementById('newEmailInput');
+                        errorMsg.style.display = 'block';
+                        input.classList.add('error');
+                        return;
+                    }
+
+                    try {
+                        Swal.fire({
+                            title: 'Sending OTP...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch('/user/profile/edit/email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: newEmail })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'OTP Sent!',
+                                text: 'Please check your new email for the verification code.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = '/user/otp';
+                            });
+                        } else {
+                            throw new Error(result.message || 'Failed to send OTP');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', error.message, 'error');
+                    }
                 }
             </script>
 </body>

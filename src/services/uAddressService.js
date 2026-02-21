@@ -16,7 +16,19 @@ export const showProfileData = async (email) => {
 export const editProfilePage = async (email) => {
     const user = await User.findOne({ email});
     const address = await addressModel.findOne({ userId: user._id, isDefault: true });
-    return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password };
+    return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password ,googleId:user.googleId};
+}
+
+export const otpSend=async (email,currentMail)=>{
+    const OTP =await GenerateOTP();
+    const user=await User.findOne({email:currentMail});
+    const subject="change Email..!";
+    await otpSendToMail(OTP,email,subject);
+    await OTPModel.findOneAndUpdate(
+    {userId: user._id},
+    {otp: OTP},
+    {upsert:true}
+  );
 }
 
 export const otpCheck = async (entredOtp, userId) => {
@@ -38,24 +50,15 @@ export const editProfile = async (editData, userId) => {
             throw new Error("current password is not matching");
         }
         const hashedPass = await hashPassword(editData.password)
-        const OTP = await GenerateOTP();
-        const subject = "Verification OTP - ZiGo";
-        await otpSendToMail(OTP, email, subject);
-        await OTPModel.findOneAndUpdate(
-        { userId: user._id },
-        { otp: OTP, createdAt: new Date() },
-        { upsert: true, new: true }
-    );
-        await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, email: editData.email, password: hashedPass } });
-    } else if (editData.email) {
-        await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, email: editData.email } });
+        await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, password: hashedPass } });
     } else {
         await User.updateOne({ _id: userId }, { $set: { userName: editData.userName } });
     }
+
     await addressModel.findOneAndUpdate({ userId: userId, isDefault: true }, { $set: { phoneNumber: editData.phoneNumber } })
 }
 
-export const editEmailOrPassword =async(email)=>{
+export const editEmail =async(email)=>{
     
 }
 

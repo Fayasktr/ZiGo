@@ -31,23 +31,31 @@ export const editProfile = asynchandler(async (req, res) => {
 
     }
 })
-export const otpSend = asynchandler(async (req, res) => {
-    const editData = req.body;
-    if (editData.email || editData.password) {
-        req.session.editData = editData;
-        await addressService.optSend(req.session.user.email || req.user.email);
-        res.render("user/otp");
+export const otpSendForEmailEdit = asynchandler(async (req, res) => {
+    try {
+        const {newMail} = req.body;
+        if (editData.email || editData.password) {
+            req.session.newEmail = newMail;
+            await addressService.otpSend(editData.email,req.session.user.email||req.user.email);
+            res.redirect("/verifiOtp");
+        }
+    } catch (error) {
+        
     }
 })
 
-export const otpCheck = asynchandler(async (req, res) => {
+export const loadOtpPage=asynchandler(async(req,res)=>{
+    res.render("/user/otp")
+});
+
+export const otpVerify = asynchandler(async (req, res) => {
     try {
         const otp = req.body;
         const userId = req.session.user._id || req.user.id;
         await addressService.otpCheck(otp, userId);
-        editProfile();
+        res.redirect("/user/profile");
     } catch (error) {
-
+        
     }
 
 })
