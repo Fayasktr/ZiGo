@@ -13,12 +13,14 @@ router.get("/ZiGo.com", userAuth.isLogout, userCntrl.LoadHomePage);
 
 router.get("/user/profile", userProfile.showProfile);
 router.get("/user/profile/edit", userProfile.loadEditProfile);
-router.post("/user/profile/edit", userProfile.editProfile);
-router.post("/user/profile/edit/email", userProfile.otpSendForEmailEdit);
-router.patch("/user/profile/image",upload.single('profileImage'),userProfile.updateProfileImage);
-router.route("/verifyOtp")
-    .get(userAuth.isOtpPending, userCntrl.loadOtpPage)
-    .post(userCntrl.otpVerify)
+
+router.put("/user/profile/edit", userProfile.updateProfile);
+router.post("/user/profile/password", userProfile.editPassword);
+router.post("/user/profile/emailRequest", userProfile.changeEmail);
+router.get("/user/profile/verifyEmail", userProfile.loadVerifyEmailOtp);
+router.post("/user/profile/verifyEmail", userProfile.verifyEmail);
+router.get("/user/profile/resendEmailOtp", userProfile.resendEmailOtp);
+router.patch("/user/profile/image", upload.single('profileImage'), userProfile.updateProfileImage);
 
 
 router.get("/user/addresses", userProfile.loadAddressPage)

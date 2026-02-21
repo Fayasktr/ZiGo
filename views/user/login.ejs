@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -306,8 +307,10 @@
                 <div class="login-header text-center lg:text-left">
                     <h2>Log In</h2>
                     <p style="margin-bottom: 3px;">Enter your details to access your account</p>
-                    <% if (locals.error && error.includes('User Blocked By Admin')) { %>
-                        <div style="color: red; font-size: 1rem; margin-bottom: 20px; margin-top: 10px;">
+                    <% if (locals.error && error.length> 0) { %>
+                        <div class="error-alert"
+                            style="background: rgba(255, 90, 31, 0.1); border: 1px solid rgba(255, 90, 31, 0.3); color: #ff8b60; padding: 0.8rem 1rem; border-radius: 12px; margin: 1.5rem 0; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 0.8rem;">
+                            <i class="fas fa-exclamation-circle"></i>
                             <%= error %>
                         </div>
                         <% } %>
@@ -321,11 +324,6 @@
                         </div>
                         <div id="emailError" style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;">
                         </div>
-                        <% if (locals.error && error.includes('User not found')) { %>
-                            <div style="color: red; font-size: 0.8rem; margin-top: 5px;">
-                                <%= error %>
-                            </div>
-                            <% } %>
                     </div>
 
                     <div class="form-group">
@@ -354,7 +352,7 @@
                         <div id="passwordError" style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;">
                         </div>
 
-                                <a href="/forgotPassword" class="forgot-pass">Forgot Password?</a>
+                        <a href="/forgotPassword" class="forgot-pass">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="login-btn">Sign In to ZiGo</button>

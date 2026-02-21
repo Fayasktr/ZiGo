@@ -19,60 +19,106 @@ export const loadEditProfile = asynchandler(async (req, res) => {
     }
 });
 
-export const editProfile = asynchandler(async (req, res) => {
+export const updateProfile = asynchandler(async (req, res) => {
     try {
-        const editData = req.session.editData;
-        const userId = req.session.user._id || req.user.id;
-        await addressService.editProfile(editData, userId);
-        return res.status(200).json({ success: true, message: "Address added successfully", address });
+        const { userName, phoneNumber } = req.body;
+        const userId = req.session.user._id || req.user._id;
+        await addressService.updatedProfileBasic(userId, userName, phoneNumber);
+        req.session.user.userName = userName;
+        res.status(200).json({ success: true, message: "basic info updated" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+})
+export const editPassword = asynchandler(async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.session.user.id || req.user.id;
+        await addressService.updatePassword(userId, currentPassword, newPassword);
+        return res.status(200).json({ success: true, message: "password updated successul" })
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+})
 
+export const changeEmail = asynchandler(async (req, res) => {
+    try {
+        const { email } = req.body;
+        const userId = req.session.user.id || req.user.id;
+
+        await addressService.otpSendForEmailChange(userId, email);
+
+        req.session.pendingEmail = email;
+
+        return res.status(200).json({ success: true, message: "OTP sent to your new email." });
     } catch (error) {
         return res.status(400).json({ success: false, message: error.message });
-
-    }
-})
-export const otpSendForEmailEdit = asynchandler(async (req, res) => {
-    try {
-        const {newMail} = req.body;
-        if (editData.email || editData.password) {
-            req.session.newEmail = newMail;
-            await addressService.otpSend(editData.email,req.session.user.email||req.user.email);
-            res.redirect("/verifiOtp");
-        }
-    } catch (error) {
-        
     }
 })
 
-export const loadOtpPage=asynchandler(async(req,res)=>{
-    res.render("/user/otp")
-});
+export const loadVerifyEmailOtp = asynchandler(async (req, res) => {
+    const email = req.session.pendingEmail;
+    const userId = req.session.user.id || req.user.id;
+    if (!email) {
+        return res.redirect('/user/profile/edit');
+    }
+    res.render("user/otp", {
+        email,
+        userId,
+        verifyAction: "/user/profile/verifyEmail",
+        resendAction: "/user/profile/resendEmailOtp"
+    });
+})
 
-export const otpVerify = asynchandler(async (req, res) => {
+export const verifyEmail = asynchandler(async (req, res) => {
     try {
-        const otp = req.body;
-        const userId = req.session.user._id || req.user.id;
-        await addressService.otpCheck(otp, userId);
+        const { otp, userId } = req.body;
+        const newEmail = req.session.pendingEmail;
+
+        if (!newEmail) throw new Error("Session expired. Please try again.");
+
+        await addressService.verifyAndChangeEmail(userId, otp, newEmail);
+
+        // Update session email
+        req.session.user.email = newEmail;
+        delete req.session.pendingEmail;
+
+        req.flash("success", "Email updated successfully!");
         res.redirect("/user/profile");
     } catch (error) {
-        
+        req.flash("error", error.message);
+        res.redirect("/user/profile/verifyEmail");
     }
-
 })
 
-export const updateProfileImage= asynchandler( async (req,res)=>{
+export const resendEmailOtp = asynchandler(async (req, res) => {
     try {
-        if(!req.file){
+        const email = req.session.pendingEmail;
+        const userId = req.session.user.id || req.user.id;
+
+        if (!email) throw new Error("Session expired. Please try again.");
+
+        await addressService.otpSendForEmailChange(userId, email);
+        req.flash("success", "OTP resent successfully.");
+        res.redirect("/user/profile/verifyEmail");
+    } catch (error) {
+        req.flash("error", error.message);
+        res.redirect("/user/profile/verifyEmail");
+    }
+})
+export const updateProfileImage = asynchandler(async (req, res) => {
+    try {
+        if (!req.file) {
             throw new Error("no files to upload");
         }
-        const userId= req.session.user._id|| req.user._id;
+        const userId = req.session.user._id || req.user._id;
         const imageUrl = req.file.path;
 
         await addressService.updateProfileImage(userId, imageUrl);
-        req.session.user.profileImage=imageUrl;
+        req.session.user.profileImage = imageUrl;
         return res.status(200).json({
-            success:true,
-            message:"profile Image Updated..",
+            success: true,
+            message: "profile Image Updated..",
             imageUrl
         })
     } catch (error) {

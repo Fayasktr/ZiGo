@@ -19,51 +19,55 @@ export const editProfilePage = async (email) => {
     return { userName: user.userName, email: user.email, phoneNumber: address ? address.phoneNumber : "", password: user.password, googleId: user.googleId };
 }
 
-export const otpSend = async (email, currentMail) => {
+export const updatedProfileBasic = async (userId, userName, phoneNumber) => {
+    await User.findByIdAndUpdate(userId, { $set: { userName } });
+
+    if (phoneNumber) {
+        await addressModel.findOneAndUpdate(
+            { userId: userId, isDefault: true },
+            { $set: { phoneNumber } },
+            { upsert: true }
+        );
+    }
+}
+
+export const updatePassword = async (userId, currentPassword, newpassword) => {
+    const user = await User.findById(userId);
+    const isMatchPassword = await checkPass(currentPassword, user.password);
+    if (!isMatchPassword) {
+        throw new Error("Current password is not match..!");
+    }
+    const hashedPassword = await hashPassword(newpassword);
+    user.password = hashedPassword;
+    await user.save();
+}
+
+export const updateProfileImage = async (userId, imageUrl) => {
+    return await User.findByIdAndUpdate(userId, { profileImage: imageUrl }, { new: true })
+}
+
+export const otpSendForEmailChange = async (userId, newEmail) => {
     const OTP = await GenerateOTP();
-    const user = await User.findOne({ email: currentMail });
-    const subject = "change Email..!";
-    await otpSendToMail(OTP, email, subject);
+    console.log("otp :",OTP)
+    const subject = "Verification OTP - ZiGo Email Change";
+    await otpSendToMail(OTP, newEmail, subject);
+
     await OTPModel.findOneAndUpdate(
-        { userId: user._id },
-        { otp: OTP },
+        { userId },
+        { otp: OTP, createdAt: new Date() },
         { upsert: true }
     );
 }
 
-export const otpCheck = async (entredOtp, userId) => {
-    let otpFromDB = await OTPModel.findOne({ userId })
-    console.log("generated otp  " + otpFromDB)
+export const verifyAndChangeEmail = async (userId, enteredOtp, newEmail) => {
+    const otpFromDB = await OTPModel.findOne({ userId });
 
-    if (!otpFromDB || otpFromDB.otp != entredOtp) {
-        throw new Error("Invalid OTP or expired..")
+    if (!otpFromDB || otpFromDB.otp !== enteredOtp) {
+        throw new Error("Invalid or expired OTP");
     }
 
+    await User.findByIdAndUpdate(userId, { $set: { email: newEmail } });
     await OTPModel.deleteOne({ userId });
-}
-
-export const editProfile = async (editData, userId) => {
-    if (editData.password) {
-        const currentPass = await User.findOne({ _id: userId })
-        const check = await checkPass(editData.password, currentPass.password);
-        if (!check) {
-            throw new Error("current password is not matching");
-        }
-        const hashedPass = await hashPassword(editData.password)
-        await User.updateOne({ _id: userId }, { $set: { userName: editData.userName, password: hashedPass } });
-    } else {
-        await User.updateOne({ _id: userId }, { $set: { userName: editData.userName } });
-    }
-
-    await addressModel.findOneAndUpdate({ userId: userId, isDefault: true }, { $set: { phoneNumber: editData.phoneNumber } })
-}
-
-export const editEmail = async (email) => {
-
-}
-
-export const updateProfileImage =async(userId,imageUrl)=>{
-    return await User.findByIdAndUpdate(userId,{profileImage:imageUrl},{new:true})
 }
 
 export const allAddresses = async (user) => {

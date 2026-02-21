@@ -248,7 +248,7 @@
                     <% } %>
             </div>
 
-            <form id="otpForm" action="/verifyOtp" method="POST">
+            <form id="otpForm" action="<%= locals.verifyAction || '/verifyOtp' %>" method="POST">
                 <div class="otp-inputs">
                     <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
                     <input type="text" class="otp-field" maxlength="1" pattern="\d" required>
@@ -258,13 +258,14 @@
                 <input type="hidden" name="otp" id="full-otp">
                 <input type="hidden" name="userId" value="<%= locals.userId || '' %>">
 
-                <button type="submit" class="verify-btn">Verify & Activate</button>
+                <button type="submit" class="verify-btn">Verify Account</button>
             </form>
 
             <p class="resend-text">
                 Didn't receive the code?
                 <span id="timerBox">Resend in <span id="timer">01:00s</span></span>
-                <a href="/resendOtp" class="resend-link disabled" id="resendBtn">Resend New Code</a>
+                <a href="<%= locals.resendAction || '/resendOtp' %>" class="resend-link disabled" id="resendBtn">Resend
+                    Code</a>
             </p>
         </div>
     </div>

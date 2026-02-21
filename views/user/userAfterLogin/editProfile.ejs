@@ -382,107 +382,123 @@
                     <h1 class="section-title">Personal <span class="text-orange-500">Information</span></h1>
                 </div>
 
-                <form id="profileForm" enctype="multipart/form-data">
-                    <div class="avatar-section">
-                        <div class="avatar-preview-wrapper">
-                            <img src="<%= (userData.profileImage) ? userData.profileImage : 'https://ui-avatars.com/api/?name=' + userData.userName + '&background=FF5A1F&color=fff' %>"
-                                alt="Profile Preview" class="avatar-preview" id="profileImage">
-                            <label for="imageUpload" class="upload-badge">
-                                <i class="fas fa-camera"></i>
-                                <input type="file" name="profileImage" id="imageUpload" class="hidden" accept="image/*"
-                                    onchange="previewAvatar(this)">
-                            </label>
-                        </div>
-                        <p class="text-xs font-bold opacity-30">UPLOAD NEW PHOTO</p>
-                        <button type="button" onclick="uploadProfileImage()"
-                            class="mt-4 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black tracking-widest py-2 px-6 rounded-xl transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 uppercase">
-                            Save Profile Photo
-                        </button>
+                <div class="avatar-section">
+                    <div class="avatar-preview-wrapper">
+                        <img src="<%= (userData.profileImage) ? userData.profileImage : 'https://ui-avatars.com/api/?name=' + userData.userName + '&background=FF5A1F&color=fff' %>"
+                            alt="Profile Preview" class="avatar-preview" id="profileImage">
+                        <label for="imageUpload" class="upload-badge">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" name="profileImage" id="imageUpload" class="hidden" accept="image/*"
+                                onchange="previewAvatar(this)">
+                        </label>
                     </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="userName" id="userName" class="form-input"
-                                placeholder="e.g. fayas_kp" value="<%= userData.userName %>">
-                            <span class="error-msg" id="error-userName">Username must be more than 3 characters.</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <div class="relative">
-                                <span class="absolute left-6 top-[1.2rem] font-bold opacity-30">+91</span>
-                                <input type="tel" name="phone" id="phone" class="form-input pl-16"
-                                    placeholder="9876543210" value="<%= userData.phoneNumber || '' %>">
-                            </div>
-                            <span class="error-msg" id="error-phone">Please enter a valid numeric phone number.</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <div class="email-display-container">
-                            <div class="email-text-box">
-                                <span class="email-text">
-                                    <%= userData.email %>
-                                </span>
-                                <span class="verified-badge-inline"><i class="fas fa-check-circle"></i>
-                                    Verified
-                                </span>
-                            </div>
-                            <% if(userData.googleId==null) { %>
-                                <button type="button" onclick="openEmailModal()" class="edit-email-btn">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <% } %>
-                        </div>
-                    </div>
-
-                    <button type="button" onclick="updateProfile()" class="save-btn">
-                        <i class="fas fa-user-check"></i> Save Personal Details
+                    <p class="text-xs font-bold opacity-30">UPLOAD NEW PHOTO</p>
+                    <button type="button" onclick="uploadProfileImage()"
+                        class="mt-4 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black tracking-widest py-2 px-6 rounded-xl transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 uppercase">
+                        Save Profile Photo
                     </button>
-                </form>
+
+                    <div class="mt-8 pt-8 border-t border-gray-100 w-full">
+                        <form id="basicInfoForm" class="space-y-6">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label text-left">Username</label>
+                                    <input type="text" id="userName" class="form-input" placeholder="e.g. fayas_kp"
+                                        value="<%= userData.userName %>">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label text-left">Phone Number</label>
+                                    <div class="relative">
+                                        <span class="absolute left-6 top-[1.2rem] font-bold opacity-30">+91</span>
+                                        <input type="tel" id="phoneNumber" class="form-input pl-16"
+                                            placeholder="9876543210" value="<%= userData.phoneNumber || '' %>">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="updateBasicInfo()"
+                                class="save-btn bg-deep-black hover:bg-orange-600 transition-all">
+                                <i class="fas fa-user-edit"></i> Update Basic Profile
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </section>
 
-            <% if(userData.googleId==null && userData.password !=null) {%>
+            <!-- Conditional Content based on Google Identity -->
+            <% if(!userData.googleId) { %>
+                <!-- Email Section (Local Only) -->
                 <section class="edit-card">
-                    <div class="card-header">
-                        <h1 class="section-title">Security <span class="text-orange-500">Settings</span></h1>
+                    <div class="card-header flex items-center justify-between">
+                        <h1 class="section-title">Email <span class="text-orange-500">Address</span></h1>
+                        <i class="fas fa-envelope-open-text text-gray-300 text-xl"></i>
                     </div>
+                    <div class="email-display-container">
+                        <div class="email-text-box">
+                            <span class="email-text">
+                                <%= userData.email %>
+                            </span>
+                            <span class="verified-badge-inline"><i class="fas fa-check-circle"></i> Verified
+                                Account</span>
+                        </div>
+                        <button type="button" onclick="openEmailModal()" class="edit-email-btn">
+                            <i class="fas fa-edit"></i> Change Email
+                        </button>
+                    </div>
+                    
+                </section>
 
+                <!-- Security Section (Local Only) -->
+                <section class="edit-card">
+                    <div class="card-header flex items-center justify-between">
+                        <h1 class="section-title">Security <span class="text-orange-500">Settings</span></h1>
+                        <i class="fas fa-lock text-gray-300 text-xl"></i>
+                    </div>
                     <form id="passwordForm">
                         <div class="form-group">
                             <label class="form-label">Current Password</label>
-                            <input type="password" name="currentPassword" id="currentPassword" class="form-input"
-                                placeholder="Enter current password">
+                            <input type="password" id="currentPassword" class="form-input" placeholder="••••••••">
                             <span class="error-msg" id="error-currentPassword">Current password is required.</span>
                         </div>
-
                         <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label">New Password</label>
-                                <input type="password" name="newPassword" id="newPassword" class="form-input"
-                                    placeholder="Enter new password">
+                                <input type="password" id="newPassword" class="form-input"
+                                    placeholder="Min 6 characters">
                                 <span class="error-msg" id="error-newPassword">Password must be at least 6
                                     characters.</span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Confirm New Password</label>
-                                <input type="password" name="confirmPassword" id="confirmPassword" class="form-input"
-                                    placeholder="Confirm new password">
+                                <input type="password" id="confirmPassword" class="form-input"
+                                    placeholder="Repeat new password">
                                 <span class="error-msg" id="error-confirmPassword">Passwords do not match.</span>
                             </div>
                         </div>
-
-                        <button type="button" onclick="updatePassword()" class="save-btn">
-                            <i class="fas fa-key"></i> Update Password
+                        <button type="button" onclick="updatePassword()"
+                            class="save-btn bg-orange-600 hover:bg-orange-700">
+                            <i class="fas fa-key"></i> Update Secure Password
                         </button>
                     </form>
                 </section>
-                <%}%>
+                <% } else { %>
+                    <!-- Google User Info -->
+                    <div class="edit-card border-blue-100 bg-blue-50/50">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-600 p-3 rounded-2xl text-white">
+                                <i class="fab fa-google text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-blue-900">Google Managed Account</h3>
+                                <p class="text-sm text-blue-700 opacity-80 mt-1">Your security settings and email are
+                                    directly managed by Google. You don't need to change passwords here.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
 
-                    <a href="/profile" class="cancel-btn">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to My Account
-                    </a>
+                        <a href="/user/profile" class="cancel-btn">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to My Account
+                        </a>
         </main>
 
         <!-- Email Edit Modal -->
@@ -538,7 +554,6 @@
 
                         const result = await response.json();
                         if (response.ok) {
-                            // Update images on the page instantly
                             if (result.imageUrl) {
                                 document.getElementById('profileImage').src = result.imageUrl;
                                 const headerAvatar = document.getElementById('headerProfileImage');
@@ -615,21 +630,13 @@
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                     if (!emailRegex.test(newEmail)) {
-                        const errorMsg = document.getElementById('error-newEmail');
-                        const input = document.getElementById('newEmailInput');
-                        errorMsg.style.display = 'block';
-                        input.classList.add('error');
+                        Swal.fire('Error', 'Please enter a valid email address.', 'error');
                         return;
                     }
 
                     try {
-                        Swal.fire({
-                            title: 'Sending OTP...',
-                            allowOutsideClick: false,
-                            didOpen: () => Swal.showLoading()
-                        });
-
-                        const response = await fetch('/user/profile/edit/email', {
+                       
+                        const response = await fetch('/user/profile/emailRequest', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email: newEmail })
@@ -641,14 +648,107 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'OTP Sent!',
-                                text: 'Please check your new email for the verification code.',
+                                text: 'Check your new email for the code.',
                                 timer: 2000,
                                 showConfirmButton: false
                             }).then(() => {
-                                window.location.href = '/user/otp';
+                                // Redirect to OTP verification page
+                                window.location.href = '/user/profile/verifyEmail';
                             });
                         } else {
                             throw new Error(result.message || 'Failed to send OTP');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', error.message, 'error');
+                    }
+                }
+
+                async function updatePassword() {
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    if (!currentPassword || !newPassword || !confirmPassword) {
+                        Swal.fire('Error', 'All fields are required.', 'error');
+                        return;
+                    }
+
+                    if (newPassword.length < 6) {
+                        Swal.fire('Error', 'New password must be at least 6 characters.', 'error');
+                        return;
+                    }
+
+                    if (newPassword !== confirmPassword) {
+                        Swal.fire('Error', 'Passwords do not match.', 'error');
+                        return;
+                    }
+
+                    try {
+                        Swal.fire({
+                            title: 'Updating password...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch('/user/profile/password', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ currentPassword, newPassword })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: 'Your password has been changed successfully.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            document.getElementById('passwordForm').reset();
+                        } else {
+                            throw new Error(result.message || 'Failed to update password');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', error.message, 'error');
+                    }
+                }
+
+                async function updateBasicInfo() {
+                    const userName = document.getElementById('userName').value.trim();
+                    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+
+                    if (!userName) {
+                        Swal.fire('Error', 'Username is required', 'error');
+                        return;
+                    }
+
+                    try {
+                        Swal.fire({
+                            title: 'Updating...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch('/user/profile/edit', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userName, phoneNumber })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: result.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            throw new Error(result.message);
                         }
                     } catch (error) {
                         Swal.fire('Error', error.message, 'error');
