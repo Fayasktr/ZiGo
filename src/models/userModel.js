@@ -15,19 +15,19 @@ const userSchema = mongoose.Schema({
         minlength: 10,
         maxlength: 50,
     },
-    phone:{
-        type:String,
-        required:false,
-        sparse:true,
-        default:null,
-        unique:true
+    phone: {
+        type: String,
+        required: false,
+        sparse: true,
+        default: null,
+        unique: true
     },
     password: {
         type: String,
         required: false,
         minlength: 6,
         maxlength: 100,
-        default:null
+        default: null
     },
     role: {
         type: String,
@@ -36,7 +36,7 @@ const userSchema = mongoose.Schema({
     },
     googleId: {
         type: String,
-        unique:true,
+        unique: true,
         default: null
     },
     profileImage: {

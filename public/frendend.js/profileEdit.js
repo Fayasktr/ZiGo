@@ -40,7 +40,7 @@ async function updateProfile() {
         });
 
         const response = await fetch('/user/profile/edit', {
-            method: 'POST',
+            method: 'PUT',
             body: formData
         });
 

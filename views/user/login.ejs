@@ -266,6 +266,42 @@
             text-decoration: none;
             font-weight: 700;
         }
+
+        /* --- Error Alert Styling --- */
+        .error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .error-alert i {
+            font-size: 1.1rem;
+        }
+
+        .error-alert span {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 

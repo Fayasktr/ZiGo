@@ -48,7 +48,7 @@ export const updateProfileImage = async (userId, imageUrl) => {
 
 export const otpSendForEmailChange = async (userId, newEmail) => {
     const OTP = await GenerateOTP();
-    console.log("otp :",OTP)
+    console.log("otp :", OTP)
     const subject = "Verification OTP - ZiGo Email Change";
     await otpSendToMail(OTP, newEmail, subject);
 
@@ -82,7 +82,12 @@ export const addAddress = async (userEmail, addressData) => {
         throw new Error("there is now user found ");
     }
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
-    const isDefault = !defaultAddres
+    
+    let shouldBeDefault = addressData.isDefault || !defaultAddres;
+    if(shouldBeDefault && defaultAddres){
+        await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
+    }
+
 
     return await addressModel.create({
         userId: user._id,
@@ -94,7 +99,7 @@ export const addAddress = async (userEmail, addressData) => {
         pincode: addressData.pincode,
         phoneNumber: addressData.phoneNumber,
         email: addressData.email,
-        isDefault: isDefault
+        isDefault: shouldBeDefault
     })
 }
 
@@ -114,7 +119,8 @@ export const editAddress = async (addressId, addressData) => {
                 pincode: addressData.pincode,
                 phoneNumber: addressData.phoneNumber,
             }
-        }
+        },
+        { new: true }
     )
 }
 
@@ -137,6 +143,7 @@ export const deleteAddress = async (userId, addressId) => {
     }
     const result = await addressModel.deleteOne({ _id: addressId, userId: userId });
     console.log("Deleted address:", addressId);
+    console.log("Deleted address:", result);
     if (result.deletedCount === 0) {
         throw new Error("address already deleted..");
     }

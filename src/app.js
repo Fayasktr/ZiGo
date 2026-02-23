@@ -42,11 +42,15 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  if (err) {
-    console.log(err.message)
-    res.send(err.message)
+  console.error("Global Error Handler:", err);
+  if (res.headersSent) {
+    return next(err);
   }
-  next()
+  res.status(err.status || 500);
+  res.render("user/404", {
+    message: "Something went wrong! Please try again later.",
+    error: process.env.NODE_ENV === "development" ? err : {}
+  });
 })
 
 export default app;

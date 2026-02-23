@@ -49,9 +49,9 @@ export const userSignUp = async (userName, email, password) => {
   });
 
   await OTPModel.findOneAndUpdate(
-    {userId: newUser._id},
-    {otp: OTP},
-    {upsert:true}
+    { userId: newUser._id },
+    { otp: OTP },
+    { upsert: true }
   );
 
   const subjectForMail = "SignUp OTP verification Code";
@@ -70,6 +70,8 @@ export const verifyOtp = async (entredOtp, userId) => {
   }
 
   await OTPModel.deleteOne({ userId });
+  await User.findByIdAndUpdate(userId, { isVerified: true });
+  return await User.findById(userId)
 }
 
 export const resendOtp = async (userId) => {
@@ -87,12 +89,12 @@ export const resendOtp = async (userId) => {
 }
 
 export const forgettPass = async (email) => {
-  let user=await User.findOne({email});
-  if(!user){
+  let user = await User.findOne({ email });
+  if (!user) {
     throw new Error("this user doesn't exist")
   }
   const OTP = await GenerateOTP()
-  let userId=user._id;
+  let userId = user._id;
   await OTPModel.findOneAndUpdate(
     { userId },
     { otp: OTP, createdAt: new Date(), isUsed: false },
@@ -104,10 +106,10 @@ export const forgettPass = async (email) => {
   return userId;
 }
 
-export const updatePassword = async(newPass,email)=>{
-  const hashedPassword =await hashPassword(newPass);
-  const savePass =await User.findOneAndUpdate({email},{password:hashedPassword});
+export const updatePassword = async (newPass, email) => {
+  const hashedPassword = await hashPassword(newPass);
+  const savePass = await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
-  console.log("password saved" +hashedPassword);
-  
+  console.log("password saved" + hashedPassword);
+
 }

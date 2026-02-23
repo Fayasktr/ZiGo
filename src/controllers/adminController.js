@@ -6,18 +6,22 @@ export const adminLoginPage = asynchandler(async (req, res) => {
     res.render("admin/adminLogin");
 })
 
+export const adminDashbord = asynchandler(async (req, res) => {
+    res.render("admin/adminDashbord")
+})
 export const adminAccess = asynchandler(async (req, res) => {
     try {
         const { adminMail, password } = req.body;
         const checkAdminAuth = await adminService.accessToAdmin(adminMail, password);
+        console.log(checkAdminAuth)
         req.session.admin = {
             adminMail: adminMail,
             adminName: checkAdminAuth.adminMail
         }
-        res.render("admin/adminDashbord")
+        res.redirect("/admin/dashbord")
     } catch (error) {
         req.flash("error", error);
-        res.redirect("admin/adminLogin");
+        res.redirect("/admin");
     }
 });
 
@@ -28,14 +32,41 @@ export const adminLogout = asynchandler(async (req, res) => {
 
 export const userManagementPage = asynchandler(async (req, res) => {
     try {
-        const users = await adminService.usersList();
-        res.render("admin/userManagement", { users });
+        let page = parseInt(req.query.page) || 1;
+        if (page < 1) page = 1;
+        const search = req.query.search || "";
+        const limit = 10;
+        const { users, totalCountOfUsers } = await adminService.usersList(page, limit, search);
+        const totalPages = Math.ceil(totalCountOfUsers / limit);
+
+        if (page > totalPages) {
+            return res.redirect(`/admin/users?page=${totalPages}`);
+        }
+        res.render("admin/userManagement", {
+            users,
+            totalCountOfUsers,
+            currentPage: page,
+            totalPages,
+            limit,
+            search
+        });
     } catch (error) {
+        console.log(error)
         req.flash("error", error.message);
-        res.redirect("/admin/adminDashbord");
+        res.redirect("/admin/dashbord");
     }
 })
 
 export const blockAndUnblock = asynchandler(async (req, res) => {
-
+    try {
+        const action = req.params.action;
+        const userId = req.params.id;
+        await adminService.blockOrUnblock(userId, action);
+        if (action === "block") {
+            delete req.session.user || req.user;
+        }
+        return res.status(200).json({ success: true, message: "update Successfully" });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message })
+    }
 })

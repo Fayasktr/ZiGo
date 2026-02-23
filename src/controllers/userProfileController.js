@@ -4,7 +4,6 @@ import * as addressService from '../services/uAddressService.js';
 export const showProfile = asynchandler(async (req, res) => {
 
     const user = req.session.user || req.user;
-    console.log("the user: " + user.email)
     const defaultAddres = await addressService.showProfileData(user.email);
     res.render("user/userAfterLogin/profile", { user, defaultAddres });
 });
@@ -15,14 +14,15 @@ export const loadEditProfile = asynchandler(async (req, res) => {
         const userData = await addressService.editProfilePage(user.email);
         res.render("user/userAfterLogin/editProfile", { userData });
     } catch (error) {
-
+        req.flash("error", "Failed to load profile data.");
+        res.redirect("/user/profile");
     }
 });
 
 export const updateProfile = asynchandler(async (req, res) => {
     try {
         const { userName, phoneNumber } = req.body;
-        const userId = req.session.user._id || req.user._id;
+        const userId = req.session?.user?.id || req.user?.id;
         await addressService.updatedProfileBasic(userId, userName, phoneNumber);
         req.session.user.userName = userName;
         res.status(200).json({ success: true, message: "basic info updated" });
@@ -79,7 +79,6 @@ export const verifyEmail = asynchandler(async (req, res) => {
 
         await addressService.verifyAndChangeEmail(userId, otp, newEmail);
 
-        // Update session email
         req.session.user.email = newEmail;
         delete req.session.pendingEmail;
 
@@ -106,12 +105,13 @@ export const resendEmailOtp = asynchandler(async (req, res) => {
         res.redirect("/user/profile/verifyEmail");
     }
 })
+
 export const updateProfileImage = asynchandler(async (req, res) => {
     try {
         if (!req.file) {
             throw new Error("no files to upload");
         }
-        const userId = req.session.user._id || req.user._id;
+        const userId = req.session.user.id || req.user.id;
         const imageUrl = req.file.path;
 
         await addressService.updateProfileImage(userId, imageUrl);
@@ -132,7 +132,8 @@ export const loadAddressPage = asynchandler(async (req, res) => {
         const addresses = await addressService.allAddresses(user);
         res.render("user/userAfterLogin/addresses", { user, addresses })
     } catch (error) {
-
+        req.flash("error", "Failed to load addresses.");
+        res.redirect("/user/profile");
     }
 })
 
@@ -192,7 +193,7 @@ export const setDefault = asynchandler(async (req, res) => {
 export const deleteAddress = asynchandler(async (req, res) => {
     try {
         const addressId = req.params.id;
-        const userId = req.session.user._id || req.user.id;
+        const userId = req.session?.user?.id || req.user?.id;
         await addressService.deleteAddress(userId, addressId);
         req.flash("success", "Default address updated successfully!");
         res.redirect("/user/addresses");

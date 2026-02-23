@@ -10,7 +10,7 @@ export const forgotPasswordPage = asyncHandler(async (req, res) => {
 });
 
 export const loginPage = asyncHandler(async (req, res) => {
-    console.log("session from load login page:",req.user);
+  console.log("session from load login page:", req.user);
   res.render("user/login");
 });
 
@@ -31,10 +31,10 @@ export const login = asyncHandler(async (req, res) => {
   }
 });
 
-export const logOut = asyncHandler(async (req, res) => {
-  
-  req.logout((err)=>{
-    if(err){
+export const logOut = asyncHandler(async (req, res, next) => {
+
+  req.logout((err) => {
+    if (err) {
       return next(err)
     }
     req.session.user = null;
@@ -43,7 +43,7 @@ export const logOut = asyncHandler(async (req, res) => {
 });
 
 export const LoadHomePage = asyncHandler(async (req, res) => {
-  console.log("session from load home page:",req.user);
+  console.log("session from load home page:", req.user);
   res.render("user/userAfterLogin/ZiGo.com.ejs");
 });
 
@@ -71,7 +71,7 @@ export const signUp = asyncHandler(async (req, res) => {
     let newUser = await userServises.userSignUp(userName, email, password);
 
     req.session.otpUserId = newUser._id;
-    req.session.otpMode= "signUp"
+    req.session.otpMode = "signUp"
     res.redirect("/verifyOtp");
   }
   catch (error) {
@@ -86,8 +86,8 @@ export const loadOtpPage = asyncHandler(async (req, res) => {
     req.flash("error", "Session expired, please sign up again.");
     return res.redirect("/signUp");
   }
-  let otpTime = new Date() ;
-  res.render("user/otp", { userId ,otpTime});
+  let otpTime = new Date();
+  res.render("user/otp", { userId, otpTime });
 });
 
 export const otpVerify = asyncHandler(async (req, res) => {
@@ -97,20 +97,21 @@ export const otpVerify = asyncHandler(async (req, res) => {
     console.log(entredOtp);
     console.log(userId);
 
-    await userServises.verifyOtp(entredOtp, userId);
+    const newUser=await userServises.verifyOtp(entredOtp, userId);
     console.log("session detailse :" + req.session);
-    if(req.session.otpMode=="forgetPass"){
-      let tempMail=req.session.tempMail
-      res.render("user/resetPassword",{email:tempMail});
-    }else{
+    if (req.session.otpMode == "forgetPass") {
+      let tempMail = req.session.tempMail
+      res.render("user/resetPassword", { email: tempMail });
+    } else {
       delete req.session.otpUserId;
       delete req.session.otpMode;
+
       req.session.user = {
-      id: existUser._id,
-      userName: existUser.userName,
-      email: existUser.email,
+        id: newUser._id,
+        userName: newUser.userName,
+        email: newUser.email,
       };
-      res.redirect("ZiGo.com");
+      res.redirect("/ZiGo.com");
     }
   }
   catch (error) {
@@ -138,8 +139,8 @@ export const sendOTPForForgotPass = asyncHandler(async (req, res) => {
     console.log(`user id ${userId}`);
 
     req.session.otpUserId = userId;
-    req.session.tempMail=email;
-    req.session.otpMode ="forgetPass";
+    req.session.tempMail = email;
+    req.session.otpMode = "forgetPass";
     res.redirect("verifyOtp")
   } catch (error) {
     req.flash("error", error.message);
@@ -149,22 +150,30 @@ export const sendOTPForForgotPass = asyncHandler(async (req, res) => {
 
 
 
-export const resetPassword =asyncHandler(async(req,res)=>{
-  try{
-    const {newPass ,conformPass,email} =req.body
-    if(newPass != conformPass){
-      req.flash("error","new Password and conform password not match");
+export const loadResetPassword = asyncHandler(async (req, res) => {
+  const email = req.session.tempMail;
+  if (!email) {
+    return res.redirect("/forgotPassword");
+  }
+  res.render("user/resetPassword", { email });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  try {
+    const { newPass, conformPass, email } = req.body
+    if (newPass != conformPass) {
+      req.flash("error", "new Password and conform password not match");
       res.redirect("resetPassword");
       return 0;
     }
-    const updatePass =await userServises.updatePassword(newPass,email);
+    const updatePass = await userServises.updatePassword(newPass, email);
     console.log("reset password completed")
     delete req.session.otpUserId;
     delete req.session.tempMail;
     delete req.session.otpMode;
     res.redirect("login");
-  }catch (error) {
-    req.flash("error",error.message);
+  } catch (error) {
+    req.flash("error", error.message);
     res.redirect("resetPassword");
   }
 

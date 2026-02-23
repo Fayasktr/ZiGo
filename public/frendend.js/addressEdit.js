@@ -6,6 +6,7 @@ async function submitAddressFormForEditAddress() {
 
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.isDefault = form.querySelector('#isDefault').checked;
 
     let isValid = true;
 

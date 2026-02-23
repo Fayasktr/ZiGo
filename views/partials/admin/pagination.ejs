@@ -1,0 +1,104 @@
+<style>
+    .pagination-bar {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 1.25rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    .pagination-info span {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .pagination-buttons {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .page-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .page-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .page-btn.active {
+        background: var(--primary-orange);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 90, 31, 0.3);
+    }
+
+    .page-btn.disabled {
+        opacity: 0.2;
+        pointer-events: none;
+    }
+</style>
+
+<div class="pagination-bar">
+    <div class="pagination-info">
+        
+        SHOWING <span>
+            <%= (currentPage - 1) * limit + 1 %>-<%= Math.min(currentPage * limit, totalCountOfUsers) %>
+        </span> OF <span>
+            <%= totalCountOfUsers %>
+        </span> RESULTS
+    </div>
+
+    <div class="pagination-buttons">
+        <div class="pagination-info">
+            SHOWING <span>
+            <%= currentPage %>
+        </span> OF <span>
+            <%= Math.ceil(totalCountOfUsers/10) %>
+        </span> PAGE
+        </div>
+        <!-- Previous Page -->
+        <% if (currentPage> 1) { %>
+            <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <% } else { %>
+                <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
+                <% } %>
+
+                    <!-- Simplified Current Page Number -->
+                    <a href="#" class="page-btn active">
+                        <%= currentPage %>
+                    </a>
+
+                    <!-- Next Page -->
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <% } else { %>
+                            <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
+                            <% } %>
+    </div>
+</div>

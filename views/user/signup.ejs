@@ -283,6 +283,42 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        /* --- Error Alert Styling --- */
+        .error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .error-alert i {
+            font-size: 1.1rem;
+        }
+
+        .error-alert span {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -322,9 +358,13 @@
                 <div class="signup-header text-center lg:text-left">
                     <h2>Create Account</h2>
                     <p style="margin-bottom: 3px;">Be part of the tech revolution.</p>
-                    <% if (locals.error) { %>
-                        <div id="mainError" style="color: red; font-size: 1rem; margin-bottom: 20px; margin-top: 10px;">
-                            <%= error %>
+
+                    <% if (locals.error && error.length> 0) { %>
+                        <div class="error-alert">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>
+                                <%= error %>
+                            </span>
                         </div>
                         <% } %>
                 </div>
@@ -334,7 +374,7 @@
                         <div class="form-group full-width">
                             <label for="userName">User Name</label>
                             <div class="input-wrapper">
-                                <input type="text" id="userName" name="userName" placeholder="e.g. john" >
+                                <input type="text" id="userName" name="userName" placeholder="e.g. john">
                             </div>
                             <p id="UserNameError"
                                 style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;"></p>
@@ -342,7 +382,7 @@
                         <div class="form-group full-width">
                             <label for="email">Email Address</label>
                             <div class="input-wrapper">
-                                <input type="email" id="email" name="email" placeholder="john@example.com" >
+                                <input type="email" id="email" name="email" placeholder="john@example.com">
                             </div>
                             <p id="EmailError" style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;">
                             </p>
@@ -350,7 +390,7 @@
                         <div class="form-group">
                             <label for="password">Password</label>
                             <div class="input-wrapper" style="position: relative;">
-                                <input type="password" id="password" name="password" placeholder="••••••••" 
+                                <input type="password" id="password" name="password" placeholder="••••••••"
                                     style="padding-right: 40px;">
                                 <button type="button" onclick="togglePasswordVisibility('password', this)"
                                     style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: white; opacity: 0.7;">

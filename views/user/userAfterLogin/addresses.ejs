@@ -298,14 +298,11 @@
                                                             title="Edit Address">
                                                             <i class="fas fa-edit text-lg"></i>
                                                         </a>
-                                                        <form action="/user/addresses/<%= addr._id %>/delete"
-                                                            method="POST" class="inline">
-                                                            <button type="submit"
-                                                                class="text-gray-400 hover:text-red-500 transition-all duration-300"
-                                                                title="Delete Address">
-                                                                <i class="fas fa-trash-alt text-lg"></i>
-                                                            </button>
-                                                        </form>
+                                                            <form id="delete-form-<%= addr._id %>" action="/user/addresses/<%= addr._id %>/delete" method="POST" class="inline">
+                                                                <button type="button" onclick="confirmDelete('<%= addr._id %>')" class="text-gray-400 hover:text-red-500 transition-all">
+                                                                    <i class="fas fa-trash-alt text-lg"></i>
+                                                                </button>
+                                                            </form>
                                                     </div>
                                     </div>
                                     <% }) %>
@@ -338,13 +335,28 @@
 
         <%- include('../../partials/footer') %>
 
-            <%- include('../../partials/footer') %>
-
                 <!-- Hidden data for flash messages -->
                 <div id="flash-data" data-error="<%= (error && error.length > 0) ? error : '' %>"
                     data-success="<%= (success && success.length > 0) ? success : '' %>" style="display: none;"></div>
 
                 <script>
+                    function confirmDelete(addressId){
+                        Swal.fire({
+                            title:"Are you sure?",
+                            text:"This address will be delete permenently..!",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#FF5A1F",
+                            cancelButtonColor: "#d33",
+                            confirmButtonText: "Yes, delete it!",
+                            cancelButtonText: "No, keep it"
+                        }).then((result)=>{
+                            if(result.isConfirmed){
+                                document.getElementById(`delete-form-${addressId}`).submit();
+                            }
+                        })
+                    }
+
                     // SweetAlert2 Toast configuration
                     const Toast = Swal.mixin({
                         toast: true,
