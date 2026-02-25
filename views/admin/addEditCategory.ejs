@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Category</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Form Styling --- */
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.2rem 3rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .icon-preview {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item active">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/category" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Categories</a>
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Taxonomy</p>
+            <h1 class="text-3xl font-extrabold">
+                <%= locals.isEdit ? 'Update' : 'Add New' %> <span class="text-orange-500">Category</span>
+            </h1>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="mb-8 max-w-[800px] mx-auto">
+            <% if (error && error.length> 0) { %>
+                <div
+                    class="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p class="font-bold text-sm">
+                        <%= error %>
+                    </p>
+                </div>
+                <% } %>
+
+                    <% if (success && success.length> 0) { %>
+                        <div
+                            class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <i class="fas fa-check-circle"></i>
+                            <p class="font-bold text-sm">
+                                <%= success %>
+                            </p>
+                        </div>
+                        <% } %>
+        </div>
+
+        <form class="form-card" id="categoryForm"
+            action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
+            method="POST">
+            <div class="form-group">
+                <label class="form-label">Category Name</label>
+                <input type="text" name="categoryName" class="form-input" placeholder="e.g. Smart Watches"
+                    value="<%= locals.isEdit ? category.name : '' %>" required>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="form-group">
+                    <label class="form-label">FontAwesome Icon Class</label>
+                    <div class="flex gap-4">
+                        <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock" id="iconInput"
+                            value="<%= locals.isEdit ? category.icon : 'fas fa-tag' %>">
+                        <div class="icon-preview" id="iconPreview">
+                            <i class="<%= locals.isEdit ? category.icon : 'fas fa-tag' %>"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Visibility Status</label>
+                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 h-[62px]">
+                        <label class="relative inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isActive) ? ''
+                                : 'checked' %> class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                            </div>
+                        </label>
+                        <div>
+                            <p class="font-bold text-xs" id="statusText">
+                                <%= (locals.isEdit && !category.isActive) ? 'Blocked' : 'Active & Listed' %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" class="form-input h-32" style="resize: none;"
+                    placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <%= locals.isEdit ? 'Update Category' : 'Create Category' %>
+            </button>
+        </form>
+    </main>
+
+    <script>
+        const iconInput = document.getElementById('iconInput');
+        const iconPreview = document.getElementById('iconPreview');
+        const statusCheckbox = document.querySelector('input[name="isActive"]');
+        const statusText = document.getElementById('statusText');
+
+        iconInput.addEventListener('input', (e) => {
+            const val = e.target.value || 'fas fa-tag';
+            iconPreview.innerHTML = `<i class="${val}"></i>`;
+        });
+
+        statusCheckbox.addEventListener('change', (e) => {
+            statusText.innerText = e.target.checked ? 'Active & Listed' : 'Blocked';
+        });
+
+        // Auto-hide alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.bg-red-500\\/10, .bg-emerald-500\\/10');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>

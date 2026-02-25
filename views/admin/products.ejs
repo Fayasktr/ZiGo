@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Product Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Reuse Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Content Layout --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        .btn-add {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-add:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+        }
+
+        /* --- Table Styling --- */
+        .products-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2rem;
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            margin-bottom: 2rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        select.search-bar {
+            cursor: pointer;
+            color: white;
+        }
+
+        select.search-bar option {
+            background: #FFFFFF;
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .product-table th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.4;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .product-table td {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .product-thumb {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .product-thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* --- Toggle Switch --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-orange);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .action-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-orange);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item active">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="page-header">
+            <div>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Catalog</p>
+                <h1 class="text-3xl font-extrabold">Product <span class="text-orange-500">Management</span></h1>
+            </div>
+            <a href="/admin/products/add" class="btn-add">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
+        </header>
+
+        <div class="products-card">
+            <div class="flex justify-between items-center mb-6">
+                <input type="text" placeholder="Search products by name or SKU..." class="search-bar">
+                <div class="flex gap-4">
+                    <select class="search-bar !mb-0 !max-w-[150px]">
+                        <option>All Categories</option>
+                        <option>SmartPhone</option>
+                        <option>Watches</option>
+                        <option>Headset</option>
+                        <option>PowerBank</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Base Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-4">
+                                <div class="product-thumb"><img src="/public/landing/neo2.png" alt=""></div>
+                                <div>
+                                    <p class="font-bold">ZiGo Neo 1 Flagship</p>
+                                    <p class="text-[10px] opacity-40 uppercase tracking-widest">SKU: ZIGO-N1-BLK</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="text-sm opacity-60">Smartphones</span></td>
+                        <td><span class="font-black">₹82,339</span></td>
+                        <td><span class="font-bold">42 Units</span></td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">Listed</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2 justify-end">
+                                <a href="/admin/products/edit" class="action-icon" title="Edit"><i
+                                        class="fas fa-pen text-xs"></i></a>
+                                <a href="#" class="action-icon" title="View Detail"><i
+                                        class="fas fa-eye text-xs"></i></a>
+                                <a href="#" class="action-icon" title="Delete"><i
+                                        class="fas fa-trash text-xs text-red-500"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-4">
+                                <div class="product-thumb"><img src="/public/landing/watch_pro.png" alt=""></div>
+                                <div>
+                                    <p class="font-bold">ZiGo Watch S Edition</p>
+                                    <p class="text-[10px] opacity-40 uppercase tracking-widest">SKU: ZIGO-W-GRN</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="text-sm opacity-60">Smart Watches</span></td>
+                        <td><span class="font-black">₹22,805</span></td>
+                        <td><span class="font-bold text-red-500">2 Units</span></td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">Unlisted</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2 justify-end">
+                                <a href="#" class="action-icon"><i class="fas fa-pen text-xs"></i></a>
+                                <a href="#" class="action-icon"><i class="fas fa-eye text-xs"></i></a>
+                                <a href="#" class="action-icon"><i class="fas fa-trash text-xs text-red-500"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="flex justify-between items-center mt-12 bg-white/5 p-6 rounded-2xl">
+                <p class="text-xs opacity-40 font-bold uppercase tracking-widest">Showing 1-10 of 124 Results</p>
+                <div class="flex gap-2">
+                    <button class="action-icon"><i class="fas fa-chevron-left"></i></button>
+                    <button class="action-icon !bg-orange-500/20 !text-orange-500 font-bold">1</button>
+                    <button class="action-icon">2</button>
+                    <button class="action-icon"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

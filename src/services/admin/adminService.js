@@ -26,7 +26,6 @@ export const usersList = async (page, limit, search) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
-    console.log("hello")
     const totalCountOfUsers = await userModel.countDocuments({ email: { $nin: "admin@gmail.com" } });
     return { users, totalCountOfUsers };
 }

@@ -1,6 +1,5 @@
 import User from "../models/userModel.js"
 const isLogin = (req, res, next) => {
-    console.log(req.user)
     if (req.session.user || req.isAuthenticated() ) {
         return res.redirect("/ZiGo.com");
     }
@@ -45,7 +44,6 @@ const checkBlocked = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log("Error in checkBlocked middleware:", error);
         next();
     }
 }

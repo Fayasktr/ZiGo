@@ -13,7 +13,6 @@ export const adminAccess = asynchandler(async (req, res) => {
     try {
         const { adminMail, password } = req.body;
         const checkAdminAuth = await adminService.accessToAdmin(adminMail, password);
-        console.log(checkAdminAuth)
         req.session.admin = {
             adminMail: adminMail,
             adminName: checkAdminAuth.adminMail
@@ -51,7 +50,6 @@ export const userManagementPage = asynchandler(async (req, res) => {
             search
         });
     } catch (error) {
-        console.log(error)
         req.flash("error", error.message);
         res.redirect("/admin/dashbord");
     }

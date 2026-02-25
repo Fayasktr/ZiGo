@@ -1,6 +1,5 @@
 const redirectIfLoggedIn=(req,res,next)=>{
     if(req.session.admin){
-        console.log("admi und")
         return res.redirect("/admin/dashbord")
     }
     next()

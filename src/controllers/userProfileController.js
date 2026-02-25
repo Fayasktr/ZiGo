@@ -170,7 +170,6 @@ export const EditAddress = asynchandler(async (req, res) => {
     try {
         const addressData = req.body;
         const addressId = req.params.id;
-        console.log("address data to edit: ", addressData);
         await addressService.editAddress(addressId, addressData);
         return res.status(200).json({ success: true, message: "Address updated successfully" });
     } catch (error) {
