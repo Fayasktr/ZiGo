@@ -43,7 +43,7 @@ export const userManagementPage = asynchandler(async (req, res) => {
         }
         res.render("admin/userManagement", {
             users,
-            totalCountOfUsers,
+            totalCount: totalCountOfUsers,
             currentPage: page,
             totalPages,
             limit,

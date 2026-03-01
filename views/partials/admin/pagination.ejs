@@ -60,45 +60,52 @@
     }
 </style>
 
-<div class="pagination-bar">
-    <div class="pagination-info">
-        
-        SHOWING <span>
-            <%= (currentPage - 1) * limit + 1 %>-<%= Math.min(currentPage * limit, totalCountOfUsers) %>
-        </span> OF <span>
-            <%= totalCountOfUsers %>
-        </span> RESULTS
-    </div>
+<% // Use the full names you prefer const currentPage=locals.currentPage || 1; const limit=locals.limit || 10; const
+    search=locals.search || "" ; // Handle different count variables from different pages const
+    totalItems=locals.totalCount || 0; const totalPages=locals.totalPages ||
+    Math.ceil(totalItems / limit) || 1; %>
 
-    <div class="pagination-buttons">
+    <div class="pagination-bar">
         <div class="pagination-info">
             SHOWING <span>
-            <%= currentPage %>
-        </span> OF <span>
-            <%= Math.ceil(totalCountOfUsers/10) %>
-        </span> PAGE
+                <%= totalItems> 0 ? (currentPage - 1) * limit + 1 : 0 %>-<%= Math.min(currentPage * limit, totalItems)
+                        %>
+            </span> OF <span>
+                <%= totalItems %>
+            </span> RESULTS
         </div>
-        <!-- Previous Page -->
-        <% if (currentPage> 1) { %>
-            <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-            <% } else { %>
-                <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
-                <% } %>
 
-                    <!-- Simplified Current Page Number -->
-                    <a href="#" class="page-btn active">
-                        <%= currentPage %>
-                    </a>
+        <div class="pagination-buttons">
+            <div class="pagination-info">
+                SHOWING <span>
+                    <%= currentPage %>
+                </span> OF <span>
+                    <%= totalPages %>
+                </span> PAGES
+            </div>
 
-                    <!-- Next Page -->
-                    <% if (currentPage < totalPages) { %>
-                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
-                            <i class="fas fa-chevron-right"></i>
+            <!-- Previous Page -->
+            <% if (currentPage> 1) { %>
+                <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <% } else { %>
+                    <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
+                    <% } %>
+
+                        <!-- Current Page Number -->
+                        <a href="#" class="page-btn active">
+                            <%= currentPage %>
                         </a>
-                        <% } else { %>
-                            <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
-                            <% } %>
+
+                        <!-- Next Page -->
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>"
+                                class="page-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <% } else { %>
+                                <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
+                                <% } %>
+        </div>
     </div>
-</div>

@@ -7,6 +7,7 @@
     <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Category</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -269,17 +270,17 @@
             <div class="form-group">
                 <label class="form-label">Category Name</label>
                 <input type="text" name="categoryName" class="form-input" placeholder="e.g. Smart Watches"
-                    value="<%= locals.isEdit ? category.name : '' %>" required>
+                    value="<%= locals.isEdit ? category.categoryName : '' %>" required>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="form-group">
                     <label class="form-label">FontAwesome Icon Class</label>
                     <div class="flex gap-4">
-                        <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock" id="iconInput"
-                            value="<%= locals.isEdit ? category.icon : 'fas fa-tag' %>">
+                        <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock"
+                            id="iconInput" value="<%= locals.isEdit ? category.iconClass : '' %>">
                         <div class="icon-preview" id="iconPreview">
-                            <i class="<%= locals.isEdit ? category.icon : 'fas fa-tag' %>"></i>
+                            <i class="<%= locals.isEdit ? category.iconClass : 'fas fa-tag' %>"></i>
                         </div>
                     </div>
                 </div>
@@ -288,7 +289,7 @@
                     <label class="form-label">Visibility Status</label>
                     <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 h-[62px]">
                         <label class="relative inline-flex items-center cursor-pointer group">
-                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isActive) ? ''
+                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isListed) ? ''
                                 : 'checked' %> class="sr-only peer">
                             <div
                                 class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
@@ -296,7 +297,7 @@
                         </label>
                         <div>
                             <p class="font-bold text-xs" id="statusText">
-                                <%= (locals.isEdit && !category.isActive) ? 'Blocked' : 'Active & Listed' %>
+                                <%= (locals.isEdit && !category.isListed) ? 'Blocked' : 'Active & Listed' %>
                             </p>
                         </div>
                     </div>
@@ -309,7 +310,8 @@
                     placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="button" onclick="handleCategorySubmit('<%= locals.isEdit ? category._id : '' %>')"
+                class="btn-submit">
                 <%= locals.isEdit ? 'Update Category' : 'Create Category' %>
             </button>
         </form>
@@ -318,7 +320,7 @@
     <script>
         const iconInput = document.getElementById('iconInput');
         const iconPreview = document.getElementById('iconPreview');
-        const statusCheckbox = document.querySelector('input[name="isActive"]');
+        const statusCheckbox = document.querySelector('input[name="isListed"]');
         const statusText = document.getElementById('statusText');
 
         iconInput.addEventListener('input', (e) => {
@@ -330,6 +332,67 @@
             statusText.innerText = e.target.checked ? 'Active & Listed' : 'Blocked';
         });
 
+        async function handleCategorySubmit(categoryId) {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data._id = categoryId; // Pass _id for the controller log
+            data.isListed = form.isListed.checked ? "on" : "off"; // Match service logic
+
+            if (categoryId) {
+                try {
+                    const response = await fetch(`/admin/category/edit/${categoryId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    })
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = "/admin/category";
+                        Swal.fire({
+                            icon: "success",
+                            title: "Update category",
+                            text: "updated successfully...",
+                            timer: 1500
+                        })
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error..",
+                        text: error.message,
+                        timer: 1500
+                    })
+                }
+            } else {
+                try {
+                    const response = await fetch("/admin/category/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = "/admin/category";
+                        Swal.fire({
+                            icon: "success",
+                            title: "Add category",
+                            text: "category added seccesfully..",
+                            timer: 1500
+                        })
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error..",
+                        text: error.message,
+                        timer: 1500
+                    })
+                }
+                console.log('Adding new category:', data);
+            }
+        }
+
         // Auto-hide alerts
         setTimeout(() => {
             const alerts = document.querySelectorAll('.bg-red-500\\/10, .bg-emerald-500\\/10');
@@ -337,7 +400,7 @@
                 alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                 alert.style.opacity = '0';
                 alert.style.transform = 'translateY(-10px)';
-                setTimeout(() => alert.remove(), 500);
+                setTimeout(() => alert.remove(), 1000);
             });
         }, 5000);
     </script>

@@ -1,20 +1,56 @@
 import categoryModel from "../../models/categoryModel.js";
 
-export const categoryData = async()=>await categoryModel.find({});
+export const categoryData = async (page,limit,search) => {
+    const skip =(page-1) *limit;
+    const category=await categoryModel.find({categoryName:{$regex:search,$options:"i"}})
+    .sort({createdAt:-1})
+    .skip(skip)
+    .limit(limit);
+    const totalCountOfCategory =await categoryModel.countDocuments();
+    return {category, totalCountOfCategory};
+}
 
-export const addNewCategory=async(categoryData)=>{
-    const oldCategory= await categoryModel.find({categoryName:categoryData.categoryName});
-    if(oldCategory.length>0){
-        throw new Error ("this category already added");
+
+export const addNewCategory = async (categoryData) => {
+    const oldCategory = await categoryModel.find({ categoryName: categoryData.categoryName });
+    if (oldCategory.length > 0) {
+        throw new Error("this category already added");
     }
-    if(!categoryData.categoryName || !categoryData.iconClass || !categoryData.description ){
+    if (!categoryData.categoryName || !categoryData.iconClass) {
         throw new Error("Must need all elements");
     }
     return await categoryModel.create({
-        categoryName:categoryData.categoryName,
-        iconClass:categoryData.iconClass,
-        description:categoryData.description,
-        isListed:categoryData.isListed === "on"?true:false
+        categoryName: categoryData.categoryName,
+        iconClass: categoryData.iconClass,
+        description: categoryData.description,
+        isListed: categoryData.isListed === "on" ? true : false
     })
 }
 
+export const listAndUnlistCategory = async (categoryId, action) => {
+    const act = action === "Unblock" ? true : false;
+    await categoryModel.findOneAndUpdate({ _id: categoryId }, { $set: { isListed: act } });
+}
+
+export const editCategoryPage = async (categoryId) => {
+    const categoryData = await categoryModel.findById(categoryId);
+    if (!categoryData) {
+        throw new Error("category not found");
+    }
+    return categoryData;
+}
+
+export const updateCategory = async (categoryData) => {
+    const category = await categoryModel.findOneAndUpdate(
+        { _id: categoryData._id },
+        { 
+            categoryName: categoryData.categoryName,
+            iconClass: categoryData.iconClass,
+            description: categoryData.description,
+            isListed: categoryData.isListed === "on" ? true : false
+        }
+    );
+    if(!category){
+        throw new Error("there is no category on this id");
+    }
+}

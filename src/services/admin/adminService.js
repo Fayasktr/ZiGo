@@ -26,7 +26,7 @@ export const usersList = async (page, limit, search) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
-    const totalCountOfUsers = await userModel.countDocuments({ email: { $nin: "admin@gmail.com" } });
+    const totalCountOfUsers = await userModel.countDocuments({ email: { $nin: "admin@gmail.com" }, $or: [{ userName: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] });
     return { users, totalCountOfUsers };
 }
 
