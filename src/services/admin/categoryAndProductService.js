@@ -56,7 +56,13 @@ export const updateCategory = async (categoryData) => {
     }
 }
 
+//product service
 export const productPage = async(page,limit,search)=>{
-    const products=await productModel.find();
-    
+    let skip=(page-1)*limit;
+    const products=await productModel.find({productName:{$regex:search,$options:"i"}})
+        .sort({createdAt:-1})
+        .skip(skip)
+        .limit(limit);
+    let totalCountOfProducts=await productModel.countDocuments();
+    return {products,totalCountOfProducts}
 }

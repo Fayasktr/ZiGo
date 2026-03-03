@@ -80,14 +80,18 @@ export const productPage =asynchandler( async(req,res)=>{
         let page=parseInt(req.query.page)||1;
         let search=req.query.search || "";
         let limit=10;
-        await serviceOfProductAndCategory(page,limit,search);
-
+        let {products, totalCountOfProducts}=await serviceOfProductAndCategory.productPage(page,limit,search);
+        let totalPages=Math.ceil(totalCountOfProducts/limit)
         res.render("admin/products",{
             products,
             totalCount:totalCountOfProducts,
-            
+            currentPage:page,
+            totalPages,
+            limit,
+            search
         });
     } catch (error) {
+        console.log(error)
         req.flash("error",error.message);
         res.redirect("/admin/dashbord");
     }

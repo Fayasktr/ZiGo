@@ -347,70 +347,75 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-4">
-                                <div class="product-thumb"><img src="/public/landing/neo2.png" alt=""></div>
-                                <div>
-                                    <p class="font-bold">ZiGo Neo 1 Flagship</p>
-                                    <p class="text-[10px] opacity-40 uppercase tracking-widest">SKU: ZIGO-N1-BLK</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="text-sm opacity-60">Smartphones</span></td>
-                        <td><span class="font-black">₹82,339</span></td>
-                        <td><span class="font-bold">42 Units</span></td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">Listed</span>
-                        </td>
-                        <td>
-                            <div class="flex gap-2 justify-end">
-                                <a href="/admin/products/edit" class="action-icon" title="Edit"><i
-                                        class="fas fa-pen text-xs"></i></a>
-                                <a href="#" class="action-icon" title="View Detail"><i
-                                        class="fas fa-eye text-xs"></i></a>
-                                <a href="#" class="action-icon" title="Delete"><i
-                                        class="fas fa-trash text-xs text-red-500"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-4">
-                                <div class="product-thumb"><img src="/public/landing/watch_pro.png" alt=""></div>
-                                <div>
-                                    <p class="font-bold">ZiGo Watch S Edition</p>
-                                    <p class="text-[10px] opacity-40 uppercase tracking-widest">SKU: ZIGO-W-GRN</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="text-sm opacity-60">Smart Watches</span></td>
-                        <td><span class="font-black">₹22,805</span></td>
-                        <td><span class="font-bold text-red-500">2 Units</span></td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                            <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">Unlisted</span>
-                        </td>
-                        <td>
-                            <div class="flex gap-2 justify-end">
-                                <a href="#" class="action-icon"><i class="fas fa-pen text-xs"></i></a>
-                                <a href="#" class="action-icon"><i class="fas fa-eye text-xs"></i></a>
-                                <a href="#" class="action-icon"><i class="fas fa-trash text-xs text-red-500"></i></a>
-                            </div>
-                        </td>
-                    </tr>
+                    <% if (products && products.length> 0) { %>
+                        <% products.forEach(product=> { %>
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-4">
+                                        <div class="product-thumb">
+                                            <img src="<%= (product.variants && product.variants[0] && product.variants[0].images) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>"
+                                                alt="<%= product.productName %>">
+                                        </div>
+                                        <div>
+                                            <p class="font-bold">
+                                                <%= product.productName %>
+                                            </p>
+                                            <p class="text-[10px] opacity-40 uppercase tracking-widest">
+                                                ID: <%= product._id.toString().slice(-6).toUpperCase() %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="text-sm opacity-60">
+                                        <%= product.category ? product.category.categoryName : 'Uncategorized' %>
+                                    </span></td>
+                                <td><span class="font-black">₹<%= (product.variants && product.variants[0]) ?
+                                            product.variants[0].price : '0' %></span></td>
+                                <td>
+                                    <% let totalStock=0; if (product.variants && Array.isArray(product.variants)) {
+                                        totalStock=product.variants.reduce((sum, variant)=> sum + (variant.stock || 0),
+                                        0);
+                                        }
+                                        %>
+                                        <span class="font-bold <%= totalStock < 5 ? 'text-red-500' : '' %>">
+                                            <%= totalStock %> Units
+                                        </span>
+                                </td>
+                                <td>
+                                    <label class="switch">
+                                        <input type="checkbox" <%=product.isListed ? 'checked' : '' %>
+                                        onchange="toggleProductStatus('<%= product._id %>', this.checked)">
+                                            <span class="slider"></span>
+                                    </label>
+                                    <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">
+                                        <%= product.isListed ? 'Listed' : 'Unlisted' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="flex gap-2 justify-end">
+                                        <a href="/admin/products/edit/<%= product._id %>" class="action-icon"
+                                            title="Edit"><i class="fas fa-pen text-xs"></i></a>
+                                        <a href="#" class="action-icon" title="View Detail"><i
+                                                class="fas fa-eye text-xs"></i></a>
+                                        <button onclick="deleteProduct('<%= product._id %>')" class="action-icon"
+                                            title="Delete"><i class="fas fa-trash text-xs text-red-500"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center py-20 opacity-40">No products found.</td>
+                                    </tr>
+                                    <% } %>
                 </tbody>
             </table>
 
         </div>
+        <%- include("../partials/admin/pagination.ejs") %>
     </main>
+
+
 </body>
 
 </html>
