@@ -73,3 +73,22 @@ export const updateCategory = asynchandler(async (req, res) => {
         res.status(400).json({ success: false, messge: error.message });
     }
 })
+
+//product controllers
+export const productPage =asynchandler( async(req,res)=>{
+    try {
+        let page=parseInt(req.query.page)||1;
+        let search=req.query.search || "";
+        let limit=10;
+        await serviceOfProductAndCategory(page,limit,search);
+
+        res.render("admin/products",{
+            products,
+            totalCount:totalCountOfProducts,
+            
+        });
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/dashbord");
+    }
+})

@@ -1,4 +1,5 @@
 import categoryModel from "../../models/categoryModel.js";
+import productModel from "../../models/productModel.js";
 
 export const categoryData = async (page,limit,search) => {
     const skip =(page-1) *limit;
@@ -53,4 +54,9 @@ export const updateCategory = async (categoryData) => {
     if(!category){
         throw new Error("there is no category on this id");
     }
+}
+
+export const productPage = async(page,limit,search)=>{
+    const products=await productModel.find();
+    
 }
