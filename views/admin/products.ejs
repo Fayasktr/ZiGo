@@ -7,6 +7,7 @@
     <title>ZiGo Admin | Product Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -254,6 +255,7 @@
         .action-icon {
             width: 36px;
             height: 36px;
+
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             display: flex;
@@ -266,6 +268,91 @@
         .action-icon:hover {
             background: rgba(255, 255, 255, 0.1);
             color: var(--primary-orange);
+        }
+
+        /* --- Search Rows Styles --- */
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .search-icon {
+            left: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            border-radius: 14px;
+            color: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-input:focus~.search-icon {
+            color: var(--primary-orange);
+        }
+
+        .btn-search-panel {
+            padding: 0.85rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search-submit {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-search-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-search-clear {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .btn-search-clear:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
     </style>
 </head>
@@ -316,15 +403,28 @@
                 <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Catalog</p>
                 <h1 class="text-3xl font-extrabold">Product <span class="text-orange-500">Management</span></h1>
             </div>
-            <a href="/admin/products/add" class="btn-add">
+            <a href="/admin/addProducts" class="btn-add">
                 <i class="fas fa-plus"></i> Add New Product
             </a>
         </header>
 
         <div class="products-card">
-            <div class="flex justify-between items-center mb-6">
-                <input type="text" placeholder="Search products by name or SKU..." class="search-bar">
-                <div class="flex gap-4">
+            <div class="search-row">
+                <div class="search-wrapper">
+                    <input type="text" id="productSearch" value="<%= search %>" placeholder="Search products by name..."
+                        class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+
+                <button id="searchBtn" class="btn-search-panel btn-search-submit">
+                    <i class="fas fa-search"></i> SEARCH
+                </button>
+
+                <button id="clearSearch" class="btn-search-panel btn-search-clear">
+                    <i class="fas fa-redo"></i> CLEAR
+                </button>
+
+                <!-- <div class="flex gap-4">
                     <select class="search-bar !mb-0 !max-w-[150px]">
                         <option>All Categories</option>
                         <option>SmartPhone</option>
@@ -332,7 +432,7 @@
                         <option>Headset</option>
                         <option>PowerBank</option>
                     </select>
-                </div>
+                </div> -->
             </div>
 
             <table class="product-table">
@@ -343,7 +443,7 @@
                         <th>Base Price</th>
                         <th>Stock</th>
                         <th>Status</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -384,7 +484,7 @@
                                 <td>
                                     <label class="switch">
                                         <input type="checkbox" <%=product.isListed ? 'checked' : '' %>
-                                        onchange="toggleProductStatus('<%= product._id %>', this.checked)">
+                                        onchange="toggleProductStatus('<%= product._id %>', this)">
                                             <span class="slider"></span>
                                     </label>
                                     <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">
@@ -395,10 +495,7 @@
                                     <div class="flex gap-2 justify-end">
                                         <a href="/admin/products/edit/<%= product._id %>" class="action-icon"
                                             title="Edit"><i class="fas fa-pen text-xs"></i></a>
-                                        <a href="#" class="action-icon" title="View Detail"><i
-                                                class="fas fa-eye text-xs"></i></a>
-                                        <button onclick="deleteProduct('<%= product._id %>')" class="action-icon"
-                                            title="Delete"><i class="fas fa-trash text-xs text-red-500"></i></button>
+
                                     </div>
                                 </td>
                             </tr>
@@ -416,6 +513,70 @@
     </main>
 
 
+    <script>
+        const productSearch = document.getElementById('productSearch');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearBtn = document.getElementById('clearSearch');
+
+        function triggerSearch() {
+            const query = productSearch.value.trim();
+            window.location.href = `/admin/products?page=1&search=${query}`;
+        }
+
+        searchBtn.addEventListener('click', triggerSearch);
+
+        clearBtn.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("search");
+            url.searchParams.set("page", "1");
+            window.location.href = url.toString();
+        });
+
+        productSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') triggerSearch();
+        });
+
+        async function toggleProductStatus(id, element) {
+            const checked = element.checked;
+            try {
+                let update = await fetch(`/admin/products/${id}/${checked}` , {
+                    method:"PATCH",
+                    headers:{'Content-Type':'application/json'}
+                })
+
+                const result = await update.json();
+                if (update.ok && result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: result.message,
+                        toast: true,
+                        position: 'top',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                } else {
+                    throw new Error(result.message || "Action failed");
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Action failed",
+                    text: error.message || "Could not change status",
+                    toast: true,
+                    position: 'top',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                element.checked = !checked;
+            }
+            console.log(`Toggling status for ${id}: ${checked}`);
+        }
+
+        function deleteProduct(id) {
+            // Placeholder for delete logic
+            console.log(`Deleting product: ${id}`);
+        }
+    </script>
 </body>
 
 </html>

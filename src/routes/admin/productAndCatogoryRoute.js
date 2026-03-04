@@ -12,6 +12,8 @@ router.put("/admin/category/edit/:id",cateAndProdController.updateCategory);
 
 //products
 router.get("/admin/products",cateAndProdController.productPage);
+router.patch("/admin/products/:id/:isListed",cateAndProdController.listAndUnlistProduct);
+router.get("/admin/addProducts",cateAndProdController.addProductPage);
 
 const categoryAndProductRoute = router;
 export default categoryAndProductRoute;

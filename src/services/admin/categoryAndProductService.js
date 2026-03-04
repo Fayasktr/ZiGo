@@ -66,3 +66,11 @@ export const productPage = async(page,limit,search)=>{
     let totalCountOfProducts=await productModel.countDocuments();
     return {products,totalCountOfProducts}
 }
+
+export const listAndUnlistProduct =async(productId,isListed)=>{
+    const update=await productModel.findByIdAndUpdate(productId,
+        {isListed},
+        {new:true}
+    );
+    return update;
+}

@@ -96,3 +96,26 @@ export const productPage =asynchandler( async(req,res)=>{
         res.redirect("/admin/dashbord");
     }
 })
+
+export const addProductPage =asynchandler (async(req,res)=>{
+    try {
+        res.render("admin/addEditProduct");
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/dashboard");
+    }
+})
+
+export const listAndUnlistProduct = asynchandler(async(req,res)=>{
+    try {
+        const productId=req.params.id;
+        const isListed=req.params.isListed=="true";
+        console.log(isListed)
+        const update=await serviceOfProductAndCategory.listAndUnlistProduct(productId,isListed);
+        console.log(update.isListed)
+        const list=update.isListed==true?"listed":"unlisted";
+        res.status(200).json({success:true, message:`product ${list}`});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message});
+    }
+});
