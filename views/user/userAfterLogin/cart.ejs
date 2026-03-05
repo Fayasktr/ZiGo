@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | Your Shopping Cart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--off-white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Cart Container --- */
+        .cart-container {
+            padding: 140px 5% 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 3rem;
+        }
+
+        @media (max-width: 1024px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cart-item {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--gray-light);
+            transition: var(--transition);
+        }
+
+        .cart-item:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .item-img {
+            width: 120px;
+            height: 120px;
+            background: var(--off-white);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .item-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-navy);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .item-meta {
+            font-size: 0.85rem;
+            color: rgba(30, 41, 59, 0.6);
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--off-white);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+        }
+
+        .qty-btn {
+            background: none;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--primary-orange);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .qty-btn:hover {
+            background: rgba(255, 90, 31, 0.1);
+            border-radius: 50%;
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .item-price-block {
+            text-align: right;
+            min-width: 140px;
+        }
+
+        .item-price {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+        }
+
+        .remove-btn {
+            color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .remove-btn:hover {
+            background: #ff4757;
+            color: white;
+        }
+
+        /* --- Summary Card --- */
+        .summary-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--gray-light);
+            height: min-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .summary-total {
+            border-top: 2px dashed var(--gray-light);
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-orange);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: block;
+            text-align: center;
+        }
+
+        .checkout-btn:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .coupon-box {
+            margin-top: 2rem;
+            background: var(--off-white);
+            padding: 1.2rem;
+            border-radius: 16px;
+        }
+
+        .coupon-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--gray-light);
+            margin-bottom: 0.8rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .coupon-input:focus {
+            border-color: var(--primary-orange);
+        }
+
+        .coupon-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--dark-navy);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .coupon-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/header') %>
+
+        <main class="cart-container">
+            <h1 class="text-4xl font-extrabold mb-10">Shopping <span class="text-orange-500">Cart</span></h1>
+
+            <div class="cart-layout">
+                <!-- Product List -->
+                <div class="cart-items">
+                    <% if (typeof cart !=='undefined' && cart && cart.items && cart.items.length> 0) { %>
+                        <% cart.items.forEach(item=> { %>
+                            <div class="cart-item" data-item-id="<%= item._id %>">
+                                <div class="item-img"
+                                    onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
+                                    <img src="/<%= (item.productId.variants && item.productId.variants[0]) ? item.productId.variants[0].images[0] : 'public/landing/no-image.png' %>"
+                                        alt="<%= item.productId.productName %>">
+                                </div>
+                                <div class="item-details">
+                                    <h3 class="item-title"
+                                        onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
+                                        <%= item.productId.productName %>
+                                    </h3>
+                                    <div class="item-meta">
+                                        <span>Brand: <%= item.productId.brand || 'ZiGo' %></span>
+                                        <span>Category: <%= (item.productId.category) ?
+                                                item.productId.category.categoryName : 'Electronics' %></span>
+                                    </div>
+                                    <div class="flex items-center mt-4 gap-6">
+                                        <div class="qty-control">
+                                            <button class="qty-btn"
+                                                onclick="updateQuantity('<%= item.productId._id %>', -1, <%= item.quantity %>)">-</button>
+                                            <span class="font-bold">
+                                                <%= item.quantity %>
+                                            </span>
+                                            <button class="qty-btn"
+                                                onclick="updateQuantity('<%= item.productId._id %>', 1, <%= item.quantity %>)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item-price-block">
+                                    <p class="item-price">₹<%= (item.price * item.quantity).toLocaleString() %>
+                                    </p>
+                                    <button class="remove-btn mt-4"
+                                        onclick="removeFromCart('<%= item.productId._id %>')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <% }) %>
+                                <% } else { %>
+                                    <div
+                                        class="bg-white p-12 rounded-[32px] border border-dashed border-gray-300 text-center">
+                                        <div
+                                            class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                                            <i class="fas fa-shopping-cart text-3xl"></i>
+                                        </div>
+                                        <h2 class="text-2xl font-bold mb-4">Your cart is empty</h2>
+                                        <p class="text-gray-500 mb-8">Looks like you haven't added anything to your cart
+                                            yet.</p>
+                                        <a href="/shop"
+                                            class="bg-orange-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-orange-600 transition-all inline-block">
+                                            Start Shopping
+                                        </a>
+                                    </div>
+                                    <% } %>
+                </div>
+
+                <!-- Sidebar Summary -->
+                <div class="summary-card">
+                    <h2 class="summary-title">Order Summary <span>(<%= (typeof cart !=='undefined' && cart ) ?
+                                cart.items.length : 0 %>)</span></h2>
+
+                    <div class="space-y-4">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span class="font-bold">₹<%= (typeof cart !=='undefined' && cart) ?
+                                    cart.totalPrice.toLocaleString() : '0.00' %></span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Estimated Shipping</span>
+                            <span class="text-green-500 font-bold">FREE</span>
+                        </div>
+                        <% let subtotal=(typeof cart !=='undefined' && cart) ? cart.totalPrice : 0; %>
+                            <% let tax=subtotal * 0.18; %>
+                                <div class="summary-row">
+                                    <span>Tax (GST 18%)</span>
+                                    <span class="font-bold">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits:
+                                            2, maximumFractionDigits: 2}) %></span>
+                                </div>
+
+                                <div class="summary-total">
+                                    <span>Total</span>
+                                    <span>₹<%= (subtotal + tax).toLocaleString(undefined, {minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2}) %></span>
+                                </div>
+                    </div>
+
+                    <a href="/checkout" class="checkout-btn">
+                        Proceed to Checkout
+                    </a>
+
+                    <div class="coupon-box">
+                        <p class="text-sm font-bold mb-3 opacity-60">PROMO CODE</p>
+                        <input type="text" placeholder="Enter code" class="coupon-input">
+                        <button class="coupon-btn">Apply Coupon</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <%- include('../../partials/footer') %>
+
+            <script>
+                // Placeholder for the logic you will implement
+                async function updateQuantity(productId, change, currentQty) {
+                    console.log('Update quantity:', productId, change);
+                    // You can implement the fetch call here
+                }
+
+                async function removeFromCart(productId) {
+                    const result = await Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You want to remove this item from cart?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#FF5A1F',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, remove it!'
+                    });
+
+                    if (result.isConfirmed) {
+                        console.log('Remove product:', productId);
+                        // You can implement the fetch call here
+                    }
+                }
+            </script>
+</body>
+
+</html>
