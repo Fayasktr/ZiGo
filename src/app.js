@@ -4,6 +4,7 @@ import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
 import adminRoute from "./routes/admin/adminRoute.js";
 import categoryAndProductRoute from "./routes/admin/productAndCatogoryRoute.js";
+import shopRoute from "./routes/shopRoute.js";
 import path from 'path';
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(shopRoute)
 app.use(adminRoute);
 app.use(authRoute);
 app.use(userRoute);

@@ -33,5 +33,6 @@ router.put("/user/addresses/:id/edit", userProfile.EditAddress);
 router.get("/user/addresses/:id/setDefault", userProfile.setDefault);
 router.post("/user/addresses/:id/delete", userProfile.deleteAddress);
 
+router.get("/user/wishlist",userProfile.wishlistPage);
 
 export default router;

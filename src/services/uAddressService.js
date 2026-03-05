@@ -6,6 +6,7 @@ import { hashPassword } from "../utils/hashPassword.js";
 import { GenerateOTP } from "../utils/otp.js"
 import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
+import wishlistModel from "../models/wishlistModel.js";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -82,7 +83,7 @@ export const addAddress = async (userEmail, addressData) => {
         throw new Error("there is now user found ");
     }
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
-    
+
     let shouldBeDefault = addressData.isDefault || !defaultAddres;
     if(shouldBeDefault && defaultAddres){
         await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
@@ -148,4 +149,11 @@ export const deleteAddress = async (userId, addressId) => {
         throw new Error("address already deleted..");
     }
     return 0;
+}
+
+export const wishlistPage = async (userId) => {
+    return await wishlistModel.find({ userId }).populate({
+        path: 'productId',
+        populate: { path: 'category' }
+    });
 }

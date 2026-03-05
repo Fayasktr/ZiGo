@@ -44,6 +44,9 @@ const productSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"category"
     },
+    basePrice:{
+        type:Number
+    },
     images:{
         type:[String],
         validate:{
