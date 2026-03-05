@@ -205,7 +205,6 @@ export const deleteAddress = asynchandler(async (req, res) => {
 
 export const wishlistPage=asynchandler(async(req,res)=>{
     try {
-        console.log("wish")
         const userId = req.session.user._id || req.user._id;
         const wishlist = await addressService.wishlistPage(userId);
         res.render("user/userAfterLogin/wishlist", { wishlist, user: req.session.user || req.user });
