@@ -202,3 +202,34 @@ export const deleteAddress = asynchandler(async (req, res) => {
     }
 })
 
+<<<<<<< Updated upstream
+=======
+
+export const wishlistPage=asynchandler(async(req,res)=>{
+    try {
+        const userId = req.session.user._id || req.user._id;
+        const wishlist = await addressService.wishlistPage(userId);
+        res.render("user/userAfterLogin/wishlist", { wishlist, user: req.session.user || req.user });
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/addresses");
+    }
+})
+
+export const cartPage=asynchandler(async(req,res)=>{
+    try {
+        const userId = req.session?.user?.id || req.user?.id || req.session?.user?._id || req.user?._id;
+        if(!userId){
+            throw new Error("user not found")
+        }
+        const cart = await addressService.getCartPage(userId);
+        res.render("user/userAfterLogin/cart", {
+            cart,
+            user: req.session.user || req.user
+        });
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/profile");
+    }
+})
+>>>>>>> Stashed changes

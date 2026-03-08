@@ -69,11 +69,12 @@ export const signUp = asyncHandler(async (req, res) => {
 
     req.session.otpUserId = newUser._id;
     req.session.otpMode = "signUp"
+    req.session.otpTime = Date.now() + 60 * 1000;
     res.redirect("/verifyOtp");
   }
   catch (error) {
     req.flash("error", "OTP not send to mail, please verify the mail..");
-    res.redirect("signUp");
+    res.redirect("/signUp");
   }
 });
 
@@ -83,7 +84,8 @@ export const loadOtpPage = asyncHandler(async (req, res) => {
     req.flash("error", "Session expired, please sign up again.");
     return res.redirect("/signUp");
   }
-  let otpTime = new Date();
+  let otpTime = req.session.otpTime;
+
   res.render("user/otp", { userId, otpTime });
 });
 
@@ -119,6 +121,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
   try {
     let userId = req.session.otpUserId
     const result = await userServises.resendOtp(userId)
+    req.session.otpTime = Date.now() + 60 * 1000;
     res.redirect("/verifyOtp");
   } catch (error) {
     req.flash("error", error.message);
@@ -135,10 +138,11 @@ export const sendOTPForForgotPass = asyncHandler(async (req, res) => {
     req.session.otpUserId = userId;
     req.session.tempMail = email;
     req.session.otpMode = "forgetPass";
-    res.redirect("verifyOtp")
+    req.session.otpTime = Date.now() + 60 * 1000;
+    res.redirect("/verifyOtp")
   } catch (error) {
     req.flash("error", error.message);
-    res.redirect("login")
+    res.redirect("/login")
   }
 })
 
@@ -157,17 +161,17 @@ export const resetPassword = asyncHandler(async (req, res) => {
     const { newPass, conformPass, email } = req.body
     if (newPass != conformPass) {
       req.flash("error", "new Password and conform password not match");
-      res.redirect("resetPassword");
+      res.redirect("/resetPassword");
       return 0;
     }
     const updatePass = await userServises.updatePassword(newPass, email);
     delete req.session.otpUserId;
     delete req.session.tempMail;
     delete req.session.otpMode;
-    res.redirect("login");
+    res.redirect("/login");
   } catch (error) {
     req.flash("error", error.message);
-    res.redirect("resetPassword");
+    res.redirect("/resetPassword");
   }
 
 })

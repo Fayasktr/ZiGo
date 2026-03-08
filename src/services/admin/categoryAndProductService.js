@@ -20,10 +20,13 @@ export const addNewCategory = async (categoryData) => {
     if (!categoryData.categoryName || !categoryData.iconClass) {
         throw new Error("Must need all elements");
     }
+    console.log(categoryData);
+
     return await categoryModel.create({
         categoryName: categoryData.categoryName,
         iconClass: categoryData.iconClass,
         description: categoryData.description,
+        variantAttributes:categoryData.variantAttributes,
         isListed: categoryData.isListed === "on" ? true : false
     })
 }
@@ -60,11 +63,16 @@ export const updateCategory = async (categoryData) => {
 export const productPage = async(page,limit,search)=>{
     let skip=(page-1)*limit;
     const products=await productModel.find({productName:{$regex:search,$options:"i"}})
+        .populate("category")
         .sort({createdAt:-1})
         .skip(skip)
         .limit(limit);
     let totalCountOfProducts=await productModel.countDocuments();
     return {products,totalCountOfProducts}
+}
+
+export const addProductPage=async()=>{
+    return await categoryModel.find()
 }
 
 export const listAndUnlistProduct =async(productId,isListed)=>{

@@ -13,11 +13,15 @@ const categorySchema = mongoose.Schema({
         type:String,
         required:false
     },
+    variantAttributes:[{
+        type:String
+    }],
     isListed:{
         type:Boolean,
         default:true
     }
-})
+},
+{ timestamps:true })
 
 
 const categoryModle = mongoose.model("category", categorySchema);

@@ -66,7 +66,6 @@ export const updateCategory = asynchandler(async (req, res) => {
     try {
         const categoryData = req.body;
         console.log(categoryData._id)
-        console.log(categoryData);
         await serviceOfProductAndCategory.updateCategory(categoryData);
         res.status(200).json({ success: true, message: "updated category" });
     } catch (error) {
@@ -99,7 +98,8 @@ export const productPage =asynchandler( async(req,res)=>{
 
 export const addProductPage =asynchandler (async(req,res)=>{
     try {
-        res.render("admin/addEditProduct");
+        const categoryList=await serviceOfProductAndCategory.addProductPage();
+        res.render("admin/addEditProduct",{category:categoryList});
     } catch (error) {
         req.flash("error",error.message);
         res.redirect("/admin/dashboard");

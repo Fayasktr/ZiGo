@@ -182,7 +182,7 @@
         <li><a href="../user/contact.html">Contact</a></li>
     </ul>
     <div class="header-actions flex items-center gap-6">
-        <button class="cart-btn">
+        <a href="/user/cart" class="cart-btn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -192,7 +192,7 @@
             <span class="cart-count">
                 <%= (typeof cartCount !=='undefined' && cartCount) ? cartCount : 0 %>
             </span>
-        </button>
+        </a>
 
         <!-- Wishlist -->
         <button class="wishlist-btn hidden sm:block">
