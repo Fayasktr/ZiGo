@@ -22,6 +22,7 @@ export const login = asyncHandler(async (req, res) => {
       id: existUser._id,
       userName: existUser.userName,
       email: existUser.email,
+      profileImage:existUser.profileImage
     };
     res.redirect("ZiGo.com");
   } catch (error) {

@@ -152,8 +152,10 @@
         }
 
         select.form-input option {
-            background: #f3f4f6; /* Light gray background */
-            color: #000000;      /* Black text */
+            background: #f3f4f6;
+            /* Light gray background */
+            color: #000000;
+            /* Black text */
             font-weight: 500;
         }
 
@@ -228,8 +230,15 @@
             padding: 1.25rem 1.5rem;
         }
 
-        .variant-row td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
-        .variant-row td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+        .variant-row td:first-child {
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+        }
+
+        .variant-row td:last-child {
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
 
         .image-chip {
             width: 40px;
@@ -308,16 +317,17 @@
                         <div class="form-group">
                             <label class="form-label">Category</label>
                             <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
-                                <% if (locals.category && category.length > 0) { %>
-                                    <% category.forEach((cat, index) => { %>
-                                        <option value="<%= cat._id %>" 
-                                            <%=(locals.isEdit && product.category.toString() === cat._id.toString()) ? 'selected' : (index === 0 ? 'selected' : '') %>>
+                                <% if (locals.category && category.length> 0) { %>
+                                    <% category.forEach((cat, index)=> { %>
+                                        <option value="<%= cat._id %>" <%=(locals.isEdit &&
+                                            product.category.toString()===cat._id.toString()) ? 'selected' : (index===0
+                                            ? 'selected' : '' ) %>>
                                             <%= cat.categoryName %>
                                         </option>
-                                    <% }) %>
-                                <% } else { %>
-                                    <option value="" disabled selected>No Category Available</option>
-                                <% } %>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <option value="" disabled selected>No Category Available</option>
+                                                <% } %>
                             </select>
                         </div>
                         <div class="form-group">
@@ -341,23 +351,25 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <div class="form-group">
                     <label class="form-label">Product Images</label>
-                    <div class="image-upload-box" onclick="document.getElementById('imageInput').click()">
+                    <label for="imageInput" class="image-upload-box block cursor-pointer">
                         <i class="fas fa-cloud-upload-alt text-4xl text-orange-500 mb-4"></i>
-                        <p class="font-bold text-sm">Drop your images here or <span class="text-orange-500">browse</span></p>
+                        <p class="font-bold text-sm">Drop your images here or <span
+                                class="text-orange-500">browse</span></p>
                         <p class="text-[10px] opacity-40 mt-2">Supports JPG, PNG (Max 5MB per image)</p>
-                        <input type="file" name="images" id="imageInput" class="hidden" multiple accept="image/*">
-                    </div>
+                        <input type="file" id="imageInput" class="hidden" multiple accept="image/*">
+                    </label>
                     <div id="imagePreviewContainer" class="grid grid-cols-4 gap-2 mt-4">
                         <% if (locals.isEdit && product.images) { %>
-                            <% product.images.forEach(img => { %>
-                                <div class="relative group">
-                                    <img src="/uploads/products/<%= img %>" class="w-full h-20 object-cover rounded-lg">
-                                    <button type="button" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
-                                        <i class="fas fa-times"></i>
+                            <% product.images.forEach(img=> { %>
+                                <div class="relative group existing-main-image-preview">
+                                    <img src="<%= img %>" class="w-full h-20 object-cover rounded-lg">
+                                    <button type="button" onclick="removeExistingImage('<%= img %>', this)"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                        <i class="fas fa-times text-[10px]"></i>
                                     </button>
                                 </div>
-                            <% }) %>
-                        <% } %>
+                                <% }) %>
+                                    <% } %>
                     </div>
                 </div>
 
@@ -365,12 +377,16 @@
                     <label class="form-label">Availability & Listing</label>
                     <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-[85px]">
                         <label class="relative inline-flex items-center cursor-pointer group">
-                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? '' : 'checked' %> class="sr-only peer">
-                            <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? ''
+                                : 'checked' %> class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                            </div>
                         </label>
                         <div>
                             <p class="font-bold text-sm" id="statusLabel">
-                                <%= (locals.isEdit && !product.isListed) ? 'Save as Draft' : 'List Product Immediately' %>
+                                <%= (locals.isEdit && !product.isListed) ? 'Save as Draft' : 'List Product Immediately'
+                                    %>
                             </p>
                             <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest" id="visibilityLabel">
                                 Visibility: <%= (locals.isEdit && !product.isListed) ? 'Private' : 'Public' %>
@@ -386,9 +402,11 @@
                     <div class="flex justify-between items-center mb-8">
                         <div>
                             <h2 class="text-xl font-bold">Product <span class="text-orange-500">Variants</span></h2>
-                            <p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-1">Manage sizes, colors, images and stock</p>
+                            <p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-1">Manage sizes, colors,
+                                images and stock</p>
                         </div>
-                        <button type="button" onclick="openAddVariantModal()" class="bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2">
+                        <button type="button" onclick="openAddVariantModal()"
+                            class="bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2">
                             <i class="fas fa-plus"></i> Add Variant
                         </button>
                     </div>
@@ -404,7 +422,7 @@
                                 <!-- Variants will be rendered here -->
                             </tbody>
                         </table>
-                        
+
                         <div id="noVariantsPlaceholder" class="py-12 text-center opacity-30">
                             <i class="fas fa-layer-group text-4xl mb-4"></i>
                             <p class="font-bold">No variants added to this product yet.</p>
@@ -424,14 +442,15 @@
 
             <!-- Hidden input for JSON data -->
             <input type="hidden" name="variantsData" id="variantsDataInput">
+            <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
         </form>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Category Data for dynamic fields
-        const categories = <%- JSON.stringify(locals.category || []) %>;
-        let productVariants = <%- locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
+        const categories =  JSON.stringify(locals.category || []);
+        let productVariants = locals.isEdit ? JSON.stringify(product.variants || []) : '[]' ;
 
         const categorySelect = document.querySelector('select[name="category"]');
         const variantsDataInput = document.getElementById('variantsDataInput');
@@ -472,7 +491,7 @@
         function updateTableHeader() {
             const selectedCatId = categorySelect.value;
             const category = categories.find(c => c._id === selectedCatId);
-            
+
             let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
             if (category && category.variantAttributes) {
                 category.variantAttributes.forEach(attr => {
@@ -514,7 +533,7 @@
                     dynamicFieldsHtml += `
                         <div>
                             <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">${attr}</label>
-                            <input id="swal-attr-${attr}" value="${variantData ? (variantData.attributes[attr] || '') : ''}" type="text" class="swal-dynamic-attr w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="Enter ${attr}" data-attr="${attr}">
+                            <input id="swal-attr-${attr.replace(/\s+/g, '_')}" value="${variantData ? (variantData.attributes[attr] || '') : ''}" type="text" class="swal-dynamic-attr w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="Enter ${attr}" data-attr="${attr}">
                         </div>
                     `;
                 });
@@ -525,11 +544,13 @@
                             <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Images (Optional)</label>
                             <input id="swal-variant-images" type="file" multiple accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition">
                             <div id="swal-image-preview-container" class="flex gap-2 mt-3 overflow-x-auto pb-2">
-                                ${variantData && variantData.tempImages ? variantData.tempImages.map(img => `<img src="${img}" class="w-10 h-10 object-cover rounded-lg border border-white/10">`).join('') : ''}
+                                <!-- Previews injected via JS -->
                             </div>
                         </div>
                     </div>
                 </div>`;
+
+            let currentVariantFiles = variantData && variantData.imageFiles ? [...variantData.imageFiles] : [];
 
             const { value: formValues } = await Swal.fire({
                 title: variantData ? 'Edit Variant' : 'Create New Variant',
@@ -541,28 +562,59 @@
                 confirmButtonText: variantData ? 'Update' : 'Add to List',
                 confirmButtonColor: '#FF5A1F',
                 didOpen: () => {
+                    // Fix Tailwind CSS bleeding into SweetAlert
+                    document.querySelectorAll('.swal2-popup input, .swal2-popup select').forEach(el => {
+                        el.style.color = 'white';
+                        el.style.backgroundColor = '#1A1A1A';
+                    });
+
                     const imgInput = document.getElementById('swal-variant-images');
                     const previewBox = document.getElementById('swal-image-preview-container');
-                    imgInput.addEventListener('change', async (e) => {
+
+                    const renderVariantPreview = () => {
                         previewBox.innerHTML = '';
-                        const files = Array.from(e.target.files);
-                        for (const file of files) {
+                        // Also show previously saved existing images if in edit mode (not file objects, just URLs)
+                        if (variantData && variantData.tempImages && currentVariantFiles.length === 0) {
+                            variantData.tempImages.forEach(imgUrl => {
+                                previewBox.innerHTML += `<img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">`;
+                            });
+                        }
+
+                        currentVariantFiles.forEach((file, idx) => {
                             const reader = new FileReader();
-                            reader.onload = (ev) => {
-                                const img = document.createElement('img');
-                                img.src = ev.target.result;
-                                img.className = 'w-10 h-10 object-cover rounded-lg border border-white/10';
-                                previewBox.appendChild(img);
+                            reader.onload = (e) => {
+                                const container = document.createElement('div');
+                                container.className = 'relative group shrink-0';
+                                container.innerHTML = `
+                                    <img src="${e.target.result}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                                    <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                                        <i class="fas fa-times text-[8px]"></i>
+                                    </button>
+                                `;
+                                container.querySelector('button').addEventListener('click', () => {
+                                    currentVariantFiles.splice(idx, 1);
+                                    renderVariantPreview();
+                                });
+                                previewBox.appendChild(container);
                             };
                             reader.readAsDataURL(file);
-                        }
+                        });
+                    };
+
+                    renderVariantPreview();
+
+                    imgInput.addEventListener('change', (e) => {
+                        const files = Array.from(e.target.files);
+                        currentVariantFiles = [...currentVariantFiles, ...files];
+                        renderVariantPreview();
+                        // Reset input so re-selecting the same file works
+                        imgInput.value = '';
                     });
                 },
                 preConfirm: async () => {
                     const price = document.getElementById('swal-price').value;
                     const stock = document.getElementById('swal-stock').value;
-                    const imgInput = document.getElementById('swal-variant-images');
-                    
+
                     if (!price || !stock) {
                         Swal.showValidationMessage('Price and Stock are required');
                         return false;
@@ -570,25 +622,26 @@
 
                     const attributes = {};
                     category.variantAttributes.forEach(attr => {
-                        attributes[attr] = document.getElementById(`swal-attr-${attr}`).value || 'N/A';
+                        attributes[attr] = document.getElementById(`swal-attr-${attr.replace(/\s+/g, '_')}`).value || 'N/A';
                     });
 
-                    // Capture images as base64 for preview (In a real app, you'd handle file upload)
-                    const tempImages = variantData ? [...(variantData.tempImages || [])] : [];
-                    if (imgInput.files.length > 0) {
-                        // Clear old images if new ones are uploaded (optional logic)
-                        tempImages.length = 0;
-                        for (const file of imgInput.files) {
-                            const b64 = await new Promise((resolve) => {
-                                const r = new FileReader();
-                                r.onload = (e) => resolve(e.target.result);
-                                r.readAsDataURL(file);
-                            });
-                            tempImages.push(b64);
-                        }
+                    // Capture images as base64 for the variant table preview
+                    const tempImages = [];
+                    for (const file of currentVariantFiles) {
+                        const b64 = await new Promise((resolve) => {
+                            const r = new FileReader();
+                            r.onload = (e) => resolve(e.target.result);
+                            r.readAsDataURL(file);
+                        });
+                        tempImages.push(b64);
                     }
 
-                    return { price, stock, attributes, tempImages };
+                    // If editing and no new images selected, keep original old URLs for display if needed
+                    if (currentVariantFiles.length === 0 && variantData && variantData.tempImages) {
+                        tempImages.push(...variantData.tempImages);
+                    }
+
+                    return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages };
                 }
             });
 
@@ -611,7 +664,7 @@
 
             const selectedCatId = categorySelect.value;
             const category = categories.find(c => c._id === selectedCatId);
-            
+
             let html = '';
             productVariants.forEach((v, index) => {
                 const imgCount = v.tempImages ? v.tempImages.length : 0;
@@ -651,7 +704,12 @@
             });
 
             variantsTableBody.innerHTML = html;
-            variantsDataInput.value = JSON.stringify(productVariants);
+            // Ensure the hidden input always reflects the latest variants string
+            const cleanVariants = productVariants.map(v => {
+                const { imageFiles, tempImages, ...rest } = v;
+                return rest;
+            });
+            variantsDataInput.value = JSON.stringify(cleanVariants);
         }
 
         function removeVariant(index) {
@@ -672,24 +730,129 @@
             });
         }
 
-        // Main Image Preview Logic
+        // --- Main Image Preview & Selection Logic ---
         const imageInput = document.getElementById('imageInput');
         const previewContainer = document.getElementById('imagePreviewContainer');
+        let mainImageFilesArray = []; // To keep track of newly uploaded files
+
         imageInput.addEventListener('change', (e) => {
-            previewContainer.innerHTML = '';
-            const files = Array.from(e.target.files);
-            files.forEach(file => {
+            const newFiles = Array.from(e.target.files);
+            if (newFiles.length > 0) {
+                mainImageFilesArray = [...mainImageFilesArray, ...newFiles];
+                updateMainImageInputAndPreview();
+            }
+            // Clear input so selecting same files works again
+            e.target.value = '';
+        });
+
+        function updateMainImageInputAndPreview() {
+            // Remove dynamically added new images (keep existing server rendered ones)
+            document.querySelectorAll('.dynamic-main-image-preview').forEach(el => el.remove());
+
+            mainImageFilesArray.forEach((file, index) => {
+                const capturedIndex = index;
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const div = document.createElement('div');
-                    div.className = 'relative group';
+                    div.className = 'relative group dynamic-main-image-preview';
                     div.innerHTML = `
                         <img src="${ev.target.result}" class="w-full h-20 object-cover rounded-lg border border-white/10">
+                        <button type="button" onclick="removeMainImage(${capturedIndex})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                            <i class="fas fa-times text-[10px]"></i>
+                        </button>
                     `;
                     previewContainer.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        window.removeMainImage = function (index) {
+            mainImageFilesArray.splice(index, 1);
+            updateMainImageInputAndPreview();
+        };
+
+        // Existing Images Removal Logic
+        let deletedImagesArray = [];
+        window.removeExistingImage = function (imgUrl, btnElement) {
+            // Ask for confirmation
+            Swal.fire({
+                title: 'Remove Image?',
+                text: 'This image will be removed when you update the product.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove',
+                background: '#121212',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deletedImagesArray.push(imgUrl);
+                    document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImagesArray);
+
+                    // Visually remove it
+                    btnElement.closest('.existing-main-image-preview').remove();
+                }
+            });
+        };
+
+        // --- Standard Form Submission Interception ---
+        const mainForm = document.querySelector('form.form-card');
+        mainForm.addEventListener('submit', async function (e) {
+            e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
+
+            // Prepare strictly JSON data without File objects
+            const cleanVariants = productVariants.map(v => {
+                const { imageFiles, tempImages, ...rest } = v;
+                return rest;
+            });
+            variantsDataInput.value = JSON.stringify(cleanVariants);
+
+            // Construct form data to natively pick up regular text fields
+            const formData = new FormData(mainForm);
+
+            // Append Main Images Manually (since name="images" was removed from input to avoid duplicates)
+            mainImageFilesArray.forEach((file) => {
+                formData.append('images', file);
+            });
+
+            // Append variant images as their own index files in FormData array
+            productVariants.forEach((variant, vIndex) => {
+                if (variant.imageFiles && variant.imageFiles.length > 0) {
+                    variant.imageFiles.forEach(file => {
+                        formData.append(`variant_${vIndex}_images`, file);
+                    });
+                }
+            });
+
+            try {
+                Swal.fire({
+                    title: 'Saving Product...',
+                    text: 'Please wait while your product and images upload.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const res = await fetch(mainForm.action || window.location.href, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Since we rely on your Express backend to either redirect or return JSON
+                if (res.redirected) {
+                    window.location.href = res.url;
+                } else if (res.ok) {
+                    window.location.href = '/admin/products';
+                } else {
+                    const errorJson = await res.json().catch(() => ({}));
+                    Swal.fire('Error', errorJson.message || 'Failed to save product.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'A network error occurred while uploading. Check your console.', 'error');
+            }
         });
 
         const listToggle = document.querySelector('input[name="isListed"]');

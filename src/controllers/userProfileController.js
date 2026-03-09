@@ -202,8 +202,7 @@ export const deleteAddress = asynchandler(async (req, res) => {
     }
 })
 
-<<<<<<< Updated upstream
-=======
+
 
 export const wishlistPage=asynchandler(async(req,res)=>{
     try {
@@ -232,4 +231,3 @@ export const cartPage=asynchandler(async(req,res)=>{
         res.redirect("/user/profile");
     }
 })
->>>>>>> Stashed changes
