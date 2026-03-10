@@ -402,17 +402,19 @@
                                             <button class="wishlist-btn" onclick="toggleWishlist('<%= product._id %>')">
                                                 <i class="fas fa-heart text-2xl"></i>
                                             </button>
-                                            <img id="mainImage"
-                                                src="<%= (defaultVariant.images && defaultVariant.images[0]) ? '/' + defaultVariant.images[0] : '/public/landing/no-image.png' %>"
-                                                data-zoom="<%= (defaultVariant.images && defaultVariant.images[0]) ? '/' + defaultVariant.images[0] : '/public/landing/no-image.png' %>"
-                                                alt="<%= product.productName %>">
+                                            <% const defaultImg=(defaultVariant.images && defaultVariant.images[0]) ?
+                                                (defaultVariant.images[0].startsWith('http') ? defaultVariant.images[0]
+                                                : '/' + defaultVariant.images[0]) : '/public/landing/no-image.png' ; %>
+                                                <img id="mainImage" src="<%= defaultImg %>"
+                                                    data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
                                         </div>
                                         <div class="thumbnail-grid">
-                                            <% if (defaultVariant.images) { %>
-                                                <% defaultVariant.images.forEach((img, idx)=> { %>
+                                            <% if (product.images) { %>
+                                                <% product.images.forEach((img, idx)=> { %>
                                                     <div class="thumb-btn <%= idx === 0 ? 'active' : '' %>"
                                                         onclick="updateImg('<%= img %>', this)">
-                                                        <img src="/<%= img %>" alt="">
+                                                        <img src="<%= img.startsWith('http') ? img : '/' + img %>"
+                                                            alt="">
                                                     </div>
                                                     <% }) %>
                                                         <% } %>
@@ -700,8 +702,9 @@
                                     });
 
                                     function updateImg(s, e) {
-                                        mainImg.src = '/' + s;
-                                        mainImg.setAttribute('data-zoom', '/' + s);
+                                        const imgUrl = s.startsWith('http') ? s : '/' + s;
+                                        mainImg.src = imgUrl;
+                                        mainImg.setAttribute('data-zoom', imgUrl);
                                         document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
                                         e.classList.add('active');
                                         initDrift(); // Reinitialize drift with the new image
