@@ -11,6 +11,7 @@
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -302,8 +303,8 @@
         </header>
 
         <form class="form-card"
-            action="<%= locals.isEdit ? '/admin/products/edit/' + product._id : '/admin/products/add' %>" method="POST"
-            enctype="multipart/form-data">
+            action="<%= locals.isEdit ? '/admin/products/edit/' + product._id : '/admin/addProducts/add' %>"
+            method="POST" enctype="multipart/form-data">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Left Column: Basic Info -->
                 <div class="space-y-6">
@@ -444,76 +445,158 @@
             <input type="hidden" name="variantsData" id="variantsDataInput">
             <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
         </form>
-    </main>
+        <!-- Custom Cropper Overlay (Placed outside SweetAlert logic) -->
+        <div id="customCropperOverlay"
+            class="fixed inset-0 bg-black/95 z-[99999] hidden flex-col items-center justify-center p-4">
+            <h2 id="cropperTitle" class="text-2xl font-bold mb-6 text-white tracking-wide">Crop Image</h2>
+            <div
+                class="w-full max-w-4xl max-h-[60vh] bg-black border border-white/10 rounded-xl overflow-hidden flex justify-center items-center shadow-2xl">
+                <img id="cropperImageRaw" src="" style="max-width: 100%; max-height: 100%;">
+            </div>
+            <div class="flex gap-4 mt-8">
+                <button id="skipCropBtn" type="button"
+                    class="bg-white/5 text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition">Skip</button>
+                <button id="confirmCropBtn" type="button"
+                    class="bg-orange-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-orange-500/20">Crop
+                    & Next</button>
+            </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Category Data for dynamic fields
-        const categories =  JSON.stringify(locals.category || []);
-        let productVariants = locals.isEdit ? JSON.stringify(product.variants || []) : '[]' ;
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+        <script>
+            const categories = <%- JSON.stringify(locals.category || []) %>;
+            let productVariants = <%- locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
 
-        const categorySelect = document.querySelector('select[name="category"]');
-        const variantsDataInput = document.getElementById('variantsDataInput');
-        const variantsTableBody = document.getElementById('variantsTableBody');
-        const variantTableHeader = document.getElementById('variantTableHeader');
-        const noVariantsPlaceholder = document.getElementById('noVariantsPlaceholder');
+            const categorySelect = document.querySelector('select[name="category"]');
+            const variantsDataInput = document.getElementById('variantsDataInput');
+            const variantsTableBody = document.getElementById('variantsTableBody');
+            const variantTableHeader = document.getElementById('variantTableHeader');
+            const noVariantsPlaceholder = document.getElementById('noVariantsPlaceholder');
 
-        // Initial setup
-        document.addEventListener('DOMContentLoaded', () => {
-            updateTableHeader();
-            renderVariantsList();
-        });
+            // --- Cropper.js Queue Logic ---
+            async function processCropQueue(files) {
+                const croppedFiles = [];
+                const overlay = document.getElementById('customCropperOverlay');
+                const img = document.getElementById('cropperImageRaw');
+                const title = document.getElementById('cropperTitle');
+                const confirmBtn = document.getElementById('confirmCropBtn');
+                const skipBtn = document.getElementById('skipCropBtn');
 
-        categorySelect.addEventListener('change', () => {
-            // When category changes, we should warn if variants exist
-            if (productVariants.length > 0) {
-                Swal.fire({
-                    title: 'Category Changed',
-                    text: 'Changing category might make existing variant attributes inconsistent. Do you want to keep them?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Clear Variants',
-                    cancelButtonText: 'Keep Existing'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        productVariants = [];
-                        updateTableHeader();
-                        renderVariantsList();
-                    } else {
-                        updateTableHeader();
-                    }
-                });
-            } else {
+                // Stop key and mouse presses from bubbling down to SweetAlert
+                overlay.onkeydown = (e) => e.stopPropagation();
+                overlay.onmousedown = (e) => e.stopPropagation();
+                overlay.onclick = (e) => e.stopPropagation();
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const dataUrl = await new Promise(res => {
+                        const reader = new FileReader();
+                        reader.onload = e => res(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+
+                    title.innerText = `Crop Image ${i + 1} of ${files.length}`;
+                    img.src = dataUrl;
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+
+                    await new Promise(resolve => {
+                        // Destroy old instance if exists
+                        if (window.currentCropper) window.currentCropper.destroy();
+
+                        window.currentCropper = new Cropper(img, {
+                            aspectRatio: NaN,
+                            viewMode: 2,
+                            background: false,
+                        });
+
+                        confirmBtn.onclick = () => {
+                            window.currentCropper.getCroppedCanvas({
+                                width: 1000,
+                                height: 1000,
+                                fillColor: '#fff',
+                                imageSmoothingEnabled: true,
+                                imageSmoothingQuality: 'high',
+                            }).toBlob((blob) => {
+                                const newFile = new File([blob], file.name, { type: file.type || 'image/jpeg' });
+                                croppedFiles.push(newFile);
+                                window.currentCropper.destroy();
+                                window.currentCropper = null;
+                                resolve();
+                            }, file.type || 'image/jpeg', 0.9);
+                        };
+
+                        skipBtn.onclick = () => {
+                            window.currentCropper.destroy();
+                            window.currentCropper = null;
+                            resolve();
+                        };
+                    });
+                }
+
+                // Hide overlay when finished
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                return croppedFiles;
+            }
+
+            // Initial setup
+            document.addEventListener('DOMContentLoaded', () => {
                 updateTableHeader();
+                renderVariantsList();
+            });
+
+            categorySelect.addEventListener('change', () => {
+                // When category changes, we should warn if variants exist
+                if (productVariants.length > 0) {
+                    Swal.fire({
+                        title: 'Category Changed',
+                        text: 'Changing category might make existing variant attributes inconsistent. Do you want to keep them?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Clear Variants',
+                        cancelButtonText: 'Keep Existing'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            productVariants = [];
+                            updateTableHeader();
+                            renderVariantsList();
+                        } else {
+                            updateTableHeader();
+                        }
+                    });
+                } else {
+                    updateTableHeader();
+                }
+            });
+
+            function updateTableHeader() {
+                const selectedCatId = categorySelect.value;
+                const category = categories.find(c => c._id === selectedCatId);
+                console.log(`selected catid ${selectedCatId} and category ${category}`)
+                let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
+                if (category && category.variantAttributes) {
+                    category.variantAttributes.forEach(attr => {
+                        html += `<th>${attr}</th>`;
+                    });
+                }
+                html += `<th class="text-right">Actions</th>`;
+                variantTableHeader.innerHTML = html;
             }
-        });
 
-        function updateTableHeader() {
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
+            async function openAddVariantModal(editIndex = null) {
+                const selectedCatId = categorySelect.value;
+                const category = categories.find(c => c._id === selectedCatId);
+                const variantData = editIndex !== null ? productVariants[editIndex] : null;
 
-            let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
-            if (category && category.variantAttributes) {
-                category.variantAttributes.forEach(attr => {
-                    html += `<th>${attr}</th>`;
-                });
-            }
-            html += `<th class="text-right">Actions</th>`;
-            variantTableHeader.innerHTML = html;
-        }
+                if (!category) {
+                    Swal.fire('Error', 'Please select a category first', 'error');
+                    return;
+                }
 
-        async function openAddVariantModal(editIndex = null) {
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
-            const variantData = editIndex !== null ? productVariants[editIndex] : null;
-
-            if (!category) {
-                Swal.fire('Error', 'Please select a category first', 'error');
-                return;
-            }
-
-            // Build dynamic input fields
-            let dynamicFieldsHtml = `
+                // Build dynamic input fields
+                let dynamicFieldsHtml = `
                 <div class="text-left space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -528,18 +611,18 @@
                     <div class="grid grid-cols-1 gap-4">
             `;
 
-            if (category.variantAttributes) {
-                category.variantAttributes.forEach(attr => {
-                    dynamicFieldsHtml += `
+                if (category.variantAttributes) {
+                    category.variantAttributes.forEach(attr => {
+                        dynamicFieldsHtml += `
                         <div>
                             <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">${attr}</label>
                             <input id="swal-attr-${attr.replace(/\s+/g, '_')}" value="${variantData ? (variantData.attributes[attr] || '') : ''}" type="text" class="swal-dynamic-attr w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="Enter ${attr}" data-attr="${attr}">
                         </div>
                     `;
-                });
-            }
+                    });
+                }
 
-            dynamicFieldsHtml += `
+                dynamicFieldsHtml += `
                         <div class="mt-4">
                             <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Images (Optional)</label>
                             <input id="swal-variant-images" type="file" multiple accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition">
@@ -550,127 +633,131 @@
                     </div>
                 </div>`;
 
-            let currentVariantFiles = variantData && variantData.imageFiles ? [...variantData.imageFiles] : [];
+                let currentVariantFiles = variantData && variantData.imageFiles ? [...variantData.imageFiles] : [];
 
-            const { value: formValues } = await Swal.fire({
-                title: variantData ? 'Edit Variant' : 'Create New Variant',
-                html: dynamicFieldsHtml,
-                focusConfirm: false,
-                background: '#121212',
-                color: '#fff',
-                showCancelButton: true,
-                confirmButtonText: variantData ? 'Update' : 'Add to List',
-                confirmButtonColor: '#FF5A1F',
-                didOpen: () => {
-                    // Fix Tailwind CSS bleeding into SweetAlert
-                    document.querySelectorAll('.swal2-popup input, .swal2-popup select').forEach(el => {
-                        el.style.color = 'white';
-                        el.style.backgroundColor = '#1A1A1A';
-                    });
+                const { value: formValues } = await Swal.fire({
+                    title: variantData ? 'Edit Variant' : 'Create New Variant',
+                    html: dynamicFieldsHtml,
+                    focusConfirm: false,
+                    allowEnterKey: false,
+                    background: '#121212',
+                    color: '#fff',
+                    showCancelButton: true,
+                    confirmButtonText: variantData ? 'Update' : 'Add to List',
+                    confirmButtonColor: '#FF5A1F',
+                    didOpen: () => {
+                        // Fix Tailwind CSS bleeding into SweetAlert
+                        document.querySelectorAll('.swal2-popup input, .swal2-popup select').forEach(el => {
+                            el.style.color = 'white';
+                            el.style.backgroundColor = '#1A1A1A';
+                        });
 
-                    const imgInput = document.getElementById('swal-variant-images');
-                    const previewBox = document.getElementById('swal-image-preview-container');
+                        const imgInput = document.getElementById('swal-variant-images');
+                        const previewBox = document.getElementById('swal-image-preview-container');
 
-                    const renderVariantPreview = () => {
-                        previewBox.innerHTML = '';
-                        // Also show previously saved existing images if in edit mode (not file objects, just URLs)
-                        if (variantData && variantData.tempImages && currentVariantFiles.length === 0) {
-                            variantData.tempImages.forEach(imgUrl => {
-                                previewBox.innerHTML += `<img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">`;
-                            });
-                        }
+                        const renderVariantPreview = () => {
+                            previewBox.innerHTML = '';
+                            // Also show previously saved existing images if in edit mode (not file objects, just URLs)
+                            if (variantData && variantData.tempImages && currentVariantFiles.length === 0) {
+                                variantData.tempImages.forEach(imgUrl => {
+                                    previewBox.innerHTML += `<img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">`;
+                                });
+                            }
 
-                        currentVariantFiles.forEach((file, idx) => {
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                const container = document.createElement('div');
-                                container.className = 'relative group shrink-0';
-                                container.innerHTML = `
+                            currentVariantFiles.forEach((file, idx) => {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    const container = document.createElement('div');
+                                    container.className = 'relative group shrink-0';
+                                    container.innerHTML = `
                                     <img src="${e.target.result}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
                                     <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
                                         <i class="fas fa-times text-[8px]"></i>
                                     </button>
                                 `;
-                                container.querySelector('button').addEventListener('click', () => {
-                                    currentVariantFiles.splice(idx, 1);
-                                    renderVariantPreview();
-                                });
-                                previewBox.appendChild(container);
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    };
+                                    container.querySelector('button').addEventListener('click', () => {
+                                        currentVariantFiles.splice(idx, 1);
+                                        renderVariantPreview();
+                                    });
+                                    previewBox.appendChild(container);
+                                };
+                                reader.readAsDataURL(file);
+                            });
+                        };
 
-                    renderVariantPreview();
-
-                    imgInput.addEventListener('change', (e) => {
-                        const files = Array.from(e.target.files);
-                        currentVariantFiles = [...currentVariantFiles, ...files];
                         renderVariantPreview();
-                        // Reset input so re-selecting the same file works
-                        imgInput.value = '';
-                    });
-                },
-                preConfirm: async () => {
-                    const price = document.getElementById('swal-price').value;
-                    const stock = document.getElementById('swal-stock').value;
 
-                    if (!price || !stock) {
-                        Swal.showValidationMessage('Price and Stock are required');
-                        return false;
-                    }
-
-                    const attributes = {};
-                    category.variantAttributes.forEach(attr => {
-                        attributes[attr] = document.getElementById(`swal-attr-${attr.replace(/\s+/g, '_')}`).value || 'N/A';
-                    });
-
-                    // Capture images as base64 for the variant table preview
-                    const tempImages = [];
-                    for (const file of currentVariantFiles) {
-                        const b64 = await new Promise((resolve) => {
-                            const r = new FileReader();
-                            r.onload = (e) => resolve(e.target.result);
-                            r.readAsDataURL(file);
+                        imgInput.addEventListener('change', async (e) => {
+                            const files = Array.from(e.target.files);
+                            if (files.length > 0) {
+                                const croppedFiles = await processCropQueue(files);
+                                currentVariantFiles = [...currentVariantFiles, ...croppedFiles];
+                                renderVariantPreview();
+                            }
+                            // Reset input so re-selecting the same file works
+                            imgInput.value = '';
                         });
-                        tempImages.push(b64);
-                    }
+                    },
+                    preConfirm: async () => {
+                        const price = document.getElementById('swal-price').value;
+                        const stock = document.getElementById('swal-stock').value;
 
-                    // If editing and no new images selected, keep original old URLs for display if needed
-                    if (currentVariantFiles.length === 0 && variantData && variantData.tempImages) {
-                        tempImages.push(...variantData.tempImages);
-                    }
+                        if (!price || !stock) {
+                            Swal.showValidationMessage('Price and Stock are required');
+                            return false;
+                        }
 
-                    return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages };
+                        const attributes = {};
+                        category.variantAttributes.forEach(attr => {
+                            attributes[attr] = document.getElementById(`swal-attr-${attr.replace(/\s+/g, '_')}`).value || 'N/A';
+                        });
+
+                        // Capture images as base64 for the variant table preview
+                        const tempImages = [];
+                        for (const file of currentVariantFiles) {
+                            const b64 = await new Promise((resolve) => {
+                                const r = new FileReader();
+                                r.onload = (e) => resolve(e.target.result);
+                                r.readAsDataURL(file);
+                            });
+                            tempImages.push(b64);
+                        }
+
+                        // If editing and no new images selected, keep original old URLs for display if needed
+                        if (currentVariantFiles.length === 0 && variantData && variantData.tempImages) {
+                            tempImages.push(...variantData.tempImages);
+                        }
+
+                        return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages };
+                    }
+                });
+
+                if (formValues) {
+                    if (editIndex !== null) {
+                        productVariants[editIndex] = formValues;
+                    } else {
+                        productVariants.push(formValues);
+                    }
+                    renderVariantsList();
                 }
-            });
+            }
 
-            if (formValues) {
-                if (editIndex !== null) {
-                    productVariants[editIndex] = formValues;
+            function renderVariantsList() {
+                if (productVariants.length > 0) {
+                    noVariantsPlaceholder.classList.add('hidden');
                 } else {
-                    productVariants.push(formValues);
+                    noVariantsPlaceholder.classList.remove('hidden');
                 }
-                renderVariantsList();
-            }
-        }
 
-        function renderVariantsList() {
-            if (productVariants.length > 0) {
-                noVariantsPlaceholder.classList.add('hidden');
-            } else {
-                noVariantsPlaceholder.classList.remove('hidden');
-            }
+                const selectedCatId = categorySelect.value;
+                const category = categories.find(c => c._id === selectedCatId);
 
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
+                let html = '';
+                productVariants.forEach((v, index) => {
+                    const imgCount = v.tempImages ? v.tempImages.length : 0;
+                    const firstImg = imgCount > 0 ? v.tempImages[0] : null;
 
-            let html = '';
-            productVariants.forEach((v, index) => {
-                const imgCount = v.tempImages ? v.tempImages.length : 0;
-                const firstImg = imgCount > 0 ? v.tempImages[0] : null;
-
-                html += `
+                    html += `
                     <tr class="variant-row">
                         <td>
                             <div class="flex items-center gap-2">
@@ -682,13 +769,13 @@
                         <td class="font-bold text-orange-500">${v.stock}</td>
                 `;
 
-                if (category && category.variantAttributes) {
-                    category.variantAttributes.forEach(attr => {
-                        html += `<td><span class="bg-white/5 px-3 py-1.5 rounded-lg text-xs font-bold text-white/70">${v.attributes[attr] || 'N/A'}</span></td>`;
-                    });
-                }
+                    if (category && category.variantAttributes) {
+                        category.variantAttributes.forEach(attr => {
+                            html += `<td><span class="bg-white/5 px-3 py-1.5 rounded-lg text-xs font-bold text-white/70">${v.attributes[attr] || 'N/A'}</span></td>`;
+                        });
+                    }
 
-                html += `
+                    html += `
                         <td class="text-right">
                             <div class="flex justify-end gap-2">
                                 <button type="button" onclick="openAddVariantModal(${index})" class="text-orange-500/60 hover:text-orange-500 transition-all p-2">
@@ -701,166 +788,167 @@
                         </td>
                     </tr>
                 `;
-            });
+                });
 
-            variantsTableBody.innerHTML = html;
-            // Ensure the hidden input always reflects the latest variants string
-            const cleanVariants = productVariants.map(v => {
-                const { imageFiles, tempImages, ...rest } = v;
-                return rest;
-            });
-            variantsDataInput.value = JSON.stringify(cleanVariants);
-        }
-
-        function removeVariant(index) {
-            Swal.fire({
-                title: 'Remove Variant?',
-                text: 'This will delete this variant combination.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete',
-                background: '#121212',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    productVariants.splice(index, 1);
-                    renderVariantsList();
-                }
-            });
-        }
-
-        // --- Main Image Preview & Selection Logic ---
-        const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        let mainImageFilesArray = []; // To keep track of newly uploaded files
-
-        imageInput.addEventListener('change', (e) => {
-            const newFiles = Array.from(e.target.files);
-            if (newFiles.length > 0) {
-                mainImageFilesArray = [...mainImageFilesArray, ...newFiles];
-                updateMainImageInputAndPreview();
+                variantsTableBody.innerHTML = html;
+                // Ensure the hidden input always reflects the latest variants string
+                const cleanVariants = productVariants.map(v => {
+                    const { imageFiles, tempImages, ...rest } = v;
+                    return rest;
+                });
+                variantsDataInput.value = JSON.stringify(cleanVariants);
             }
-            // Clear input so selecting same files works again
-            e.target.value = '';
-        });
 
-        function updateMainImageInputAndPreview() {
-            // Remove dynamically added new images (keep existing server rendered ones)
-            document.querySelectorAll('.dynamic-main-image-preview').forEach(el => el.remove());
+            function removeVariant(index) {
+                Swal.fire({
+                    title: 'Remove Variant?',
+                    text: 'This will delete this variant combination.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete',
+                    background: '#121212',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        productVariants.splice(index, 1);
+                        renderVariantsList();
+                    }
+                });
+            }
 
-            mainImageFilesArray.forEach((file, index) => {
-                const capturedIndex = index;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const div = document.createElement('div');
-                    div.className = 'relative group dynamic-main-image-preview';
-                    div.innerHTML = `
+            // --- Main Image Preview & Selection Logic ---
+            const imageInput = document.getElementById('imageInput');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            let mainImageFilesArray = []; // To keep track of newly uploaded files
+
+            imageInput.addEventListener('change', async (e) => {
+                const newFiles = Array.from(e.target.files);
+                if (newFiles.length > 0) {
+                    const croppedFiles = await processCropQueue(newFiles);
+                    mainImageFilesArray = [...mainImageFilesArray, ...croppedFiles];
+                    updateMainImageInputAndPreview();
+                }
+                // Clear input so selecting same files works again
+                e.target.value = '';
+            });
+
+            function updateMainImageInputAndPreview() {
+                // Remove dynamically added new images (keep existing server rendered ones)
+                document.querySelectorAll('.dynamic-main-image-preview').forEach(el => el.remove());
+
+                mainImageFilesArray.forEach((file, index) => {
+                    const capturedIndex = index;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const div = document.createElement('div');
+                        div.className = 'relative group dynamic-main-image-preview';
+                        div.innerHTML = `
                         <img src="${ev.target.result}" class="w-full h-20 object-cover rounded-lg border border-white/10">
                         <button type="button" onclick="removeMainImage(${capturedIndex})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
                             <i class="fas fa-times text-[10px]"></i>
                         </button>
                     `;
-                    previewContainer.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
+                        previewContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
 
-        window.removeMainImage = function (index) {
-            mainImageFilesArray.splice(index, 1);
-            updateMainImageInputAndPreview();
-        };
+            window.removeMainImage = function (index) {
+                mainImageFilesArray.splice(index, 1);
+                updateMainImageInputAndPreview();
+            };
 
-        // Existing Images Removal Logic
-        let deletedImagesArray = [];
-        window.removeExistingImage = function (imgUrl, btnElement) {
-            // Ask for confirmation
-            Swal.fire({
-                title: 'Remove Image?',
-                text: 'This image will be removed when you update the product.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, remove',
-                background: '#121212',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deletedImagesArray.push(imgUrl);
-                    document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImagesArray);
-
-                    // Visually remove it
-                    btnElement.closest('.existing-main-image-preview').remove();
-                }
-            });
-        };
-
-        // --- Standard Form Submission Interception ---
-        const mainForm = document.querySelector('form.form-card');
-        mainForm.addEventListener('submit', async function (e) {
-            e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
-
-            // Prepare strictly JSON data without File objects
-            const cleanVariants = productVariants.map(v => {
-                const { imageFiles, tempImages, ...rest } = v;
-                return rest;
-            });
-            variantsDataInput.value = JSON.stringify(cleanVariants);
-
-            // Construct form data to natively pick up regular text fields
-            const formData = new FormData(mainForm);
-
-            // Append Main Images Manually (since name="images" was removed from input to avoid duplicates)
-            mainImageFilesArray.forEach((file) => {
-                formData.append('images', file);
-            });
-
-            // Append variant images as their own index files in FormData array
-            productVariants.forEach((variant, vIndex) => {
-                if (variant.imageFiles && variant.imageFiles.length > 0) {
-                    variant.imageFiles.forEach(file => {
-                        formData.append(`variant_${vIndex}_images`, file);
-                    });
-                }
-            });
-
-            try {
+            // Existing Images Removal Logic
+            let deletedImagesArray = [];
+            window.removeExistingImage = function (imgUrl, btnElement) {
+                // Ask for confirmation
                 Swal.fire({
-                    title: 'Saving Product...',
-                    text: 'Please wait while your product and images upload.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+                    title: 'Remove Image?',
+                    text: 'This image will be removed when you update the product.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, remove',
+                    background: '#121212',
+                    color: '#fff',
+                    confirmButtonColor: '#ef4444'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deletedImagesArray.push(imgUrl);
+                        document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImagesArray);
+
+                        // Visually remove it
+                        btnElement.closest('.existing-main-image-preview').remove();
+                    }
+                });
+            };
+
+            // --- Standard Form Submission Interception ---
+            const mainForm = document.querySelector('form.form-card');
+            mainForm.addEventListener('submit', async function (e) {
+                e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
+
+                // Prepare strictly JSON data without File objects
+                const cleanVariants = productVariants.map(v => {
+                    const { imageFiles, tempImages, ...rest } = v;
+                    return rest;
+                });
+                variantsDataInput.value = JSON.stringify(cleanVariants);
+
+                // Construct form data to natively pick up regular text fields
+                const formData = new FormData(mainForm);
+
+                // Append Main Images Manually (since name="images" was removed from input to avoid duplicates)
+                mainImageFilesArray.forEach((file) => {
+                    formData.append('images', file);
+                });
+
+                // Append variant images as their own index files in FormData array
+                productVariants.forEach((variant, vIndex) => {
+                    if (variant.imageFiles && variant.imageFiles.length > 0) {
+                        variant.imageFiles.forEach(file => {
+                            formData.append(`variant_${vIndex}_images`, file);
+                        });
                     }
                 });
 
-                const res = await fetch(mainForm.action || window.location.href, {
-                    method: 'POST',
-                    body: formData
-                });
+                try {
+                    Swal.fire({
+                        title: 'Saving Product...',
+                        text: 'Please wait while your product and images upload.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
 
-                // Since we rely on your Express backend to either redirect or return JSON
-                if (res.redirected) {
-                    window.location.href = res.url;
-                } else if (res.ok) {
-                    window.location.href = '/admin/products';
-                } else {
-                    const errorJson = await res.json().catch(() => ({}));
-                    Swal.fire('Error', errorJson.message || 'Failed to save product.', 'error');
+                    const res = await fetch(mainForm.action || window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    // Since we rely on your Express backend to either redirect or return JSON
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                    } else if (res.ok) {
+                        window.location.href = '/admin/products';
+                    } else {
+                        const errorJson = await res.json().catch(() => ({}));
+                        Swal.fire('Error', errorJson.message || 'Failed to save product.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Error', 'A network error occurred while uploading. Check your console.', 'error');
                 }
-            } catch (err) {
-                console.error(err);
-                Swal.fire('Error', 'A network error occurred while uploading. Check your console.', 'error');
-            }
-        });
+            });
 
-        const listToggle = document.querySelector('input[name="isListed"]');
-        listToggle.addEventListener('change', (e) => {
-            document.getElementById('statusLabel').innerText = e.target.checked ? 'List Product Immediately' : 'Save as Draft';
-            document.getElementById('visibilityLabel').innerText = e.target.checked ? 'Visibility: Public' : 'Visibility: Private';
-        });
-    </script>
+            const listToggle = document.querySelector('input[name="isListed"]');
+            listToggle.addEventListener('change', (e) => {
+                document.getElementById('statusLabel').innerText = e.target.checked ? 'List Product Immediately' : 'Save as Draft';
+                document.getElementById('visibilityLabel').innerText = e.target.checked ? 'Visibility: Public' : 'Visibility: Private';
+            });
+        </script>
 </body>
 
 </html>

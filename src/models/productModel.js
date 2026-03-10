@@ -19,13 +19,7 @@ const variantSchema = mongoose.Schema({
         of:String
     },images:{
         type:[String],
-        required:true,
-        validate:{
-            validator:function(val){
-                return val.length>=3;
-            },
-            message:"A variants must have at lease 3 images"
-        }
+        required:false
     },
     isListed:{
         type:Boolean,

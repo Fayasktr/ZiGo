@@ -1,5 +1,7 @@
 import asynchandler from "express-async-handler";
 import * as addressService from '../services/uAddressService.js';
+import { uploadToCloudinary } from '../config/cloudinary.js';
+
 
 export const showProfile = asynchandler(async (req, res) => {
 
@@ -108,11 +110,12 @@ export const resendEmailOtp = asynchandler(async (req, res) => {
 
 export const updateProfileImage = asynchandler(async (req, res) => {
     try {
+        
         if (!req.file) {
             throw new Error("no files to upload");
         }
         const userId = req.session.user.id || req.user.id;
-        const imageUrl = req.file.path;
+        const imageUrl = await uploadToCloudinary(req.file.buffer, 'your_product_folder');
 
         await addressService.updateProfileImage(userId, imageUrl);
         req.session.user.profileImage = imageUrl;

@@ -1,18 +1,21 @@
 import asynchandler from 'express-async-handler';
 import * as serviceOfProductAndCategory from '../../services/admin/categoryAndProductService.js';
+import { uploadToCloudinary } from '../../config/cloudinary.js';
+import sharp from "sharp";
+import { json } from 'express';
 
 export const getCategory = asynchandler(async (req, res) => {
     try {
-        let page =parseInt(req.query.page) || 1;
-        if(page<1) page=1;
-        const search =req.query.search ||"";
-        const limit=10;
-        const {category, totalCountOfCategory} = await serviceOfProductAndCategory.categoryData(page,limit,search);
-        const totalPages= Math.ceil(totalCountOfCategory/limit);
-        if(page>totalPages){
+        let page = parseInt(req.query.page) || 1;
+        if (page < 1) page = 1;
+        const search = req.query.search || "";
+        const limit = 10;
+        const { category, totalCountOfCategory } = await serviceOfProductAndCategory.categoryData(page, limit, search);
+        const totalPages = Math.ceil(totalCountOfCategory / limit);
+        if (page > totalPages) {
             return res.redirect(`/admin/category?page=${totalPages}`)
         }
-        res.render("admin/categories", { category,totalCount:totalCountOfCategory,currentPage:page,totalPages,limit,search });
+        res.render("admin/categories", { category, totalCount: totalCountOfCategory, currentPage: page, totalPages, limit, search });
     } catch (error) {
         req.flash("error", error.message);
         res.redirect("/admin/dashborad");
@@ -65,7 +68,6 @@ export const getEditCategoryPage = asynchandler(async (req, res) => {
 export const updateCategory = asynchandler(async (req, res) => {
     try {
         const categoryData = req.body;
-        console.log(categoryData._id)
         await serviceOfProductAndCategory.updateCategory(categoryData);
         res.status(200).json({ success: true, message: "updated category" });
     } catch (error) {
@@ -74,48 +76,104 @@ export const updateCategory = asynchandler(async (req, res) => {
 })
 
 //product controllers
-export const productPage =asynchandler( async(req,res)=>{
+export const productPage = asynchandler(async (req, res) => {
     try {
-        let page=parseInt(req.query.page)||1;
-        let search=req.query.search || "";
-        let limit=10;
-        let {products, totalCountOfProducts}=await serviceOfProductAndCategory.productPage(page,limit,search);
-        let totalPages=Math.ceil(totalCountOfProducts/limit)
-        res.render("admin/products",{
+        let page = parseInt(req.query.page) || 1;
+        let search = req.query.search || "";
+        let limit = 10;
+        let { products, totalCountOfProducts } = await serviceOfProductAndCategory.productPage(page, limit, search);
+        let totalPages = Math.ceil(totalCountOfProducts / limit)
+        res.render("admin/products", {
             products,
-            totalCount:totalCountOfProducts,
-            currentPage:page,
+            totalCount: totalCountOfProducts,
+            currentPage: page,
             totalPages,
             limit,
             search
         });
     } catch (error) {
         console.log(error)
-        req.flash("error",error.message);
+        req.flash("error", error.message);
         res.redirect("/admin/dashbord");
     }
 })
 
-export const addProductPage =asynchandler (async(req,res)=>{
+export const addProductPage = asynchandler(async (req, res) => {
     try {
-        const categoryList=await serviceOfProductAndCategory.addProductPage();
-        res.render("admin/addEditProduct",{category:categoryList});
+        const categoryList = await serviceOfProductAndCategory.addProductPage();
+        res.render("admin/addEditProduct", { category: categoryList });
     } catch (error) {
-        req.flash("error",error.message);
+        req.flash("error", error.message);
         res.redirect("/admin/dashboard");
     }
 })
 
-export const listAndUnlistProduct = asynchandler(async(req,res)=>{
+export const listAndUnlistProduct = asynchandler(async (req, res) => {
     try {
-        const productId=req.params.id;
-        const isListed=req.params.isListed=="true";
+        const productId = req.params.id;
+        const isListed = req.params.isListed == "true";
         console.log(isListed)
-        const update=await serviceOfProductAndCategory.listAndUnlistProduct(productId,isListed);
+        const update = await serviceOfProductAndCategory.listAndUnlistProduct(productId, isListed);
         console.log(update.isListed)
-        const list=update.isListed==true?"listed":"unlisted";
-        res.status(200).json({success:true, message:`product ${list}`});
+        const list = update.isListed == true ? "listed" : "unlisted";
+        res.status(200).json({ success: true, message: `product ${list}` });
     } catch (error) {
-        res.status(400).json({success:false,message:error.message});
+        res.status(400).json({ success: false, message: error.message });
     }
 });
+
+export const addProduct = asynchandler(async (req, res) => {
+    try {
+        const mainImageUrls=[];
+        const variantsImageUrls={}
+        console.log(req.body)
+        if(req.files && req.files.length>0){
+            for(let file of req.files){
+                const webpBuffer = await sharp(file.buffer).webp().toBuffer();
+                const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
+                
+                if(file.fieldname == "images"){
+                    mainImageUrls.push(url);
+                }else if(file.fieldname.startsWith("variant_")){
+                    if(!variantsImageUrls[file.fieldname]){
+                        variantsImageUrls[file.fieldname]=[];
+                    }
+                    variantsImageUrls[file.fieldname].push(url);
+                }
+            }
+        }
+        let variantArray=[];
+        if(req.body.variantData && req.body.variantData != "[]"){
+            variantArray=JSON.parse(req.body.variantData);
+        }
+        let formatedVariants=variantArray.map((variant,index)=>{
+            let variantImagesToUpload=variantsImageUrls[`variant_${index}_images`] || [];
+            return {
+                price:Number(variant.price),
+                stock:Number(variant.stock),
+                attributes: variant.attributes || {},
+                imagesAtribute:variantImagesToUpload,
+                isListed:true
+            }
+        })
+        const finalProductDataToUpload={
+            productName:req.body.name,
+            description:req.body.description,
+            brand:req.body.brand,
+            category:req.body.category,
+            isListed:req.body.isListed =="on"?true:false,
+            images:mainImageUrls,
+            variants: formatedVariants
+        }
+        console.log("final product to upload:-",finalProductDataToUpload);
+        const uploaded=await serviceOfProductAndCategory.addProduct(finalProductDataToUpload);
+        console.log("data after upload:",uploaded);
+        res.status(200).json({success:true,message:"product uploaded"});
+    } catch (error) {
+        console.log(error)
+        res.status(200).json({success:false,message:"product not uploaded"});
+    }
+})
+
+
+

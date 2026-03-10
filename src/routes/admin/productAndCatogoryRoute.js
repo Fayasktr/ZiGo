@@ -1,5 +1,6 @@
 import express from "express";
 import * as cateAndProdController from "../../controllers/admin/adminCategoryAndProductController.js";
+import upload from "../../middlewares/uploadMiddleware.js"
 
 const router =express.Router();
 
@@ -14,7 +15,7 @@ router.put("/admin/category/edit/:id",cateAndProdController.updateCategory);
 router.get("/admin/products",cateAndProdController.productPage);
 router.patch("/admin/products/:id/:isListed",cateAndProdController.listAndUnlistProduct);
 router.get("/admin/addProducts",cateAndProdController.addProductPage);
-// router.post("/admin/addProducts/")
+router.post("/admin/addProducts/add",upload.any(),cateAndProdController.addProduct);
 
 const categoryAndProductRoute = router;
 export default categoryAndProductRoute;
