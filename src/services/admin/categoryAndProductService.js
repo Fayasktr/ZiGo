@@ -51,6 +51,7 @@ export const updateCategory = async (categoryData) => {
             categoryName: categoryData.categoryName,
             iconClass: categoryData.iconClass,
             description: categoryData.description,
+            variantAttributes:categoryData.variantAttributes,
             isListed: categoryData.isListed === "on" ? true : false
         }
     );
