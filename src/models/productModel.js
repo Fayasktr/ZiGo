@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 
 const variantSchema = mongoose.Schema({
+    productId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Product"
+    },
     price:{
         type:Number,
         required:true
@@ -15,13 +19,7 @@ const variantSchema = mongoose.Schema({
         of:String
     },images:{
         type:[String],
-        required:true,
-        validate:{
-            validator:function(val){
-                return val.length>=3;
-            },
-            message:"A variants must have at lease 3 images"
-        }
+        required:false
     },
     isListed:{
         type:Boolean,
@@ -45,6 +43,9 @@ const productSchema = mongoose.Schema({
         ref:"category"
     },
     basePrice:{
+        type:Number
+    },
+    stock:{
         type:Number
     },
     images:{
@@ -73,19 +74,3 @@ const productModel = mongoose.model("productModel",productSchema);
 export default productModel;
 
 
-// Product
-// │
-// ├ name
-// ├ description
-// ├ brand
-// ├ category
-// ├ images
-// ├ isListed
-// │
-// └ variants[]
-//       │
-//       ├ attributes
-//       ├ price
-//       ├ stock
-//       ├ images
-//       └ isListed
