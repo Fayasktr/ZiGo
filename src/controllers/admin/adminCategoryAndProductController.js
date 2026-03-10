@@ -83,7 +83,7 @@ export const productPage = asynchandler(async (req, res) => {
         let limit = 10;
         let { products, totalCountOfProducts } = await serviceOfProductAndCategory.productPage(page, limit, search);
         let totalPages = Math.ceil(totalCountOfProducts / limit)
-        console.log("products detailse:-",products)
+        // console.log("products detailse:-", products)
         res.render("admin/products", {
             products,
             totalCount: totalCountOfProducts,
@@ -125,56 +125,82 @@ export const listAndUnlistProduct = asynchandler(async (req, res) => {
 
 export const addProduct = asynchandler(async (req, res) => {
     try {
-        const mainImageUrls=[];
-        const variantsImageUrls={}
-        console.log("req.body when uploading product:",req.body)
-        if(req.files && req.files.length>0){
-            for(let file of req.files){
+        const mainImageUrls = [];
+        const variantsImageUrls = {}
+        if (req.files && req.files.length > 0) {
+            for (let file of req.files) {
                 const webpBuffer = await sharp(file.buffer).webp().toBuffer();
                 const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
-                
-                if(file.fieldname == "images"){
+
+                if (file.fieldname == "images") {
                     mainImageUrls.push(url);
-                }else if(file.fieldname.startsWith("variant_")){
-                    if(!variantsImageUrls[file.fieldname]){
-                        variantsImageUrls[file.fieldname]=[];
+                } else if (file.fieldname.startsWith("variant_")) {
+                    if (!variantsImageUrls[file.fieldname]) {
+                        variantsImageUrls[file.fieldname] = [];
                     }
                     variantsImageUrls[file.fieldname].push(url);
                 }
             }
         }
-        let variantsArray=[];
-        if(req.body.variantsData && req.body.variantsData != "[]"){
-            variantsArray=JSON.parse(req.body.variantsData);
+        let variantsArray = [];
+        if (req.body.variantsData && req.body.variantsData != "[]") {
+            variantsArray = JSON.parse(req.body.variantsData);
         }
-        let formatedVariants=variantsArray.map((variant,index)=>{
-            let variantImagesToUpload=variantsImageUrls[`variant_${index}_images`] || [];
+        let formatedVariants = variantsArray.map((variant, index) => {
+            let variantImagesToUpload = variantsImageUrls[`variant_${index}_images`] || [];
             return {
-                price:Number(variant.price),
-                stock:Number(variant.stock),
+                price: Number(variant.price),
+                stock: Number(variant.stock),
                 attributes: variant.attributes || {},
-                images:variantImagesToUpload,
-                isListed:true
+                images: variantImagesToUpload,
+                isListed: true
             }
         })
-        const finalProductDataToUpload={
-            productName:req.body.name,
-            description:req.body.description,
-            brand:req.body.brand,
-            category:req.body.category,
-            isListed:req.body.isListed =="on"?true:false,
-            images:mainImageUrls,
+        if (formatedVariants.length === 0) {
+            throw new Error("at least 1 variant is required.");
+        }
+        if (mainImageUrls.length < 3) {
+            throw new Error("minimum 3 main images are required.");
+        }
+
+        const finalProductDataToUpload = {
+            productName: req.body.name,
+            description: req.body.description,
+            brand: req.body.brand,
+            category: req.body.category,
+            basePrice: formatedVariants[0].price,
+            isListed: req.body.isListed == "on" ? true : false,
+            images: mainImageUrls,
             variants: formatedVariants
         }
-        console.log("final product to upload:-",finalProductDataToUpload);
-        const uploaded=await serviceOfProductAndCategory.addProduct(finalProductDataToUpload);
-        console.log("data after upload:",uploaded);
-        res.status(200).json({success:true,message:"product uploaded"});
+        console.log("final product to upload:-", finalProductDataToUpload);
+        const uploaded = await serviceOfProductAndCategory.addProduct(finalProductDataToUpload);
+        console.log("data after upload:", uploaded);
+        res.status(200).json({ success: true, message: "product uploaded" });
     } catch (error) {
         console.log(error)
-        res.status(200).json({success:false,message:"product not uploaded"});
+        res.status(400).json({ success: false, message: error.message });
     }
 })
 
+export const editProductPage = asynchandler(async (req, res) => {
+    try {
+        const productId = req.params.id;
+        console.log("product Id: ", productId);
+        const { productForEdit, category } = await serviceOfProductAndCategory.editProductPage(productId);
+        console.log(productForEdit)
+        res.render("admin/addEditProduct", { product: productForEdit, isEdit: true, category });
+    } catch (error) {
+        req.flash("error", error.message);
+        res.redirect("/admin/products");
+    }
+})
 
-
+export const updateProduct = asynchandler(async (req, res) => {
+    try {
+        const update = await serviceOfProductAndCategory.updateProduct(req.body);
+        res.status(200).json({ success: true, message: "product update success.." })
+    } catch (error) {
+        res.status(400).json({ success: false, message: "product update failed" });
+    }
+})

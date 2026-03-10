@@ -42,6 +42,12 @@ const productSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"category"
     },
+    basePrice:{
+        type:Number
+    },
+    stock:{
+        type:Number
+    },
     images:{
         type:[String],
         validate:{
@@ -68,19 +74,3 @@ const productModel = mongoose.model("productModel",productSchema);
 export default productModel;
 
 
-// Product
-// │
-// ├ name
-// ├ description
-// ├ brand
-// ├ category
-// ├ images
-// ├ isListed
-// │
-// └ variants[]
-//       │
-//       ├ attributes
-//       ├ price
-//       ├ stock
-//       ├ images
-//       └ isListed

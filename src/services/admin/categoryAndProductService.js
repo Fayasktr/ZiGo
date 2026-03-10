@@ -91,3 +91,13 @@ export const addProduct=async(productData)=>{
     }
     return await productModel.create(productData);
 }
+
+export const editProductPage=async(productId)=>{
+    const productForEdit=await productModel.findById(productId);
+    const category=await categoryModel.find()
+    return {productForEdit,category};
+}
+
+export const updateProduct=async(reqData)=>{
+    console.log("req data:",reqData);
+}
