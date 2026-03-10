@@ -83,6 +83,7 @@ export const productPage = asynchandler(async (req, res) => {
         let limit = 10;
         let { products, totalCountOfProducts } = await serviceOfProductAndCategory.productPage(page, limit, search);
         let totalPages = Math.ceil(totalCountOfProducts / limit)
+        console.log("products detailse:-",products)
         res.render("admin/products", {
             products,
             totalCount: totalCountOfProducts,
@@ -126,7 +127,7 @@ export const addProduct = asynchandler(async (req, res) => {
     try {
         const mainImageUrls=[];
         const variantsImageUrls={}
-        console.log(req.body)
+        console.log("req.body when uploading product:",req.body)
         if(req.files && req.files.length>0){
             for(let file of req.files){
                 const webpBuffer = await sharp(file.buffer).webp().toBuffer();
@@ -142,17 +143,17 @@ export const addProduct = asynchandler(async (req, res) => {
                 }
             }
         }
-        let variantArray=[];
-        if(req.body.variantData && req.body.variantData != "[]"){
-            variantArray=JSON.parse(req.body.variantData);
+        let variantsArray=[];
+        if(req.body.variantsData && req.body.variantsData != "[]"){
+            variantsArray=JSON.parse(req.body.variantsData);
         }
-        let formatedVariants=variantArray.map((variant,index)=>{
+        let formatedVariants=variantsArray.map((variant,index)=>{
             let variantImagesToUpload=variantsImageUrls[`variant_${index}_images`] || [];
             return {
                 price:Number(variant.price),
                 stock:Number(variant.stock),
                 attributes: variant.attributes || {},
-                imagesAtribute:variantImagesToUpload,
+                images:variantImagesToUpload,
                 isListed:true
             }
         })
