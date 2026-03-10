@@ -84,7 +84,7 @@ export const addAddress = async (userEmail, addressData) => {
         throw new Error("there is now user found ");
     }
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
-    
+
     let shouldBeDefault = addressData.isDefault || !defaultAddres;
     if(shouldBeDefault && defaultAddres){
         await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
@@ -150,7 +150,6 @@ export const deleteAddress = async (userId, addressId) => {
         throw new Error("address already deleted..");
     }
     return 0;
-
 }
 
 export const wishlistPage = async (userId) => {

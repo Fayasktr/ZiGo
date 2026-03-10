@@ -24,7 +24,7 @@ export const login = asyncHandler(async (req, res) => {
       email: existUser.email,
       profileImage:existUser.profileImage
     };
-    res.redirect("ZiGo.com");
+    res.redirect("/ZiGo.com");
   } catch (error) {
     req.flash("error", error.message);
     res.redirect("/login");
@@ -94,9 +94,9 @@ export const otpVerify = asyncHandler(async (req, res) => {
   try {
     const entredOtp = req.body.otp;
     const userId = req.body.userId;
-    console.log("entered otp"+entredOtp);
+    console.log("entered otp" + entredOtp);
 
-    const newUser=await userServises.verifyOtp(entredOtp, userId);
+    const newUser = await userServises.verifyOtp(entredOtp, userId);
     if (req.session.otpMode == "forgetPass") {
       let tempMail = req.session.tempMail
       res.render("user/resetPassword", { email: tempMail });

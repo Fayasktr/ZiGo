@@ -37,8 +37,8 @@ export const wishlistUpdate = asyncHandler(async (req, res) => {
 
 export const addToCart = asyncHandler(async (req, res) => {
     try {
-        
+
     } catch (error) {
-        
+
     }
 })
