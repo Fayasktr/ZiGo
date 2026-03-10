@@ -7,10 +7,7 @@ import { GenerateOTP } from "../utils/otp.js"
 import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
 import wishlistModel from "../models/wishlistModel.js";
-<<<<<<< HEAD
-=======
 import cartModel from "../models/cartModel.js";
->>>>>>> feature-product
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
