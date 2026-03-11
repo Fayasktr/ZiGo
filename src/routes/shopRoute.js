@@ -9,7 +9,7 @@ router.get("/shop", shopCntrl.loadShop);
 router.get("/productDetailse/:productId", shopCntrl.loadProductDetailsePage);
 
 router.patch("/shop/wishlist/:id", wishlistAndCart.isThereUser, shopCntrl.wishlistUpdate);
-// router.patch("/shop/cart/:id")
+router.post("/shop/cart/:id",shopCntrl.addToCart);
 
 const shopRoute = router;
 

@@ -328,12 +328,14 @@
             transition: var(--transition);
         }
 
-        /* --- Tabs --- */
+        /* --- Scroll Navigation --- */
         .tabs-nav {
             display: flex;
             gap: 4rem;
             border-bottom: 2px solid var(--gray-light);
             margin-bottom: 3rem;
+            background: var(--white);
+            padding-top: 1rem;
         }
 
         .tab-trigger {
@@ -342,6 +344,7 @@
             opacity: 0.4;
             cursor: pointer;
             position: relative;
+            transition: var(--transition);
         }
 
         .tab-trigger.active {
@@ -357,14 +360,13 @@
             width: 100%;
             height: 3px;
             background: var(--primary-orange);
+            transition: var(--transition);
         }
 
         .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
             display: block;
+            scroll-margin-top: 100px;
+            margin-bottom: 80px;
         }
 
         .reveal {
@@ -573,19 +575,23 @@
 
                                 <section class="reveal">
                                     <div class="tabs-nav">
-                                        <div class="tab-trigger active" onclick="switchTab('desc', this)">Description
-                                        </div>
-                                        <div class="tab-trigger" onclick="switchTab('specs', this)">Specifications</div>
-                                        <div class="tab-trigger" onclick="switchTab('reviews', this)">Reviews</div>
+                                        <div class="tab-trigger active" data-target="desc-panel"
+                                            onclick="scrollToSection('desc-panel')">Description</div>
+                                        <div class="tab-trigger" data-target="specs-panel"
+                                            onclick="scrollToSection('specs-panel')">Specifications</div>
+                                        <div class="tab-trigger" data-target="reviews-panel"
+                                            onclick="scrollToSection('reviews-panel')">Reviews</div>
                                     </div>
 
-                                    <div id="desc-panel" class="tab-panel active">
+                                    <div id="desc-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Description</h3>
                                         <p class="text-lg opacity-70 leading-relaxed max-w-4xl">
                                             <%= product.description %>
                                         </p>
                                     </div>
 
                                     <div id="specs-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Specifications</h3>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl">
                                             <% if (product.specifications) { %>
                                                 <% product.specifications.forEach(spec=> { %>
@@ -603,6 +609,7 @@
                                     </div>
 
                                     <div id="reviews-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
                                         <div class="flex items-center gap-12 p-8 bg-gray-50 rounded-3xl mb-12">
                                             <div class="text-center">
                                                 <h2 class="text-5xl font-extrabold mb-2">4.8</h2>
@@ -611,6 +618,7 @@
                                             <p class="opacity-50">"Premium build quality and exceptional performance.
                                                 ZiGo never disappoints!" - <i>Verified User</i></p>
                                         </div>
+                                    </div>
                                 </section>
 
                                 <% if (relatedProducts && relatedProducts.length> 0) { %>
@@ -674,12 +682,35 @@
                                         let v = parseInt(i.value) + n;
                                         if (v > 0) i.value = v;
                                     }
-                                    function switchTab(id, e) {
-                                        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                                        document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
-                                        document.getElementById(id + '-panel').classList.add('active');
-                                        e.classList.add('active');
+                                    function scrollToSection(id) {
+                                        const el = document.getElementById(id);
+                                        if (el) {
+                                            const y = el.getBoundingClientRect().top + window.scrollY - 100;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }
                                     }
+
+                                    window.addEventListener('scroll', () => {
+                                        const panels = document.querySelectorAll('.tab-panel');
+                                        const triggers = document.querySelectorAll('.tab-trigger');
+
+                                        let currentPanel = '';
+                                        panels.forEach(panel => {
+                                            const panelTop = panel.getBoundingClientRect().top;
+                                            if (panelTop <= 150) {
+                                                currentPanel = panel.getAttribute('id');
+                                            }
+                                        });
+
+                                        if (currentPanel) {
+                                            triggers.forEach(trigger => {
+                                                trigger.classList.remove('active');
+                                                if (trigger.getAttribute('data-target') === currentPanel) {
+                                                    trigger.classList.add('active');
+                                                }
+                                            });
+                                        }
+                                    });
                                     window.addEventListener('load', () => {
                                         document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
                                     });

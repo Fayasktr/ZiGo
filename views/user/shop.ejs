@@ -623,10 +623,31 @@
 
                                 async function addToCart(productId) {
                                     try {
-                                        let update=await fetch(`/shop/cart/${productId}`);
+                                        let update=await fetch(`/shop/cart/${productId}`{
+                                            method:"POST",
+                                            headers: { "Content-Type": "application/json" }
+                                        });
                                         let result=await update.json();
+                                        if(update.ok && result.success){
+                                            Swal.fire({
+                                                icon: "success",
+                                                title: result.message,
+                                                toast: true,
+                                                position: "top",
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            })
+                                        }
                                     } catch (error) {
-                                        
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Action failed",
+                                            text: error.message || "Could not able to add to cart",
+                                            toast: true,
+                                            position: 'top',
+                                            showConfirmButton: false,
+                                            timer: 3000
+                                        });
                                     }
                                     console.log('Add to cart:', productId);
                                 }
