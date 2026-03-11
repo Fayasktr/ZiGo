@@ -256,9 +256,24 @@
 
                                             <div class="w-40 h-40 flex items-center justify-center mb-4 cursor-pointer"
                                                 onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
-                                                <img src="<%= (item.productId.variants && item.productId.variants[0] && item.productId.variants[0].images) ? '/' + item.productId.variants[0].images[0] : '/public/landing/no-image.png' %>"
-                                                    alt="<%= item.productId.productName %>"
-                                                    class="max-w-full max-h-full object-contain">
+                                                <% let targetVid=item.variantId ? item.variantId.toString() : null; let
+                                                    wVariant=null; if (item.productId.variants) {
+                                                    wVariant=item.productId.variants.find(v=> v._id.toString() ===
+                                                    targetVid);
+                                                    if (!wVariant) wVariant = item.productId.variants[0];
+                                                    }
+                                                    let wImgSrc='/public/landing/no-image.png' ;
+                                                    if (wVariant && wVariant.images && wVariant.images.length> 0) {
+                                                    let wUrl = wVariant.images[0];
+                                                    if (wUrl.startsWith('http') || wUrl.startsWith('/')) {
+                                                    wImgSrc = wUrl;
+                                                    } else {
+                                                    wImgSrc = '/' + wUrl;
+                                                    }
+                                                    }
+                                                    %>
+                                                    <img src="<%= wImgSrc %>" alt="<%= item.productId.productName %>"
+                                                        class="max-w-full max-h-full object-contain">
                                             </div>
 
                                             <h4 class="font-bold text-center mb-1 text-lg">
@@ -269,8 +284,8 @@
                                             </p>
 
                                             <p class="text-orange-500 font-extrabold text-xl mb-6">
-                                                ₹<%= (item.productId.variants && item.productId.variants[0]) ?
-                                                    item.productId.variants[0].price.toLocaleString() : 'N/A' %>
+                                                ₹<%= (wVariant && wVariant.price) ? wVariant.price.toLocaleString()
+                                                    : 'N/A' %>
                                             </p>
 
                                             <div class="flex flex-col gap-2 w-full">

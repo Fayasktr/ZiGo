@@ -208,7 +208,7 @@ export const deleteAddress = asynchandler(async (req, res) => {
 
 export const wishlistPage=asynchandler(async(req,res)=>{
     try {
-        const userId = req.session.user._id || req.user._id;
+        const userId = req.session.user.id || req.user.id;
         const wishlist = await addressService.wishlistPage(userId);
         res.render("user/userAfterLogin/wishlist", { wishlist, user: req.session.user || req.user });
     } catch (error) {
@@ -219,7 +219,7 @@ export const wishlistPage=asynchandler(async(req,res)=>{
 
 export const cartPage=asynchandler(async(req,res)=>{
     try {
-        const userId = req.session?.user?.id || req.user?.id || req.session?.user?._id || req.user?._id;
+        const userId = req.session?.user?.id || req.user?.id 
         if(!userId){
             throw new Error("user not found")
         }

@@ -650,17 +650,30 @@
                                                     onclick="window.location.href='/productDetailse/<%= rel._id %>'">
                                                     <div
                                                         class="aspect-square bg-gray-50 rounded-3xl p-8 flex items-center justify-center border border-transparent group-hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
-                                                        <img src="<%= (rel.variants && rel.variants[0] && rel.variants[0].images) ? '/' + rel.variants[0].images[0] : '/public/landing/no-image.png' %>"
-                                                            alt="<%= rel.productName %>"
-                                                            class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
-                                                        <% if (rel.variants[0].mrp> rel.variants[0].price) { %>
-                                                            <span
-                                                                class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
-                                                                <%= Math.round(((rel.variants[0].mrp -
-                                                                    rel.variants[0].price)/rel.variants[0].mrp)*100) %>
-                                                                    %
-                                                            </span>
-                                                            <% } %>
+                                                        <% let relImgSrc='/public/landing/no-image.png' ; if
+                                                            (rel.variants && rel.variants.length> 0 &&
+                                                            rel.variants[0].images && rel.variants[0].images.length > 0)
+                                                            {
+                                                            let relUrl = rel.variants[0].images[0];
+                                                            if (relUrl.startsWith('http') || relUrl.startsWith('/')) {
+                                                            relImgSrc = relUrl;
+                                                            } else {
+                                                            relImgSrc = '/' + relUrl;
+                                                            }
+                                                            }
+                                                            %>
+                                                            <img src="<%= relImgSrc %>" alt="<%= rel.productName %>"
+                                                                class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
+                                                            <% if (rel.variants && rel.variants[0] &&
+                                                                rel.variants[0].mrp> rel.variants[0].price) { %>
+                                                                <span
+                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
+                                                                    <%= Math.round(((rel.variants[0].mrp -
+                                                                        rel.variants[0].price)/rel.variants[0].mrp)*100)
+                                                                        %>
+                                                                        %
+                                                                </span>
+                                                                <% } %>
                                                     </div>
                                                     <div class="mt-5">
                                                         <h3

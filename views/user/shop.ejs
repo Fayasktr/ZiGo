@@ -448,13 +448,30 @@
                                     <% if (products && products.length> 0) { %>
                                         <div class="product-grid">
                                             <% products.forEach((product, index)=> { %>
-                                                <div class="product-card reveal active" data-id="<%=product._id%>">
+                                                <div class="product-card reveal active" data-id="<%=product._id%>"
+                                                    data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
                                                     <div class="img-container">
-                                                        <button class="wishlist-heart-btn" title="Add to Wishlist">
-                                                            <i class="fas fa-heart"></i>
-                                                        </button>
-                                                        <img src="<%= (product.variants && product.variants[0] && product.variants[0].images) ? '/' + product.variants[0].images[0] : '/public/landing/no-image.png' %>"
-                                                            alt="<%= product.productName %>">
+                                                        <% const variantIdStr=(product.variants && product.variants[0])
+                                                            ? product.variants[0]._id.toString() : '' ; const
+                                                            inWishlist=typeof userWishlist !=='undefined' &&
+                                                            userWishlist.includes(variantIdStr); let
+                                                            imgSrc='/public/landing/no-image.png' ; if (product.variants
+                                                            && product.variants.length> 0 && product.variants[0].images
+                                                            && product.variants[0].images.length > 0) {
+                                                            let imgUrl = product.variants[0].images[0];
+                                                            if (imgUrl.startsWith('http') || imgUrl.startsWith('/')) {
+                                                            imgSrc = imgUrl;
+                                                            } else {
+                                                            imgSrc = '/' + imgUrl;
+                                                            }
+                                                            }
+                                                            %>
+                                                            <button
+                                                                class="wishlist-heart-btn <%= inWishlist ? 'active' : '' %>"
+                                                                title="Add to Wishlist">
+                                                                <i class="fas fa-heart"></i>
+                                                            </button>
+                                                            <img src="<%= imgSrc %>" alt="<%= product.productName %>">
                                                     </div>
                                                     <div class="product-info">
                                                         <span class="p-cat">
@@ -552,18 +569,19 @@
                                     const card = event.target.closest(".product-card");
                                     if (!card) return;
                                     const productId = card.dataset.id;
+                                    const variantId = card.dataset.variantId;
 
                                     // Check IF they clicked the Wishlist Button
                                     const wishlistBtn = event.target.closest('.wishlist-heart-btn');
                                     if (wishlistBtn) {
-                                        toggleWishlist(productId, wishlistBtn); // Pass the button here
+                                        toggleWishlist(productId, variantId, wishlistBtn); // Pass the button here
                                         return;
                                     }
 
                                     // Check IF they clicked the Add to Cart Button
                                     const cartBtn = event.target.closest('.add-cart-btn');
                                     if (cartBtn) {
-                                        addToCart(productId);
+                                        addToCart(productId, variantId);
                                         return;
                                     }
 
@@ -571,9 +589,9 @@
                                     window.location.href = `/productDetailse/${productId}`;
                                 })
 
-                                async function toggleWishlist(productId, btnElement) {
+                                async function toggleWishlist(productId, variantId, btnElement) {
                                     try {
-                                        const update = await fetch(`/shop/wishlist/${productId}`, {
+                                        const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
                                             method: "PATCH",
                                             headers: { "Content-Type": "application/json" }
                                         });
@@ -626,15 +644,32 @@
 
                                 }
 
-                                async function addToCart(productId) {
+                                async function addToCart(productId, variantId) {
                                     try {
                                         console.log(productId)
-                                        let update = await fetch(`/shop/cart/${productId}`,{
+                                        let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
                                             method: "POST",
                                             headers: { "Content-Type": "application/json" }
                                         });
+
+                                        if (update.status === 401) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Login Required',
+                                                text: 'You need to be logged in to manage your cart.',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#FF5A1F',
+                                                confirmButtonText: 'Login Now'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = '/login';
+                                                }
+                                            });
+                                            return;
+                                        }
+
                                         let result = await update.json();
-                                        console.log("result",result);
+                                        console.log("result", result);
                                         if (update.ok && result.success) {
                                             Swal.fire({
                                                 icon: "success",
@@ -644,6 +679,8 @@
                                                 showConfirmButton: false,
                                                 timer: 3000
                                             })
+                                        } else {
+                                            throw new Error(result.message || "Could not add to cart");
                                         }
                                     } catch (error) {
                                         Swal.fire({
@@ -655,8 +692,7 @@
                                             showConfirmButton: false,
                                             timer: 3000
                                         });
-                                        let update = await fetch(`/shop/cart/${productId}`);
-                                        let result = await update.json();
+
                                     }
                                     console.log('Add to cart:', productId);
                                 }
