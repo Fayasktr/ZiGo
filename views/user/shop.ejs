@@ -367,21 +367,17 @@
                                         <div class="filter-section">
                                             <h4>Categories</h4>
                                             <ul class="filter-list">
-                                                <li class="filter-item">
-                                                    <label>
-                                                        <input type="radio" name="category" value=""
-                                                            <%=!selectedCategory ? 'checked' : '' %>
-                                                        onchange="submitFilters()">
-                                                        All Categories
-                                                    </label>
-                                                </li>
-                                                <% categories.forEach(cat=> { %>
+                                                <% categories.forEach(cat=> {
+                                                    const isChecked = Array.isArray(selectedCategory)
+                                                    ? selectedCategory.includes(cat.categoryName)
+                                                    : selectedCategory === cat.categoryName;
+                                                    %>
                                                     <li class="filter-item">
                                                         <label>
-                                                            <input type="radio" name="category"
-                                                                value="<%= cat.categoryName %>"
-                                                                <%=selectedCategory===cat.categoryName ? 'checked' : ''
-                                                                %> onchange="submitFilters()">
+                                                            <input type="checkbox" name="category"
+                                                                value="<%= cat.categoryName %>" <%=isChecked ? 'checked'
+                                                                : '' %>
+                                                            onchange="submitFilters()">
                                                             <%= cat.categoryName %>
                                                         </label>
                                                     </li>
@@ -454,8 +450,7 @@
                                             <% products.forEach((product, index)=> { %>
                                                 <div class="product-card reveal active" data-id="<%=product._id%>">
                                                     <div class="img-container">
-                                                        <button class="wishlist-heart-btn" title="Add to Wishlist"
-                                                            onclick="toggleWishlist('<%= product._id %>',this)">
+                                                        <button class="wishlist-heart-btn" title="Add to Wishlist">
                                                             <i class="fas fa-heart"></i>
                                                         </button>
                                                         <img src="<%= (product.variants && product.variants[0] && product.variants[0].images) ? '/' + product.variants[0].images[0] : '/public/landing/no-image.png' %>"
@@ -481,8 +476,7 @@
                                                                 </div>
                                                                 <!-- MRP if applicable -->
                                                             </div>
-                                                            <button class="add-cart-btn"
-                                                                onclick="addToCart('<%= product._id %>')">
+                                                            <button class="add-cart-btn">
                                                                 <svg width="20" height="20" viewBox="0 0 24 24"
                                                                     fill="none" stroke="currentColor" stroke-width="2">
                                                                     <path d="M12 5v14M5 12h14"></path>
@@ -519,10 +513,16 @@
                                     const form = document.getElementById('filterForm');
                                     const formData = new FormData(form);
                                     const params = new URLSearchParams(window.location.search);
+
+                                    // Remove existing array-like params to prevent duplication
+                                    params.delete('category');
+                                    params.delete('price');
+
                                     // Update params from form
                                     for (const [key, value] of formData.entries()) {
-                                        if (value) params.set(key, value);
-                                        else params.delete(key);
+                                        if (value) {
+                                            params.append(key, value);
+                                        }
                                     }
 
                                     params.set('page', '1'); // Reset to page 1 on filter
@@ -553,16 +553,21 @@
                                     if (!card) return;
                                     const productId = card.dataset.id;
 
-                                    // Check IF they clicked the Cart or wishlist Button
+                                    // Check IF they clicked the Wishlist Button
                                     const wishlistBtn = event.target.closest('.wishlist-heart-btn');
                                     if (wishlistBtn) {
                                         toggleWishlist(productId, wishlistBtn); // Pass the button here
                                         return;
                                     }
-                                    if (event.target.closest('.cart-btn-trigger')) {
+
+                                    // Check IF they clicked the Add to Cart Button
+                                    const cartBtn = event.target.closest('.add-cart-btn');
+                                    if (cartBtn) {
                                         addToCart(productId);
                                         return;
                                     }
+
+                                    // Otherwise redirect to product details
                                     window.location.href = `/productDetailse/${productId}`;
                                 })
 
@@ -623,12 +628,14 @@
 
                                 async function addToCart(productId) {
                                     try {
-                                        let update=await fetch(`/shop/cart/${productId}`{
-                                            method:"POST",
+                                        console.log(productId)
+                                        let update = await fetch(`/shop/cart/${productId}`,{
+                                            method: "POST",
                                             headers: { "Content-Type": "application/json" }
                                         });
-                                        let result=await update.json();
-                                        if(update.ok && result.success){
+                                        let result = await update.json();
+                                        console.log("result",result);
+                                        if (update.ok && result.success) {
                                             Swal.fire({
                                                 icon: "success",
                                                 title: result.message,
@@ -648,6 +655,8 @@
                                             showConfirmButton: false,
                                             timer: 3000
                                         });
+                                        let update = await fetch(`/shop/cart/${productId}`);
+                                        let result = await update.json();
                                     }
                                     console.log('Add to cart:', productId);
                                 }

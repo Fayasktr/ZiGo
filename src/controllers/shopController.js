@@ -15,7 +15,7 @@ export const loadProductDetailsePage = asyncHandler(async (req, res) => {
     try {
         const productId = req.params.productId;
         const { product, relatedProducts } = await shopService.productDetailsePage(productId);
-        console.log("kdjnfkdj")
+        console.log("product detailse:",product)
         res.render("user/productDetailse", { product, relatedProducts });
     } catch (error) {
         console.log(error)

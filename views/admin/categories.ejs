@@ -190,6 +190,43 @@
             color: #FF4757;
         }
 
+        /* --- Attribute Tags --- */
+        .attribute-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .attr-tag {
+            background: rgba(255, 90, 31, 0.08);
+            color: var(--primary-orange);
+            border: 1px solid rgba(255, 90, 31, 0.15);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .attr-tag:hover {
+            background: var(--primary-orange);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2);
+        }
+
+        .no-attr {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+        }
+
         /* Modal Simulation */
         .modal-btn {
             padding: 0.8rem 1.5rem;
@@ -402,6 +439,17 @@
                             <%= cat.categoryName %>
                         </h3>
                         <p class="cat-count">0 Products Listed</p>
+                        
+                        <!-- Variant Attributes Section -->
+                        <div class="attribute-container">
+                            <% if (cat.variantAttributes && cat.variantAttributes.length > 0) { %>
+                                <% cat.variantAttributes.forEach(attr => { %>
+                                    <span class="attr-tag"><%= attr %></span>
+                                <% }) %>
+                            <% } else { %>
+                                <span class="no-attr">No variants defined</span>
+                            <% } %>
+                        </div>
                         <div class="flex gap-2 mt-8">
                             <a href="/admin/category/edit/<%= cat._id %>"
                                 class="modal-btn bg-white/5 text-center flex-1 hover:bg-white/10">Edit</a>

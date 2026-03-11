@@ -353,26 +353,40 @@
         });
 
         // --- TIMER LOGIC ---
-        let timeLeft = 60;
+        let timeLeft;
         let countdown;
 
         function startTimer() {
             resendBtn.classList.add('disabled');
             timerBox.classList.remove('hidden');
-            timeLeft = 60;
+
+            // Calculate initial time left in seconds
+            const expiryTime = Number("<%=otpTime%>");
+            const currentTime = Date.now();
+            timeLeft = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
+
+            updateTimerDisplay();
+
             clearInterval(countdown);
             countdown = setInterval(() => {
                 timeLeft--;
-                const mins = Math.floor(timeLeft / 60);
-                const secs = timeLeft % 60;
-                timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
+                    timeLeft = 0;
+                    updateTimerDisplay();
                     timerBox.classList.add('hidden');
                     resendBtn.classList.remove('disabled');
+                } else {
+                    updateTimerDisplay();
                 }
             }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
         // --- INPUT NAVIGATION ---

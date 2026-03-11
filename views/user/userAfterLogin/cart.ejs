@@ -305,12 +305,12 @@
                                     <div class="flex items-center mt-4 gap-6">
                                         <div class="qty-control">
                                             <button class="qty-btn"
-                                                onclick="updateQuantity('<%= item.productId._id %>', -1, <%= item.quantity %>)">-</button>
+                                                onclick="updateQuantity('<%= item.productId._id %>', -1, '<%= item.quantity %>')">-</button>
                                             <span class="font-bold">
                                                 <%= item.quantity %>
                                             </span>
                                             <button class="qty-btn"
-                                                onclick="updateQuantity('<%= item.productId._id %>', 1, <%= item.quantity %>)">+</button>
+                                                onclick="updateQuantity('<%= item.productId._id %>', 1, '<%= item.quantity %>')">+</button>
                                         </div>
                                     </div>
                                 </div>

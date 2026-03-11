@@ -12,6 +12,7 @@
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/drift-zoom/dist/drift-basic.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -403,16 +404,19 @@
                                             <button class="wishlist-btn" onclick="toggleWishlist('<%= product._id %>')">
                                                 <i class="fas fa-heart text-2xl"></i>
                                             </button>
-                                            <img id="mainImage"
-                                                src="<%= (defaultVariant.images && defaultVariant.images[0]) ? '/' + defaultVariant.images[0] : '/public/landing/no-image.png' %>"
-                                                alt="<%= product.productName %>">
+                                            <% const defaultImg=(defaultVariant.images && defaultVariant.images[0]) ?
+                                                (defaultVariant.images[0].startsWith('http') ? defaultVariant.images[0]
+                                                : '/' + defaultVariant.images[0]) : '/public/landing/no-image.png' ; %>
+                                                <img id="mainImage" src="<%= defaultImg %>"
+                                                    data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
                                         </div>
                                         <div class="thumbnail-grid">
-                                            <% if (defaultVariant.images) { %>
-                                                <% defaultVariant.images.forEach((img, idx)=> { %>
+                                            <% if (product.images) { %>
+                                                <% product.images.forEach((img, idx)=> { %>
                                                     <div class="thumb-btn <%= idx === 0 ? 'active' : '' %>"
                                                         onclick="updateImg('<%= img %>', this)">
-                                                        <img src="/<%= img %>" alt="">
+                                                        <img src="<%= img.startsWith('http') ? img : '/' + img %>"
+                                                            alt="">
                                                     </div>
                                                     <% }) %>
                                                         <% } %>
@@ -420,7 +424,12 @@
                                     </div>
 
                                     <!-- Info -->
-                                    <div class="reveal" data-delay="300">
+                                    <div class="reveal relative" data-delay="300" id="infoColumn">
+                                        <!-- Drift Zoom Target Pane -->
+                                        <div id="zoomPane"
+                                            class="absolute inset-0 bg-white z-[99] hidden rounded-3xl overflow-hidden pointer-events-none shadow-2xl border border-gray-100">
+                                        </div>
+
                                         <nav class="flex gap-2 text-sm opacity-50 mb-6">
                                             <a href="/">Home</a> / <a href="/shop">Shop</a> / <span>
                                                 <%= product.productName %>
@@ -671,12 +680,44 @@
 
                             <%- include('../partials/footer') %>
 
+                                <script src="https://unpkg.com/drift-zoom/dist/Drift.min.js"></script>
                                 <script>
+                                    let driftInstance;
+                                    const mainImg = document.getElementById('mainImage');
+                                    const pane = document.getElementById('zoomPane');
+
+                                    function initDrift() {
+                                        if (driftInstance) {
+                                            driftInstance.destroy();
+                                        }
+                                        driftInstance = new Drift(mainImg, {
+                                            paneContainer: pane,
+                                            inlinePane: 1024,
+                                            inlineOffsetY: -85,
+                                            containInline: true,
+                                            hoverBoundingBox: true,
+                                            zoomFactor: 2.5
+                                        });
+                                    }
+
+                                    // Toggle visibility of the zoom pane manually to lay smoothly over content
+                                    mainImg.addEventListener('mouseenter', () => {
+                                        if (window.innerWidth > 1024) pane.classList.remove('hidden');
+                                    });
+
+                                    mainImg.addEventListener('mouseleave', () => {
+                                        pane.classList.add('hidden');
+                                    });
+
                                     function updateImg(s, e) {
-                                        document.getElementById('mainImage').src = s;
+                                        const imgUrl = s.startsWith('http') ? s : '/' + s;
+                                        mainImg.src = imgUrl;
+                                        mainImg.setAttribute('data-zoom', imgUrl);
                                         document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
                                         e.classList.add('active');
+                                        initDrift(); // Reinitialize drift with the new image
                                     }
+
                                     function changeQty(n) {
                                         let i = document.getElementById('qty');
                                         let v = parseInt(i.value) + n;
@@ -711,8 +752,17 @@
                                             });
                                         }
                                     });
+
+                                    function switchTab(id, e) {
+                                        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                                        document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+                                        document.getElementById(id + '-panel').classList.add('active');
+                                        e.classList.add('active');
+                                    }
+
                                     window.addEventListener('load', () => {
                                         document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+                                        initDrift();
                                     });
 
                                     // Placeholder for dynamic variant selection

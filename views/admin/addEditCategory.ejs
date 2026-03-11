@@ -304,6 +304,54 @@
                 </div>
             </div>
 
+            <div class="form-group relative">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="form-label !mb-0">Variant Attributes</label>
+                    <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
+                </div>
+
+                <!-- Input area -->
+                <div class="relative flex items-center mb-5">
+                    <div class="absolute left-5 text-white/40"><i class="fas fa-magic"></i></div>
+                    <input type="text" id="newAttributeInput" class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50" placeholder="Type attribute (e.g., RAM, Color) and press Enter..." onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
+                    <button type="button" onclick="addVariantAttributeInline()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+
+                <!-- Tags container -->
+                <div id="variantAttributesContainer" class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
+                    <!-- Glassmorphic glow effect -->
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none"></div>
+                    
+                    <% 
+                        let attributesToDisplay = [];
+                        if (locals.isEdit) {
+                            attributesToDisplay = category.variantAttributes || [];
+                        } else {
+                            attributesToDisplay = ['Price', 'Stock'];
+                        }
+                    %>
+
+                    <% if (attributesToDisplay.length > 0) { %>
+                        <% attributesToDisplay.forEach((attr, index) => { %>
+                            <div class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
+                                <span class="font-bold text-sm tracking-wide"><%= attr %></span>
+                                <button type="button" onclick="removeVariantAttribute(this)" class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                                    <i class="fas fa-times text-[10px]"></i>
+                                </button>
+                                <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div id="noAttributesText" class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes defined yet</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Description (Optional)</label>
                 <textarea name="description" class="form-input h-32" style="resize: none;"
@@ -332,13 +380,106 @@
             statusText.innerText = e.target.checked ? 'Active & Listed' : 'Blocked';
         });
 
+        function addVariantAttributeInline() {
+            const input = document.getElementById('newAttributeInput');
+            const attributeName = input.value.trim();
+
+            if (!attributeName) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'warning',
+                    title: 'Please type an attribute first!',
+                    showConfirmButton: false, timer: 2000,
+                    background: '#1A1A1A', color: '#fff'
+                });
+                return;
+            }
+
+            const noText = document.getElementById('noAttributesText');
+            if (noText) noText.remove();
+
+            const container = document.getElementById('variantAttributesContainer');
+            
+            // Check for duplicates
+            const existingInputs = container.querySelectorAll('input[name="variantAttributes[]"]');
+            let isDuplicate = false;
+            existingInputs.forEach(existingInput => {
+                if (existingInput.value.toLowerCase() === attributeName.toLowerCase()) {
+                    isDuplicate = true;
+                }
+            });
+
+            if (isDuplicate) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'error',
+                    title: 'Attribute already exists!',
+                    showConfirmButton: false, timer: 2000,
+                    background: '#1A1A1A', color: '#fff'
+                });
+                input.style.border = '1px solid red';
+                setTimeout(() => input.style.border = '', 500);
+                return;
+            }
+
+            // Create new tag element
+            const tagDiv = document.createElement('div');
+            // Adding a snappy scale-in transition
+            tagDiv.className = 'variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group scale-95 opacity-0';
+            tagDiv.innerHTML = `
+                <span class="font-bold text-sm tracking-wide">${escapeHtml(attributeName)}</span>
+                <button type="button" onclick="removeVariantAttribute(this)" class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+                <input type="hidden" name="variantAttributes[]" value="${escapeHtml(attributeName)}">
+            `;
+
+            container.appendChild(tagDiv);
+            
+            // Trigger animation after append
+            requestAnimationFrame(() => {
+                tagDiv.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                tagDiv.classList.remove('scale-95', 'opacity-0');
+            });
+
+            input.value = ''; // Clear input
+            input.focus();
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function removeVariantAttribute(button) {
+            const tag = button.closest('.variant-tag');
+            
+            // Animate scale out before removing
+            tag.style.transform = 'scale(0.9)';
+            tag.style.opacity = '0';
+            
+            setTimeout(() => {
+                tag.remove();
+                const container = document.getElementById('variantAttributesContainer');
+                if (container.querySelectorAll('.variant-tag').length === 0) {
+                    container.innerHTML = `
+                        <div id="noAttributesText" class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes defined yet</p>
+                        </div>
+                    `;
+                }
+            }, 300); // Wait for transition completion
+        }
+
         async function handleCategorySubmit(categoryId) {
             const form = document.getElementById('categoryForm');
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             data._id = categoryId; // Pass _id for the controller log
             data.isListed = form.isListed.checked ? "on" : "off"; // Match service logic
-
+            data.variantAttributes = formData.getAll('variantAttributes[]');
+            delete data['variantAttributes[]']; // Clean up to avoid confusion
+            
             if (categoryId) {
                 try {
                     const response = await fetch(`/admin/category/edit/${categoryId}`, {

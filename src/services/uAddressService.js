@@ -7,6 +7,7 @@ import { GenerateOTP } from "../utils/otp.js"
 import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
 import wishlistModel from "../models/wishlistModel.js";
+import cartModel from "../models/cartModel.js";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -156,4 +157,14 @@ export const wishlistPage = async (userId) => {
         path: 'productId',
         populate: { path: 'category' }
     });
+}
+
+export const getCartPage = async (userId) => {
+    const cartItems = await cartModel.find({ userId }).populate({
+        path: 'productId',
+        populate: { path: 'category' }
+    });
+
+    const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return { items: cartItems, totalPrice };
 }
