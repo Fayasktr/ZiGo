@@ -367,21 +367,17 @@
                                         <div class="filter-section">
                                             <h4>Categories</h4>
                                             <ul class="filter-list">
-                                                <li class="filter-item">
-                                                    <label>
-                                                        <input type="radio" name="category" value=""
-                                                            <%=!selectedCategory ? 'checked' : '' %>
-                                                        onchange="submitFilters()">
-                                                        All Categories
-                                                    </label>
-                                                </li>
-                                                <% categories.forEach(cat=> { %>
+                                                <% categories.forEach(cat=> {
+                                                    const isChecked = Array.isArray(selectedCategory)
+                                                    ? selectedCategory.includes(cat.categoryName)
+                                                    : selectedCategory === cat.categoryName;
+                                                    %>
                                                     <li class="filter-item">
                                                         <label>
-                                                            <input type="radio" name="category"
-                                                                value="<%= cat.categoryName %>"
-                                                                <%=selectedCategory===cat.categoryName ? 'checked' : ''
-                                                                %> onchange="submitFilters()">
+                                                            <input type="checkbox" name="category"
+                                                                value="<%= cat.categoryName %>" <%=isChecked ? 'checked'
+                                                                : '' %>
+                                                            onchange="submitFilters()">
                                                             <%= cat.categoryName %>
                                                         </label>
                                                     </li>
@@ -519,10 +515,16 @@
                                     const form = document.getElementById('filterForm');
                                     const formData = new FormData(form);
                                     const params = new URLSearchParams(window.location.search);
+
+                                    // Remove existing array-like params to prevent duplication
+                                    params.delete('category');
+                                    params.delete('price');
+
                                     // Update params from form
                                     for (const [key, value] of formData.entries()) {
-                                        if (value) params.set(key, value);
-                                        else params.delete(key);
+                                        if (value) {
+                                            params.append(key, value);
+                                        }
                                     }
 
                                     params.set('page', '1'); // Reset to page 1 on filter
@@ -623,10 +625,10 @@
 
                                 async function addToCart(productId) {
                                     try {
-                                        let update=await fetch(`/shop/cart/${productId}`);
-                                        let result=await update.json();
+                                        let update = await fetch(`/shop/cart/${productId}`);
+                                        let result = await update.json();
                                     } catch (error) {
-                                        
+
                                     }
                                     console.log('Add to cart:', productId);
                                 }

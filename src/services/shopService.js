@@ -20,11 +20,21 @@ export const getShopData = async (quary) => {
             filter.price = { $gte: parseInt(min), $lte: parseInt(max) }
         }
     }
+    let categories = await categoryModel.find({ isListed: true }).sort({ createdAt: -1 });
+
+    let categoryArray = [];
     if (category) {
-        let categoryData = await categoryModel.findOne({ categoryName: category, isListed: true });
-        if (categoryData) {
-            filter.category = categoryData._id;
+        categoryArray = Array.isArray(category) ? category : [category];
+    }
+
+    if (categoryArray.length > 0) {
+        let categoryData = await categoryModel.find({ categoryName: { $in: categoryArray }, isListed: true });
+        if (categoryData && categoryData.length > 0) {
+            filter.category = { $in: categoryData.map(c => c._id) };
         }
+    } else {
+        const categoryIds = categories.map((item) => item._id);
+        filter.category = { $in: categoryIds };
     }
 
     const [products, totalCount] = await Promise.all([
@@ -35,7 +45,6 @@ export const getShopData = async (quary) => {
             .limit(limit),
         productModel.countDocuments(filter)
     ]);
-    const categories = await categoryModel.find({ isListed: true });
 
     return {
         products,
