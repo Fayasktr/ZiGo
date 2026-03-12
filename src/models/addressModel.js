@@ -32,7 +32,7 @@ const addressesSchema = mongoose.Schema({
         required: true,
     },
     phoneNumber: {
-        type: Number,
+        type: String,
         required: true,
         match: /^[0-9]{10}$/
     },
