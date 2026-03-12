@@ -86,8 +86,8 @@ export const addAddress = async (userEmail, addressData) => {
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
 
     let shouldBeDefault = addressData.isDefault || !defaultAddres;
-    if(shouldBeDefault && defaultAddres){
-        await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
+    if (shouldBeDefault && defaultAddres) {
+        await addressModel.updateMany({ userId: user._id }, { $set: { isDefault: false } });
     }
 
 
@@ -108,7 +108,14 @@ export const addAddress = async (userEmail, addressData) => {
 export const editAddressPage = async (addressId) => await addressModel.findOne({ _id: addressId });
 
 
-export const editAddress = async (addressId, addressData) => {
+export const editAddress = async (userId, addressId, addressData) => {
+    if (addressData.isDefault) {
+        await addressModel.updateMany(
+            { userId: userId },
+            { $set: { isDefault: false } }
+        );
+    }
+
     return await addressModel.findByIdAndUpdate(
         { _id: addressId },
         {
@@ -120,6 +127,7 @@ export const editAddress = async (addressId, addressData) => {
                 city: addressData.city,
                 pincode: addressData.pincode,
                 phoneNumber: addressData.phoneNumber,
+                isDefault: addressData.isDefault === true || addressData.isDefault === 'on'
             }
         },
         { new: true }
