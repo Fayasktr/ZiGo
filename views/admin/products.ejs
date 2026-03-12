@@ -487,7 +487,7 @@
                                         onchange="toggleProductStatus('<%= product._id %>', this)">
                                             <span class="slider"></span>
                                     </label>
-                                    <span class="text-[10px] ml-2 opacity-40 font-bold uppercase">
+                                    <span class="status-label text-[10px] ml-2 opacity-40 font-bold uppercase">
                                         <%= product.isListed ? 'Listed' : 'Unlisted' %>
                                     </span>
                                 </td>
@@ -539,9 +539,9 @@
         async function toggleProductStatus(id, element) {
             const checked = element.checked;
             try {
-                let update = await fetch(`/admin/products/${id}/${checked}` , {
-                    method:"PATCH",
-                    headers:{'Content-Type':'application/json'}
+                let update = await fetch(`/admin/products/${id}/${checked}`, {
+                    method: "PATCH",
+                    headers: { 'Content-Type': 'application/json' }
                 })
 
                 const result = await update.json();
@@ -554,6 +554,12 @@
                         showConfirmButton: false,
                         timer: 3000
                     });
+
+                    // Update the text label next to the toggle
+                    const label = element.closest('td').querySelector('.status-label');
+                    if (label) {
+                        label.textContent = checked ? 'Listed' : 'Unlisted';
+                    }
                 } else {
                     throw new Error(result.message || "Action failed");
                 }

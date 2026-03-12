@@ -302,159 +302,167 @@
             </h1>
         </header>
 
-        <form class="form-card"
-            action="<%= locals.isEdit ? '/admin/products/update/' + product._id : '/admin/addProducts/add' %>"
+        <form class="form-card" action="<%= locals.isEdit ? '/admin/products/update' : '/admin/addProducts/add' %>"
             method="POST" enctype="multipart/form-data">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Left Column: Basic Info -->
-                <div class="space-y-6">
-                    <div class="form-group">
-                        <label class="form-label">Product Name</label>
-                        <input type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
-                            value="<%= locals.isEdit ? product.productName : '' %>" required>
-                    </div>
+            <% if (locals.isEdit) { %>
+                <input type="hidden" name="id" value="<%= product._id %>">
+                <% } %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column: Basic Info -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Product Name</label>
+                                <input type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
+                                    value="<%= locals.isEdit ? product.productName : '' %>" required>
+                            </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
-                                <% if (locals.category && category.length> 0) { %>
-                                    <% category.forEach((cat, index)=> { %>
-                                        <option value="<%= cat._id %>" <%=(locals.isEdit &&
-                                            product.category.toString()===cat._id.toString()) ? 'selected' : (index===0
-                                            ? 'selected' : '' ) %>>
-                                            <%= cat.categoryName %>
-                                        </option>
-                                        <% }) %>
-                                            <% } else { %>
-                                                <option value="" disabled selected>No Category Available</option>
-                                                <% } %>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Brand</label>
-                            <input type="text" name="brand" class="form-input"
-                                value="<%= locals.isEdit ? product.brand : '' %>">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Description -->
-                <div class="space-y-6">
-                    <div class="form-group">
-                        <label class="form-label">Full Description</label>
-                        <textarea name="description" class="form-input h-[200px]" style="resize: none;"
-                            placeholder="Enter product details..."><%= locals.isEdit ? product.description : '' %></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                <div class="form-group">
-                    <label class="form-label">Product Images</label>
-                    <label for="imageInput" class="image-upload-box block cursor-pointer">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-orange-500 mb-4"></i>
-                        <p class="font-bold text-sm">Drop your images here or <span
-                                class="text-orange-500">browse</span></p>
-                        <p class="text-[10px] opacity-40 mt-2">Supports JPG, PNG (Max 5MB per image)</p>
-                        <input type="file" id="imageInput" class="hidden" multiple accept="image/*">
-                    </label>
-                    <div id="imagePreviewContainer" class="grid grid-cols-4 gap-2 mt-4">
-                        <% if (locals.isEdit && product.images) { %>
-                            <% product.images.forEach(img=> { %>
-                                <div class="relative group existing-main-image-preview">
-                                    <img src="<%= img %>" class="w-full h-20 object-cover rounded-lg">
-                                    <button type="button" onclick="removeExistingImage('<%= img %>', this)"
-                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                        <i class="fas fa-times text-[10px]"></i>
-                                    </button>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
+                                        <% if (locals.category && category.length> 0) { %>
+                                            <% category.forEach((cat, index)=> { %>
+                                                <option value="<%= cat._id %>" <%=(locals.isEdit &&
+                                                    product.category.toString()===cat._id.toString()) ? 'selected' :
+                                                    (index===0 ? 'selected' : '' ) %>>
+                                                    <%= cat.categoryName %>
+                                                </option>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <option value="" disabled selected>No Category Available
+                                                        </option>
+                                                        <% } %>
+                                    </select>
                                 </div>
-                                <% }) %>
-                                    <% } %>
-                    </div>
-                    <p id="mainImagesError" class="text-red-500 text-[11px] font-bold mt-2 hidden">
-                        <i class="fas fa-exclamation-circle mr-1"></i> Minimum 3 images required.
-                    </p>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Availability & Listing</label>
-                <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-[85px]">
-                    <label class="relative inline-flex items-center cursor-pointer group">
-                        <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? '' : 'checked'
-                            %> class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                                <div class="form-group">
+                                    <label class="form-label">Brand</label>
+                                    <input type="text" name="brand" class="form-input"
+                                        value="<%= locals.isEdit ? product.brand : '' %>">
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                    <div>
-                        <p class="font-bold text-sm" id="statusLabel">
-                            <%= (locals.isEdit && !product.isListed) ? 'Save as Draft' : 'List Product Immediately' %>
-                        </p>
-                        <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest" id="visibilityLabel">
-                            Visibility: <%= (locals.isEdit && !product.isListed) ? 'Private' : 'Public' %>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            </div>
 
-            <!-- Full Width Variants Section -->
-            <div class="mt-8">
-                <div class="variant-box">
-                    <div class="flex justify-between items-center mb-8">
-                        <div>
-                            <h2 class="text-xl font-bold">Product <span class="text-orange-500">Variants</span></h2>
-                            <p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-1">Manage sizes, colors,
-                                images and stock</p>
-                            <p class="text-xs font-semibold uppercase tracking-widest mt-1 
-                                    text-red-700 bg-red-50 border border-red-300 
-                                    px-2 py-1 rounded inline-block">
-                                ⚠ Always add base model first
+                        <!-- Right Column: Description -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Full Description</label>
+                                <textarea name="description" class="form-input h-[200px]" style="resize: none;"
+                                    placeholder="Enter product details..."><%= locals.isEdit ? product.description : '' %></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                        <div class="form-group">
+                            <label class="form-label">Product Images</label>
+                            <label for="imageInput" class="image-upload-box block cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-orange-500 mb-4"></i>
+                                <p class="font-bold text-sm">Drop your images here or <span
+                                        class="text-orange-500">browse</span></p>
+                                <p class="text-[10px] opacity-40 mt-2">Supports JPG, PNG (Max 5MB per image)</p>
+                                <input type="file" id="imageInput" class="hidden" multiple accept="image/*">
+                            </label>
+                            <div id="imagePreviewContainer" class="grid grid-cols-4 gap-2 mt-4">
+                                <% if (locals.isEdit && product.images) { %>
+                                    <% product.images.forEach(img=> { %>
+                                        <div class="relative group existing-main-image-preview">
+                                            <img src="<%= img %>" class="w-full h-20 object-cover rounded-lg">
+                                            <button type="button" onclick="removeExistingImage('<%= img %>', this)"
+                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                                <i class="fas fa-times text-[10px]"></i>
+                                            </button>
+                                        </div>
+                                        <% }) %>
+                                            <% } %>
+                            </div>
+                            <p id="mainImagesError" class="text-red-500 text-[11px] font-bold mt-2 hidden">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Minimum 3 images required.
                             </p>
                         </div>
-                        <button type="button" onclick="openAddVariantModal()"
-                            class="bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Add Variant
-                        </button>
                     </div>
 
-                    <div id="variantsDisplayContainer" class="overflow-x-auto">
-                        <table class="variant-table">
-                            <thead>
-                                <tr id="variantTableHeader">
-                                    <!-- Dynamic Headers will be injected here -->
-                                </tr>
-                            </thead>
-                            <tbody id="variantsTableBody">
-                                <!-- Variants will be rendered here -->
-                            </tbody>
-                        </table>
-
-                        <div id="noVariantsPlaceholder" class="py-12 text-center opacity-30">
-                            <i class="fas fa-layer-group text-4xl mb-4"></i>
-                            <p class="font-bold">No variants added to this product yet.</p>
+                    <div class="form-group">
+                        <label class="form-label">Availability & Listing</label>
+                        <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-[85px]">
+                            <label class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? ''
+                                    : 'checked' %> class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                                </div>
+                            </label>
+                            <div>
+                                <p class="font-bold text-sm" id="statusLabel">
+                                    <%= (locals.isEdit && !product.isListed) ? 'Save as Draft'
+                                        : 'List Product Immediately' %>
+                                </p>
+                                <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest"
+                                    id="visibilityLabel">
+                                    Visibility: <%= (locals.isEdit && !product.isListed) ? 'Private' : 'Public' %>
+                                </p>
+                            </div>
                         </div>
-                        <p id="variantsError" class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> Please add at least one variant.
-                        </p>
                     </div>
-                </div>
-            </div>
+                    </div>
 
-            <!-- Footer Actions -->
-            <div class="mt-8 flex justify-start gap-4">
-                <button type="submit" class="btn-submit !w-auto !px-[60px]">
-                    <%= locals.isEdit ? 'Update Product' : 'Publish Product' %>
-                </button>
-                <button type="button" onclick="window.history.back()"
-                    class="bg-white/5 text-white font-bold px-10 py-4 rounded-32 hover:bg-white/10 transition">Cancel</button>
-            </div>
+                    <!-- Full Width Variants Section -->
+                    <div class="mt-8">
+                        <div class="variant-box">
+                            <div class="flex justify-between items-center mb-8">
+                                <div>
+                                    <h2 class="text-xl font-bold">Product <span class="text-orange-500">Variants</span>
+                                    </h2>
+                                    <p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-1">Manage sizes,
+                                        colors,
+                                        images and stock</p>
+                                    <p class="text-xs font-semibold uppercase tracking-widest mt-1 
+                                    text-red-700 bg-red-50 border border-red-300 
+                                    px-2 py-1 rounded inline-block">
+                                        ⚠ Always add base model first
+                                    </p>
+                                </div>
+                                <button type="button" onclick="openAddVariantModal()"
+                                    class="bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> Add Variant
+                                </button>
+                            </div>
 
-            <!-- Hidden input for JSON data -->
-            <input type="hidden" name="variantsData" id="variantsDataInput">
-            <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
+                            <div id="variantsDisplayContainer" class="overflow-x-auto">
+                                <table class="variant-table">
+                                    <thead>
+                                        <tr id="variantTableHeader">
+                                            <!-- Dynamic Headers will be injected here -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="variantsTableBody">
+                                        <!-- Variants will be rendered here -->
+                                    </tbody>
+                                </table>
+
+                                <div id="noVariantsPlaceholder" class="py-12 text-center opacity-30">
+                                    <i class="fas fa-layer-group text-4xl mb-4"></i>
+                                    <p class="font-bold">No variants added to this product yet.</p>
+                                </div>
+                                <p id="variantsError"
+                                    class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Please add at least one variant.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="mt-8 flex justify-start gap-4">
+                        <button type="submit" class="btn-submit !w-auto !px-[60px]">
+                            <%= locals.isEdit ? 'Update Product' : 'Publish Product' %>
+                        </button>
+                        <button type="button" onclick="window.history.back()"
+                            class="bg-white/5 text-white font-bold px-10 py-4 rounded-32 hover:bg-white/10 transition">Cancel</button>
+                    </div>
+
+                    <!-- Hidden input for JSON data -->
+                    <input type="hidden" name="variantsData" id="variantsDataInput">
+                    <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
         </form>
     </main>
     <!-- Custom Cropper Overlay (Placed outside SweetAlert logic) -->
@@ -670,13 +678,26 @@
 
                     const renderVariantPreview = () => {
                         previewBox.innerHTML = '';
-                        // Also show previously saved existing images if in edit mode (not file objects, just URLs)
-                        if (variantData && variantData.tempImages && currentVariantFiles.length === 0) {
-                            variantData.tempImages.forEach(imgUrl => {
-                                previewBox.innerHTML += `<img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">`;
-                            });
-                        }
 
+                        // Show existing images (URLs from server)
+                        const existingImages = variantData ? (variantData.images || []) : [];
+                        existingImages.forEach((imgUrl, idx) => {
+                            const container = document.createElement('div');
+                            container.className = 'relative group shrink-0';
+                            container.innerHTML = `
+                                <img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                                <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                                    <i class="fas fa-times text-[8px]"></i>
+                                </button>
+                            `;
+                            container.querySelector('button').addEventListener('click', () => {
+                                variantData.images.splice(idx, 1);
+                                renderVariantPreview();
+                            });
+                            previewBox.appendChild(container);
+                        });
+
+                        // Show newly selected files (as previews)
                         currentVariantFiles.forEach((file, idx) => {
                             const reader = new FileReader();
                             reader.onload = (e) => {
@@ -726,7 +747,7 @@
                     });
 
                     // --- Variant Image Validation ---
-                    const existingCount = (variantData && variantData.tempImages && currentVariantFiles.length === 0) ? variantData.tempImages.length : 0;
+                    const existingCount = variantData ? (variantData.images || []).length : 0;
                     const totalImages = existingCount + currentVariantFiles.length;
 
                     if (totalImages < 3) {
@@ -736,6 +757,10 @@
 
                     // Capture images as base64 for the variant table preview
                     const tempImages = [];
+                    // Keep the remaining existing URLs
+                    const keptImages = variantData ? (variantData.images || []) : [];
+                    tempImages.push(...keptImages);
+
                     for (const file of currentVariantFiles) {
                         const b64 = await new Promise((resolve) => {
                             const r = new FileReader();
@@ -745,12 +770,7 @@
                         tempImages.push(b64);
                     }
 
-                    // If editing and no new images selected, keep original old URLs for display if needed
-                    if (currentVariantFiles.length === 0 && variantData && variantData.tempImages) {
-                        tempImages.push(...variantData.tempImages);
-                    }
-
-                    return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages };
+                    return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages, images: keptImages };
                 }
             });
 
@@ -954,7 +974,12 @@
             // Construct form data to natively pick up regular text fields
             const formData = new FormData(mainForm);
 
-            // Append Main Images Manually (since name="images" was removed from input to avoid duplicates)
+            // Collect existing images URLs that are still in the preview (not deleted)
+            document.querySelectorAll('.existing-main-image-preview img').forEach(img => {
+                formData.append('existingMainImages', img.src);
+            });
+
+            // Append new Main Images Manually (since name="images" was removed from input to avoid duplicates)
             mainImageFilesArray.forEach((file) => {
                 formData.append('images', file);
             });
