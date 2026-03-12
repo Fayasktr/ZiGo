@@ -87,22 +87,27 @@
             position: absolute;
             top: 2rem;
             right: 2rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
             width: 50px;
             height: 50px;
-            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            color: #ccc;
-            cursor: pointer;
             transition: var(--transition);
+            color: var(--dark-navy);
             border: none;
         }
 
         .wishlist-btn.active {
             color: #ff4757 !important;
+            background: white;
+        }
+
+        .wishlist-btn:hover {
+            transform: scale(1.1);
         }
 
         .thumbnail-grid {
@@ -201,17 +206,31 @@
 
         .variant-chip {
             padding: 0.8rem 1.5rem;
-            border: 2px solid var(--gray-light);
+            border: 2px solid var(--deep-black);
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
+            opacity: 1;
         }
 
         .variant-chip.active {
             border-color: var(--primary-orange);
             color: var(--primary-orange);
             background: rgba(255, 90, 31, 0.05);
+        }
+
+        .variant-chip.not-compatible {
+            border-color: var(--gray-light);
+            color: #ccc;
+            opacity: 0.6;
+        }
+
+        .variant-chip.disabled {
+            opacity: 0.1;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(1);
         }
 
         .color-options {
@@ -366,6 +385,8 @@
 
         .tab-panel.active {
             display: block;
+            scroll-margin-top: 160px;
+            margin-bottom: 80px;
         }
 
         .reveal {
@@ -382,16 +403,29 @@
 </head>
 
 <body>
-    <% if (user) { %>
+    <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/header') %>
             <% } else { %>
                 <%- include('../partials/headerBeforeLogin') %>
                     <% } %>
 
-                        <% const defaultVariant=product.variants[0] || {}; const allRams=[...new
-                            Set(product.variants.map(v=> v.ram))].filter(Boolean);
-                            const allStorages = [...new Set(product.variants.map(v => v.storage))].filter(Boolean);
-                            const allColors = [...new Set(product.variants.map(v => v.color))].filter(Boolean);
+                        <% const defaultVariant=product.variants && product.variants.length> 0 ? product.variants[0] :
+                            {};
+                            const variantAttributes = (product.category && product.category.variantAttributes) ?
+                            product.category.variantAttributes : [];
+
+                            const getAttrValue = (attributes, attr) => {
+                            if (!attributes) return null;
+                            // Handle both Mongoose Map (.get()) and plain JS object ([])
+                            if (typeof attributes.get === 'function') return attributes.get(attr);
+                            return attributes[attr];
+                            };
+
+                            const getUniqueAttributeValues = (attr) => {
+                            if (!product.variants) return [];
+                            return [...new Set(product.variants.map(v => getAttrValue(v.attributes,
+                            attr)))].filter(Boolean);
+                            };
                             %>
 
                             <main class="productDetail-container">
@@ -399,7 +433,8 @@
                                     <!-- Gallery -->
                                     <div class="reveal">
                                         <div class="main-image-wrapper">
-                                            <button class="wishlist-btn" onclick="toggleWishlist('<%= product._id %>')">
+                                            <button class="wishlist-btn"
+                                                onclick="toggleWishlist('<%= product._id %>', currentVariantId, this)">
                                                 <i class="fas fa-heart text-2xl"></i>
                                             </button>
                                             <% const defaultImg=(defaultVariant.images && defaultVariant.images[0]) ?
@@ -409,8 +444,8 @@
                                                     data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
                                         </div>
                                         <div class="thumbnail-grid">
-                                            <% if (product.images) { %>
-                                                <% product.images.forEach((img, idx)=> { %>
+                                            <% if (defaultVariant.images) { %>
+                                                <% defaultVariant.images.forEach((img, idx)=> { %>
                                                     <div class="thumb-btn <%= idx === 0 ? 'active' : '' %>"
                                                         onclick="updateImg('<%= img %>', this)">
                                                         <img src="<%= img.startsWith('http') ? img : '/' + img %>"
@@ -471,112 +506,64 @@
                                                     <% } %>
                                         </div>
 
-                                        <% if (allRams.length> 0) { %>
-                                            <div class="mb-8">
-                                                <span class="block font-bold mb-4 text-sm uppercase opacity-60">Select
-                                                    RAM</span>
-                                                <div class="flex gap-4">
-                                                    <% allRams.forEach(ram=> { %>
-                                                        <div class="variant-chip <%= ram === defaultVariant.ram ? 'active' : '' %>"
-                                                            onclick="selectVariant('ram', '<%= ram %>')">
-                                                            <%= ram %>
-                                                        </div>
-                                                        <% }) %>
+                                        <div id="variant-selectors">
+                                            <% variantAttributes.forEach(attr=> {
+                                                const values = getUniqueAttributeValues(attr);
+                                                if (values.length > 0) { %>
+                                                <div class="mb-8 variant-group" data-attribute="<%= attr %>">
+                                                    <span
+                                                        class="block font-bold mb-4 text-sm uppercase opacity-60">Select
+                                                        <%= attr %>
+                                                    </span>
+                                                    <div class="flex flex-wrap gap-4">
+                                                        <% values.forEach(val=> {
+                                                            const isActive = getAttrValue(defaultVariant.attributes,
+                                                            attr) === val;
+                                                            %>
+                                                            <div class="variant-chip <%= isActive ? 'active' : '' %>"
+                                                                data-value="<%= val %>"
+                                                                onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
+                                                                <%= val %>
+                                                            </div>
+                                                            <% }) %>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <% } %>
+                                                <% } }) %>
+                                        </div>
 
-                                                <% if (allStorages.length> 0) { %>
-                                                    <div class="mb-8">
-                                                        <span
-                                                            class="block font-bold mb-4 text-sm uppercase opacity-60">Select
-                                                            Storage</span>
-                                                        <div class="flex gap-4">
-                                                            <% allStorages.forEach(storage=> { %>
-                                                                <div class="variant-chip <%= storage === defaultVariant.storage ? 'active' : '' %>"
-                                                                    onclick="selectVariant('storage', '<%= storage %>')">
-                                                                    <%= storage %>
-                                                                </div>
-                                                                <% }) %>
+                                        <div class="flex gap-6 h-[60px]">
+                                            <div class="qty-selector">
+                                                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                                                <input type="number" class="qty-input" value="1" id="qty" readonly>
+                                                <button class="qty-btn" onclick="changeQty(1)">+</button>
+                                            </div>
+                                            <button class="add-to-cart-btn-large flex-1"
+                                                onclick="addToCart('<%= product._id %>', currentVariantId)">Add to
+                                                Cart</button>
+                                            <button class="buy-now-btn-large flex-1"
+                                                onclick="buyNow('<%= product._id %>')">Buy
+                                                Now</button>
+                                        </div>
+
+                                        <!-- Quick Specs -->
+                                        <div class="key-specs-list">
+                                            <% if (product.specifications && product.specifications.length> 0) { %>
+                                                <% product.specifications.slice(0, 4).forEach(spec=> { %>
+                                                    <div class="spec-mini-item">
+                                                        <div class="spec-icon"><i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <div class="spec-text">
+                                                            <b>
+                                                                <%= spec.name %>
+                                                            </b>
+                                                            <span>
+                                                                <%= spec.value %>
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                    <% } %>
-
-                                                        <% if (allColors.length> 0) { %>
-                                                            <div class="mb-8">
-                                                                <span
-                                                                    class="block font-bold mb-4 text-sm uppercase opacity-60">Available
-                                                                    Colors</span>
-                                                                <div class="color-options">
-                                                                    <% allColors.forEach(color=> { %>
-                                                                        <div class="color-circle <%= color === defaultVariant.color ? 'active' : '' %>"
-                                                                            style="background-color: <%= color.toLowerCase() %>;"
-                                                                            title="<%= color %>"
-                                                                            onclick="selectVariant('color', '<%= color %>')">
-                                                                        </div>
-                                                                        <% }) %>
-                                                                </div>
-                                                            </div>
-                                                            <% } %>
-
-                                                                <div class="flex gap-6 h-[60px]">
-                                                                    <div class="qty-selector">
-                                                                        <button class="qty-btn"
-                                                                            onclick="changeQty(-1)">-</button>
-                                                                        <input type="number" class="qty-input" value="1"
-                                                                            id="qty" readonly>
-                                                                        <button class="qty-btn"
-                                                                            onclick="changeQty(1)">+</button>
-                                                                    </div>
-                                                                    <button class="add-to-cart-btn-large flex-1"
-                                                                        onclick="addToCart('<%= product._id %>')">Add to
-                                                                        Cart</button>
-                                                                    <button class="buy-now-btn-large flex-1"
-                                                                        onclick="buyNow('<%= product._id %>')">Buy
-                                                                        Now</button>
-                                                                </div>
-
-                                                                <!-- Quick Specs -->
-                                                                <div class="key-specs-list">
-                                                                    <% if (product.specifications &&
-                                                                        product.specifications.length> 0) { %>
-                                                                        <% product.specifications.slice(0,
-                                                                            4).forEach(spec=> { %>
-                                                                            <div class="spec-mini-item">
-                                                                                <div class="spec-icon"><i
-                                                                                        class="fas fa-check-circle"></i>
-                                                                                </div>
-                                                                                <div class="spec-text">
-                                                                                    <b>
-                                                                                        <%= spec.name %>
-                                                                                    </b>
-                                                                                    <span>
-                                                                                        <%= spec.value %>
-                                                                                    </span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <% }) %>
-                                                                                <% } else { %>
-                                                                                    <div class="spec-mini-item">
-                                                                                        <div class="spec-icon"><i
-                                                                                                class="fas fa-microchip"></i>
-                                                                                        </div>
-                                                                                        <div class="spec-text">
-                                                                                            <b>Performance</b><span>Optimized
-                                                                                                Engine</span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="spec-mini-item">
-                                                                                        <div class="spec-icon"><i
-                                                                                                class="fas fa-mobile-alt"></i>
-                                                                                        </div>
-                                                                                        <div class="spec-text">
-                                                                                            <b>Display</b><span>High
-                                                                                                Definition</span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <% } %>
-                                                                </div>
+                                                    <% }) %>
+                                                        <% } %>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -715,6 +702,35 @@
                                         let v = parseInt(i.value) + n;
                                         if (v > 0) i.value = v;
                                     }
+                                    function scrollToSection(id) {
+                                        const el = document.getElementById(id);
+                                        if (el) {
+                                            const y = el.getBoundingClientRect().top + window.scrollY - 160;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }
+                                    }
+
+                                    window.addEventListener('scroll', () => {
+                                        const panels = document.querySelectorAll('.tab-panel');
+                                        const triggers = document.querySelectorAll('.tab-trigger');
+
+                                        let currentPanel = '';
+                                        panels.forEach(panel => {
+                                            const panelTop = panel.getBoundingClientRect().top;
+                                            if (panelTop <= 180) {
+                                                currentPanel = panel.getAttribute('id');
+                                            }
+                                        });
+
+                                        if (currentPanel) {
+                                            triggers.forEach(trigger => {
+                                                trigger.classList.remove('active');
+                                                if (trigger.getAttribute('data-target') === currentPanel) {
+                                                    trigger.classList.add('active');
+                                                }
+                                            });
+                                        }
+                                    });
 
                                     function switchTab(id, e) {
                                         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -728,16 +744,267 @@
                                         initDrift();
                                     });
 
-                                    // Placeholder for dynamic variant selection
-                                    function selectVariant(type, value) {
-                                        console.log(`Selecting ${type}: ${value}`);
-                                        // Logic to reload page or update data via AJAX would go here
-                                        location.reload(); // Simple reload for now
+                                    // --- Dynamic Variant Selection Logic ---
+                                    const productVariants = <%- JSON.stringify(product.variants || []) %>;
+                                    let userWishlist = <%- JSON.stringify(wishlist || []) %>;
+                                    let currentVariantId = '<%= defaultVariant._id || "" %>';
+                                    let selectedAttributes = {};
+
+                                    // Initialize selected attributes from default variant
+                                    <% if (defaultVariant.attributes) { %>
+                                        <% variantAttributes.forEach(attr => { %>
+                                        selectedAttributes['<%= attr %>'] = '<%= getAttrValue(defaultVariant.attributes, attr) %>';
+                                        <% }) %>
+                                    <% } %>
+
+                                        function selectVariantAttribute(attr, value) {
+                                            selectedAttributes[attr] = value;
+
+                                            // Find all variants that have this new attribute value
+                                            const candidates = productVariants.filter(v => v.attributes[attr] === value && v.isListed !== false);
+
+                                            if (candidates.length === 0) return; // Should not happen with availability check
+
+                                            // Score candidates based on how many other selected attributes they match
+                                            let bestVariant = candidates[0];
+                                            let maxScore = -1;
+
+                                            candidates.forEach(v => {
+                                                let score = 0;
+                                                Object.entries(selectedAttributes).forEach(([key, val]) => {
+                                                    if (key !== attr && v.attributes[key] === val) {
+                                                        score++;
+                                                    }
+                                                });
+                                                if (score > maxScore) {
+                                                    maxScore = score;
+                                                    bestVariant = v;
+                                                }
+                                            });
+
+                                            // Automatically update the selection "brain" to match this valid variant
+                                            selectedAttributes = { ...bestVariant.attributes };
+
+                                            updateVariantUI(bestVariant);
+                                            updateAvailability();
+                                        }
+
+                                    function updateAvailability() {
+                                        // Loop through all attribute groups
+                                        document.querySelectorAll('.variant-group').forEach(group => {
+                                            const attrName = group.getAttribute('data-attribute');
+
+                                            group.querySelectorAll('.variant-chip').forEach(chip => {
+                                                const chipValue = chip.getAttribute('data-value');
+
+                                                // 1. Is it the ACTIVE selection?
+                                                const isActive = selectedAttributes[attrName] === chipValue;
+
+                                                // 2. Is it AVAILABLE (Compatible with ALL OTHER current selections)?
+                                                const isAvailable = productVariants.some(v => {
+                                                    if (v.isListed === false) return false;
+                                                    // It matches this chip...
+                                                    if (v.attributes[attrName] !== chipValue) return false;
+                                                    // AND it matches EVERY OTHER currently selected attribute
+                                                    return Object.entries(selectedAttributes).every(([key, val]) => {
+                                                        if (key === attrName) return true;
+                                                        return v.attributes[key] === val;
+                                                    });
+                                                });
+
+                                                // 3. Does it exist at all (for pivoting)?
+                                                const existsAtAll = productVariants.some(v => v.attributes[attrName] === chipValue && v.isListed !== false);
+
+                                                // Reset classes
+                                                chip.classList.remove('active', 'not-compatible', 'disabled');
+
+                                                if (isActive) {
+                                                    chip.classList.add('active');
+                                                } else if (isAvailable) {
+                                                    // Standard state - normal border
+                                                } else if (existsAtAll) {
+                                                    chip.classList.add('not-compatible'); // Gray but clickable
+                                                } else {
+                                                    chip.classList.add('disabled'); // Not even clickable
+                                                }
+                                            });
+                                        });
                                     }
 
-                                    function toggleWishlist(id) { console.log('Wishlist:', id); }
-                                    function addToCart(id) { console.log('Cart:', id); }
-                                    function buyNow(id) { console.log('Buy now:', id); }
+                                    // Initial check
+                                    window.addEventListener('load', () => {
+                                        updateAvailability();
+                                    });
+
+                                    function updateVariantUI(variant) {
+                                        currentVariantId = variant._id;
+
+                                        // Update Price
+                                        const priceEl = document.querySelector('.current-price');
+                                        if (priceEl) priceEl.innerText = '₹' + variant.price.toLocaleString();
+
+                                        // Update Stock Status
+                                        const stockEl = document.querySelector('.stock-status');
+                                        if (stockEl) {
+                                            if (variant.stock > 0) {
+                                                stockEl.innerText = 'In Stock';
+                                                stockEl.className = 'stock-status in-stock';
+                                            } else {
+                                                stockEl.innerText = 'Out of Stock';
+                                                stockEl.className = 'stock-status out-of-stock';
+                                            }
+                                        }
+
+                                        // Update Images
+                                        if (variant.images && variant.images.length > 0) {
+                                            const mainImg = document.getElementById('mainImage');
+                                            const firstImg = variant.images[0].startsWith('http') ? variant.images[0] : '/' + variant.images[0];
+                                            mainImg.src = firstImg;
+                                            mainImg.setAttribute('data-zoom', firstImg);
+
+                                            if (window.driftInstance && window.driftInstance.setTarget) {
+                                                window.driftInstance.setTarget(mainImg);
+                                            }
+
+                                            const thumbGrid = document.querySelector('.thumbnail-grid');
+                                            if (thumbGrid) {
+                                                thumbGrid.innerHTML = variant.images.map((img, idx) => {
+                                                    const url = img.startsWith('http') ? img : '/' + img;
+                                                    return '<div class="thumb-btn ' + (idx === 0 ? 'active' : '') + '" onclick="updateImg(\'' + img + '\', this)"><img src="' + url + '" alt=""></div>';
+                                                }).join('');
+                                            }
+                                        }
+
+                                        // Update Wishlist Heart Color
+                                        const heartBtn = document.querySelector('.wishlist-btn');
+                                        if (heartBtn) {
+                                            if (userWishlist.includes(variant._id)) {
+                                                heartBtn.classList.add('active');
+                                            } else {
+                                                heartBtn.classList.remove('active');
+                                            }
+                                        }
+                                    }
+
+                                    async function toggleWishlist(productId, variantId, btnElement) {
+                                        try {
+                                            const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
+                                                method: "PATCH",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (update.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Login Required',
+                                                    text: 'You need to be logged in to manage your wishlist.',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        window.location.href = '/login';
+                                                    }
+                                                });
+                                                return;
+                                            }
+
+                                            const result = await update.json();
+                                            if (update.ok && result.success) {
+                                                // Update local wishlist state
+                                                if (result.action === 'added') {
+                                                    userWishlist.push(variantId);
+                                                } else {
+                                                    userWishlist = userWishlist.filter(id => id !== variantId);
+                                                }
+
+                                                if (btnElement) {
+                                                    if (result.action === 'added') btnElement.classList.add('active');
+                                                    else btnElement.classList.remove('active');
+                                                }
+                                                Swal.fire({
+                                                    icon: "success",
+                                                    title: result.message,
+                                                    toast: true,
+                                                    position: "top",
+                                                    showConfirmButton: false,
+                                                    timer: 3000
+                                                })
+
+                                            } else {
+                                                throw new Error(result.message || "Wishlist update failed");
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message || "Could not change status",
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+
+                                        }
+
+                                    }
+
+                                    async function addToCart(productId, variantId) {
+                                        try {
+                                            console.log(productId)
+                                            let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (update.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Login Required',
+                                                    text: 'You need to be logged in to manage your cart.',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        window.location.href = '/login';
+                                                    }
+                                                });
+                                                return;
+                                            }
+
+                                            let result = await update.json();
+                                            console.log("result", result);
+                                            if (update.ok && result.success) {
+                                                Swal.fire({
+                                                    icon: "success",
+                                                    title: result.message,
+                                                    toast: true,
+                                                    position: "top",
+                                                    showConfirmButton: false,
+                                                    timer: 3000
+                                                })
+                                            } else {
+                                                throw new Error(result.message || "Could not add to cart");
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message || "Could not able to add to cart",
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+
+                                        }
+                                        console.log('Add to cart:', productId);
+                                    }
+
+                                    function buyNow(productId) {
+                                        console.log('Buy now:', productId, currentVariantId);
+                                    }
                                 </script>
 </body>
 

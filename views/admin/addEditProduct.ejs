@@ -305,9 +305,64 @@
         <form class="form-card"
             action="<%= locals.isEdit ? '/admin/products/update/' + product._id : '/admin/addProducts/add' %>"
             method="POST" enctype="multipart/form-data">
+<<<<<<< Updated upstream
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Left Column: Basic Info -->
                 <div class="space-y-6">
+=======
+            <% if (locals.isEdit) { %>
+                <input type="hidden" name="id" value="<%= product._id %>">
+                <% } %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column: Basic Info -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Product Name</label>
+                                <input type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
+                                    value="<%= locals.isEdit ? product.productName : '' %>" required>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
+                                        <% if (locals.category && category.length> 0) { %>
+                                            <% category.forEach((cat, index)=> { %>
+                                                <option value="<%= cat._id %>" <%=(locals.isEdit &&
+                                                    product.category.toString()===cat._id.toString()) ? 'selected' :
+                                                    (index===0 ? 'selected' : '' ) %>>
+                                                    <%= cat.categoryName %>
+                                                </option>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <option value="" disabled selected>No Category Available
+                                                        </option>
+                                                        <% } %>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Brand</label>
+                                    <input type="text" name="brand" class="form-input"
+                                        value="<%= locals.isEdit ? product.brand : '' %>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Description -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Full Description</label>
+                                <textarea name="description" class="form-input h-[200px]" style="resize: none;"
+                                    placeholder="Enter product details..."><%= locals.isEdit ? product.description : '' %></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+
+                    </div>
+
+>>>>>>> Stashed changes
                     <div class="form-group">
                         <label class="form-label">Product Name</label>
                         <input type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
@@ -594,6 +649,7 @@
                     html += `<th>${attr}</th>`;
                 });
             }
+            html += `<th class="w-24">Status</th>`;
             html += `<th class="text-right">Actions</th>`;
             variantTableHeader.innerHTML = html;
         }
@@ -619,6 +675,18 @@
                         <div>
                             <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Stock</label>
                             <input id="swal-stock" type="number" value="${variantData ? variantData.stock : ''}" class="w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Listing Status</label>
+                            <div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="swal-isListed" type="checkbox" ${variantData ? (variantData.isListed ? 'checked' : '') : 'checked'} class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                                </label>
+                                <span id="swal-status-label" class="text-xs font-bold">${variantData ? (variantData.isListed ? 'Listed' : 'Unlisted') : 'Listed'}</span>
+                            </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-4">
@@ -661,8 +729,16 @@
                 didOpen: () => {
                     // Fix Tailwind CSS bleeding into SweetAlert
                     document.querySelectorAll('.swal2-popup input, .swal2-popup select').forEach(el => {
-                        el.style.color = 'white';
-                        el.style.backgroundColor = '#1A1A1A';
+                        if (el.type !== 'checkbox') {
+                            el.style.color = 'white';
+                            el.style.backgroundColor = '#1A1A1A';
+                        }
+                    });
+
+                    const isListedToggle = document.getElementById('swal-isListed');
+                    const statusLabel = document.getElementById('swal-status-label');
+                    isListedToggle.addEventListener('change', (e) => {
+                        statusLabel.innerText = e.target.checked ? 'Listed' : 'Unlisted';
                     });
 
                     const imgInput = document.getElementById('swal-variant-images');
@@ -745,12 +821,18 @@
                         tempImages.push(b64);
                     }
 
+<<<<<<< Updated upstream
                     // If editing and no new images selected, keep original old URLs for display if needed
                     if (currentVariantFiles.length === 0 && variantData && variantData.tempImages) {
                         tempImages.push(...variantData.tempImages);
                     }
 
                     return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages };
+=======
+                    const isListed = document.getElementById('swal-isListed').checked;
+
+                    return { price, stock, attributes, imageFiles: currentVariantFiles, tempImages, images: keptImages, isListed };
+>>>>>>> Stashed changes
                 }
             });
 
@@ -800,6 +882,11 @@
                 }
 
                 html += `
+                        <td>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${v.isListed ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
+                                ${v.isListed ? 'Listed' : 'Unlisted'}
+                            </span>
+                        </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-2">
                                 <button type="button" onclick="openAddVariantModal(${index})" class="text-orange-500/60 hover:text-orange-500 transition-all p-2">
@@ -841,72 +928,9 @@
             });
         }
 
-        // --- Main Image Preview & Selection Logic ---
-        const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        let mainImageFilesArray = []; // To keep track of newly uploaded files
 
-        imageInput.addEventListener('change', async (e) => {
-            const newFiles = Array.from(e.target.files);
-            if (newFiles.length > 0) {
-                const croppedFiles = await processCropQueue(newFiles);
-                mainImageFilesArray = [...mainImageFilesArray, ...croppedFiles];
-                updateMainImageInputAndPreview();
-            }
-            // Clear input so selecting same files works again
-            e.target.value = '';
-        });
 
-        function updateMainImageInputAndPreview() {
-            // Remove dynamically added new images (keep existing server rendered ones)
-            document.querySelectorAll('.dynamic-main-image-preview').forEach(el => el.remove());
 
-            mainImageFilesArray.forEach((file, index) => {
-                const capturedIndex = index;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const div = document.createElement('div');
-                    div.className = 'relative group dynamic-main-image-preview';
-                    div.innerHTML = `
-                        <img src="${ev.target.result}" class="w-full h-20 object-cover rounded-lg border border-white/10">
-                        <button type="button" onclick="removeMainImage(${capturedIndex})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
-                            <i class="fas fa-times text-[10px]"></i>
-                        </button>
-                    `;
-                    previewContainer.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        window.removeMainImage = function (index) {
-            mainImageFilesArray.splice(index, 1);
-            updateMainImageInputAndPreview();
-        };
-
-        // Existing Images Removal Logic
-        let deletedImagesArray = [];
-        window.removeExistingImage = function (imgUrl, btnElement) {
-            // Ask for confirmation
-            Swal.fire({
-                title: 'Remove Image?',
-                text: 'This image will be removed when you update the product.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, remove',
-                background: '#121212',
-                color: '#fff',
-                confirmButtonColor: '#ef4444'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deletedImagesArray.push(imgUrl);
-                    document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImagesArray);
-
-                    // Visually remove it
-                    btnElement.closest('.existing-main-image-preview').remove();
-                }
-            });
-        };
 
         // --- Standard Form Submission Interception ---
         const mainForm = document.querySelector('form.form-card');
@@ -914,22 +938,13 @@
             e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
 
             // --- Reset Messages ---
-            const mainImagesError = document.getElementById('mainImagesError');
             const variantsError = document.getElementById('variantsError');
-            mainImagesError.classList.add('hidden');
             variantsError.classList.add('hidden');
 
             // --- Frontend Validation ---
             let hasError = false;
 
-            // 1. Check for minimum 3 main images
-            const existingImagesCount = document.querySelectorAll('.existing-main-image-preview').length;
-            const totalImages = existingImagesCount + mainImageFilesArray.length;
 
-            if (totalImages < 3) {
-                mainImagesError.classList.remove('hidden');
-                hasError = true;
-            }
 
             // 2. Check for at least 1 variant
             if (productVariants.length === 0) {
@@ -954,10 +969,14 @@
             // Construct form data to natively pick up regular text fields
             const formData = new FormData(mainForm);
 
+<<<<<<< Updated upstream
             // Append Main Images Manually (since name="images" was removed from input to avoid duplicates)
             mainImageFilesArray.forEach((file) => {
                 formData.append('images', file);
             });
+=======
+
+>>>>>>> Stashed changes
 
             // Append variant images as their own index files in FormData array
             productVariants.forEach((variant, vIndex) => {

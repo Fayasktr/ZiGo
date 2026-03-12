@@ -19,7 +19,12 @@ const variantSchema = mongoose.Schema({
         of:String
     },images:{
         type:[String],
-        required:false
+        validate:{
+            validator:function(val){
+                return !val || val.length>=3
+            },
+            message:"A product must have minimum 3 images"
+        }
     },
     isListed:{
         type:Boolean,
@@ -47,15 +52,6 @@ const productSchema = mongoose.Schema({
     },
     stock:{
         type:Number
-    },
-    images:{
-        type:[String],
-        validate:{
-            validator:function(val){
-                return !val || val.length>=3
-            },
-            message:"A product must have minimum 3 images"
-        }
     },
     variants:[variantSchema],
     isListed:{

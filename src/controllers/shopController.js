@@ -14,9 +14,10 @@ export const loadShop = asyncHandler(async (req, res) => {
 export const loadProductDetailsePage = asyncHandler(async (req, res) => {
     try {
         const productId = req.params.productId;
-        const { product, relatedProducts } = await shopService.productDetailsePage(productId);
+        const userId=req?.session?.user?.id||req?.user?.id||"";
+        const { product, relatedProducts ,wishlist} = await shopService.productDetailsePage(productId,userId);
         console.log("product detailse:",product)
-        res.render("user/productDetailse", { product, relatedProducts });
+        res.render("user/productDetailse", { product, relatedProducts ,wishlist});
     } catch (error) {
         console.log(error)
         req.flash("error", error.message);
@@ -24,21 +25,17 @@ export const loadProductDetailsePage = asyncHandler(async (req, res) => {
     }
 })
 
+
 export const wishlistUpdate = asyncHandler(async (req, res) => {
     try {
         const productId = req.params.id;
-        const userId = req.session.user._id || req.user._id;
-        const update = await shopService.wishlistUpdate(productId, userId);
+        const userId = req.session.user.id || req.user.id
+        const variantId=req.query.variantId;
+        console.log(`wishlist =product id:${productId}, and variant id:${variantId}, userId:${userId}`)
+        const update = await shopService.wishlistUpdate(productId, userId,variantId);
         res.status(200).json({ success: true, message: "wishlist updated", action: update.action });
     } catch (error) {
         res.status(400).json({ success: false, message: "action failed" });
     }
 })
 
-export const addToCart = asyncHandler(async (req, res) => {
-    try {
-
-    } catch (error) {
-
-    }
-})

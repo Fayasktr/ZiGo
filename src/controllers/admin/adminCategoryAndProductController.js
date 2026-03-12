@@ -2,7 +2,6 @@ import asynchandler from 'express-async-handler';
 import * as serviceOfProductAndCategory from '../../services/admin/categoryAndProductService.js';
 import { uploadToCloudinary } from '../../config/cloudinary.js';
 import sharp from "sharp";
-import { json } from 'express';
 
 export const getCategory = asynchandler(async (req, res) => {
     try {
@@ -125,16 +124,13 @@ export const listAndUnlistProduct = asynchandler(async (req, res) => {
 
 export const addProduct = asynchandler(async (req, res) => {
     try {
-        const mainImageUrls = [];
         const variantsImageUrls = {}
         if (req.files && req.files.length > 0) {
             for (let file of req.files) {
                 const webpBuffer = await sharp(file.buffer).webp().toBuffer();
                 const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
 
-                if (file.fieldname == "images") {
-                    mainImageUrls.push(url);
-                } else if (file.fieldname.startsWith("variant_")) {
+                if (file.fieldname.startsWith("variant_")) {
                     if (!variantsImageUrls[file.fieldname]) {
                         variantsImageUrls[file.fieldname] = [];
                     }
@@ -153,14 +149,11 @@ export const addProduct = asynchandler(async (req, res) => {
                 stock: Number(variant.stock),
                 attributes: variant.attributes || {},
                 images: variantImagesToUpload,
-                isListed: true
+                isListed: variant.isListed !== undefined ? variant.isListed : true
             }
         })
         if (formatedVariants.length === 0) {
             throw new Error("at least 1 variant is required.");
-        }
-        if (mainImageUrls.length < 3) {
-            throw new Error("minimum 3 main images are required.");
         }
 
         const finalProductDataToUpload = {
@@ -170,10 +163,8 @@ export const addProduct = asynchandler(async (req, res) => {
             category: req.body.category,
             basePrice: formatedVariants[0].price,
             isListed: req.body.isListed == "on" ? true : false,
-            images: mainImageUrls,
             variants: formatedVariants
         }
-        console.log("final product to upload:-", finalProductDataToUpload);
         const uploaded = await serviceOfProductAndCategory.addProduct(finalProductDataToUpload);
         console.log("data after upload:", uploaded);
         res.status(200).json({ success: true, message: "product uploaded" });
@@ -182,6 +173,7 @@ export const addProduct = asynchandler(async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 })
+
 
 export const editProductPage = asynchandler(async (req, res) => {
     try {
@@ -198,7 +190,59 @@ export const editProductPage = asynchandler(async (req, res) => {
 
 export const updateProduct = asynchandler(async (req, res) => {
     try {
-        const update = await serviceOfProductAndCategory.updateProduct(req.body);
+        const { id, name, description, brand, category, isListed, variantsData } = req.body;
+
+
+        const variantsNewImageUrls = {};
+
+        if (req.files && req.files.length > 0) {
+            for (let file of req.files) {
+                const webpBuffer = await sharp(file.buffer).webp().toBuffer();
+                const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
+
+                if (file.fieldname.startsWith("variant_")) {
+                    if (!variantsNewImageUrls[file.fieldname]) {
+                        variantsNewImageUrls[file.fieldname] = [];
+                    }
+                    variantsNewImageUrls[file.fieldname].push(url);
+                }
+            }
+        }
+        // 2. Handle Variants
+        let parsedVariants = [];
+        if (variantsData) {
+            parsedVariants = JSON.parse(variantsData);
+        }
+
+        const finalVariants = parsedVariants.map((variant, index) => {
+            const existingVariantImages = variant.images || []; // Note: changed from existingImages to images to match addEditProduct.ejs
+            const newVariantImages = variantsNewImageUrls[`variant_${index}_images`] || [];
+
+            return {
+                price: Number(variant.price),
+                stock: Number(variant.stock),
+                attributes: variant.attributes || {},
+                images: [...existingVariantImages, ...newVariantImages],
+                isListed: variant.isListed !== undefined ? variant.isListed : true
+            };
+        });
+
+        if (finalVariants.length === 0) {
+            throw new Error("at least 1 variant is required.");
+        }
+
+        const updateData = {
+            id,
+            productName: name,
+            description,
+            brand,
+            category,
+            basePrice: finalVariants[0].price,
+            isListed: isListed === "on",
+            variants: finalVariants
+        };
+
+        await serviceOfProductAndCategory.updateProduct(updateData);
         res.status(200).json({ success: true, message: "product update success.." })
     } catch (error) {
         res.status(400).json({ success: false, message: "product update failed" });
