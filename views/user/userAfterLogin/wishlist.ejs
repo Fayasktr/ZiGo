@@ -320,35 +320,53 @@
         <script>
             async function removeFromWishlist(productId, variantId) {
                 try {
-                    const response = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' }
+                    const result = await Swal.fire({
+                        title: 'Are you sure?',
+                        text: "Do you want to remove this item from your wishlist?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#FF5A1F',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, remove it!'
                     });
-                    const result = await response.json();
 
-                    if (result.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Removed!',
-                            text: result.message,
-                            toast: true,
-                            position: 'top',
-                            showConfirmButton: false,
-                            timer: 3000
+                    if (result.isConfirmed) {
+                        const response = await fetch(`/user/wishlist/${productId}?variantId=${variantId}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' }
                         });
-                        // Reload to update the list
-                        setTimeout(() => window.location.reload(), 1000);
+                        const data = await response.json();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Removed!',
+                                text: data.message,
+                                toast: true,
+                                position: 'top',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                            // Reload to update the list
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            throw new Error(data.message || 'Failed to remove item');
+                        }
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error('Remove Wishlist Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Something went wrong!'
+                    });
                 }
             }
 
             async function moveToCart(productId, variantId) {
                 try {
-                    // Assuming you'll have a moveToCart route or similar
-                    const response = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
-                        method: 'POST',
+                    const response = await fetch(`/user/wishlist/cart/${productId}?variantId=${variantId}`, {
+                        method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' }
                     });
                     const result = await response.json();
@@ -363,17 +381,18 @@
                             showConfirmButton: false,
                             timer: 3000
                         });
-                        // Reload to update list (remove from wishlist if moved)
+                        // Reload to update list (item is removed from wishlist)
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: result.message
-                        });
+                        throw new Error(result.message || 'Failed to move to cart');
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error('Move to Cart Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Something went wrong!'
+                    });
                 }
             }
         </script>

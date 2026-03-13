@@ -35,7 +35,9 @@ router.post("/user/addresses/:id/delete", userProfile.deleteAddress);
 
 router.get("/user/wishlist",userProfile.wishlistPage);
 
-router.get("/user/wishlist",userProfile.wishlistPage);
-router.get("/user/cart",userProfile.cartPage);
+router.get("/user/wishlist", userProfile.wishlistPage);
+router.patch("/user/wishlist/:id", userProfile.removeWishlist);
+router.patch("/user/wishlist/cart/:id",userProfile.addToCart);
+router.get("/user/cart", userProfile.cartPage);
 
 export default router;

@@ -162,14 +162,38 @@ export const deleteAddress = async (userId, addressId) => {
 
 export const wishlistPage = async (userId) => {
     if (!userId) return [];
-
-    // Ensure userId is an ObjectId if it's a string
     const queryId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
 
     return await wishlistModel.find({ userId: queryId }).populate({
         path: 'productId',
         populate: { path: 'category' }
     });
+}
+
+export const deleteWishlistItem=async(userId,productId,variantId)=>{
+    const item=await wishlistModel.findOneAndDelete({userId,productId,variantId});
+    return true;
+}
+
+export const addToCart=async(userId,productId,variantId)=>{
+    const existCart=await cartModel.findOne({userId,productId,variantId});
+    
+    if(existCart){
+        if(existCart.quantity<10){
+            await cartModel.findOneAndUpdate({userId,productId,variantId},{$inc:{quantity:1}})
+        }else{
+            throw new Error("Maximum cart limit reached (10 per item)");
+        }
+    }else {
+        await cartModel.create({
+            userId:userId,
+            productId:productId,
+            variantId:variantId,
+            quantity:1
+        })
+    }
+    const deleteItem=await wishlistModel.findOneAndDelete({userId,productId,variantId});
+    return true;
 }
 
 export const getCartPage = async (userId) => {

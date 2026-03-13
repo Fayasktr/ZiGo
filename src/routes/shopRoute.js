@@ -11,6 +11,8 @@ router.get("/productDetailse/:productId", shopCntrl.loadProductDetailsePage);
 router.patch("/shop/wishlist/:id", wishlistAndCart.isThereUser, shopCntrl.wishlistUpdate);
 router.post("/shop/cart/:id",wishlistAndCart.isThereUser,shopCntrl.addToCart);
 
+
+
 const shopRoute = router;
 
 export default shopRoute;

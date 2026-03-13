@@ -225,6 +225,30 @@ export const wishlistPage=asynchandler(async(req,res)=>{
     }
 })
 
+export const removeWishlist =asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session.user.id||req.user.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        let result =await addressService.deleteWishlistItem(userId,productId,variantId);
+        res.status(200).json({success:result,message:"item removed from wishlist"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message});
+    }
+})
+
+export const addToCart=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req.user?.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        let updateToCart=await addressService.addToCart(userId,productId,variantId);
+        res.status(200).json({success:true,message:"item added to cart"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message});
+    }
+})
+
 export const cartPage=asynchandler(async(req,res)=>{
     try {
         const user = req.session?.user || req.user;
