@@ -450,12 +450,26 @@
                                             <% products.forEach((product, index)=> { %>
                                                 <div class="product-card reveal active" data-id="<%=product._id%>">
                                                     <div class="img-container">
-                                                        <button class="wishlist-heart-btn" title="Add to Wishlist"
-                                                            onclick="toggleWishlist('<%= product._id %>',this)">
-                                                            <i class="fas fa-heart"></i>
-                                                        </button>
-                                                        <img src="<%= (product.variants && product.variants[0] && product.variants[0].images) ? '/' + product.variants[0].images[0] : '/public/landing/no-image.png' %>"
-                                                            alt="<%= product.productName %>">
+                                                        <% const listedVariants=product.variants.filter(v=> v.isListed
+                                                            !== false);
+                                                            const displayVariant = listedVariants.length > 0 ?
+                                                            listedVariants[0] : (product.variants[0] || {});
+                                                            const firstVariantId = displayVariant._id ?
+                                                            displayVariant._id.toString() : "";
+                                                            const isWishlisted = userWishlist &&
+                                                            userWishlist.includes(firstVariantId);
+                                                            %>
+                                                            <button
+                                                                class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
+                                                                title="Add to Wishlist"
+                                                                data-variant-id="<%= firstVariantId %>">
+                                                                <i class="fas fa-heart"></i>
+                                                            </button>
+                                                            <% const prodImg=(displayVariant.images &&
+                                                                displayVariant.images[0]) ? displayVariant.images[0]
+                                                                : '/public/landing/no-image.png' ; %>
+                                                                <img src="<%= prodImg %>"
+                                                                    alt="<%= product.productName %>">
                                                     </div>
                                                     <div class="product-info">
                                                         <span class="p-cat">
@@ -478,7 +492,7 @@
                                                                 <!-- MRP if applicable -->
                                                             </div>
                                                             <button class="add-cart-btn"
-                                                                onclick="addToCart('<%= product._id %>')">
+                                                                data-variant-id="<%= firstVariantId %>">
                                                                 <svg width="20" height="20" viewBox="0 0 24 24"
                                                                     fill="none" stroke="currentColor" stroke-width="2">
                                                                     <path d="M12 5v14M5 12h14"></path>
@@ -555,22 +569,30 @@
                                     if (!card) return;
                                     const productId = card.dataset.id;
 
-                                    // Check IF they clicked the Cart or wishlist Button
+                                    // Check IF they clicked the Wishlist Button
                                     const wishlistBtn = event.target.closest('.wishlist-heart-btn');
                                     if (wishlistBtn) {
-                                        toggleWishlist(productId, wishlistBtn); // Pass the button here
+                                        event.stopPropagation();
+                                        const variantId = wishlistBtn.dataset.variantId;
+                                        toggleWishlist(productId, variantId, wishlistBtn);
                                         return;
                                     }
-                                    if (event.target.closest('.cart-btn-trigger')) {
-                                        addToCart(productId);
+
+                                    // Check IF they clicked the Cart Button
+                                    const cartBtn = event.target.closest('.add-cart-btn');
+                                    if (cartBtn) {
+                                        event.stopPropagation();
+                                        const variantId = cartBtn.dataset.variantId;
+                                        addToCart(productId, variantId);
                                         return;
                                     }
+
                                     window.location.href = `/productDetailse/${productId}`;
                                 })
 
-                                async function toggleWishlist(productId, btnElement) {
+                                async function toggleWishlist(productId, variantId, btnElement) {
                                     try {
-                                        const update = await fetch(`/shop/wishlist/${productId}`, {
+                                        const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
                                             method: "PATCH",
                                             headers: { "Content-Type": "application/json" }
                                         });
@@ -623,14 +645,52 @@
 
                                 }
 
-                                async function addToCart(productId) {
+                                async function addToCart(productId, variantId) {
                                     try {
-                                        let update = await fetch(`/shop/cart/${productId}`);
-                                        let result = await update.json();
-                                    } catch (error) {
+                                        let response = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' }
+                                        });
 
+                                        if (response.status === 401) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Login Required',
+                                                text: 'Please login to add items to cart.',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#FF5A1F',
+                                                confirmButtonText: 'Login'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) window.location.href = '/login';
+                                            });
+                                            return;
+                                        }
+
+                                        let result = await response.json();
+                                        if (response.ok && result.success) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Added to Cart',
+                                                text: result.message,
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+                                        } else {
+                                            throw new Error(result.message || "Failed to add to cart");
+                                        }
+                                    } catch (error) {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: error.message,
+                                            toast: true,
+                                            position: 'top',
+                                            showConfirmButton: false,
+                                            timer: 3000
+                                        });
                                     }
-                                    console.log('Add to cart:', productId);
                                 }
 
                                 // Handle scroll reveal

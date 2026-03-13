@@ -3,7 +3,8 @@ import * as shopService from "../services/shopService.js";
 
 export const loadShop = asyncHandler(async (req, res) => {
     try {
-        const shopData = await shopService.getShopData(req.query);
+        const userId = req.session?.user?.id || req?.user?.id || ""
+        const shopData = await shopService.getShopData(req.query, userId);
         res.render("user/shop", shopData);
     } catch (error) {
         console.error("Shop Load Error:", error);
@@ -39,3 +40,17 @@ export const wishlistUpdate = asyncHandler(async (req, res) => {
     }
 })
 
+export const addToCart = asyncHandler(async (req, res) => {
+    try {
+        const productId = req.params.id;
+        let userId = req?.session?.user?.id || req?.user?.id;
+        let variantId = req.query.variantId;
+        let quantity = req.query.quantity || 1;
+        console.log(`add to cart =product id:${productId}, and variant id:${variantId}, userId:${userId}, quantity:${quantity}`)
+        const updateCart = await shopService.addToCart(productId, userId, variantId, quantity);
+        res.status(200).json({ success: true, message: "Added to cart successfully" });
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ success: false, message: error.message });
+    }
+})

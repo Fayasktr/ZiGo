@@ -192,7 +192,6 @@ export const updateProduct = asynchandler(async (req, res) => {
     try {
         const { id, name, description, brand, category, isListed, variantsData } = req.body;
 
-
         const variantsNewImageUrls = {};
 
         if (req.files && req.files.length > 0) {
@@ -208,14 +207,13 @@ export const updateProduct = asynchandler(async (req, res) => {
                 }
             }
         }
-        // 2. Handle Variants
         let parsedVariants = [];
         if (variantsData) {
             parsedVariants = JSON.parse(variantsData);
         }
 
         const finalVariants = parsedVariants.map((variant, index) => {
-            const existingVariantImages = variant.images || []; // Note: changed from existingImages to images to match addEditProduct.ejs
+            const existingVariantImages = variant.images || []; 
             const newVariantImages = variantsNewImageUrls[`variant_${index}_images`] || [];
 
             return {

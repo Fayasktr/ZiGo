@@ -1,13 +1,10 @@
 import productModel from "../models/productModel.js";
 import categoryModel from "../models/categoryModel.js";
 import wishlistModel from "../models/wishlistModel.js";
+import cartModel from "../models/cartModel.js";
 import mongoose from "mongoose";
 
-<<<<<<< Updated upstream
-export const getShopData = async (quary) => {
-=======
 export const getShopData = async (quary, userId) => {
->>>>>>> Stashed changes
     let { page = 1, search = "", category = "", price = "" } = quary;
     let limit = 9;
     let skip = (page - 1) * limit;
@@ -19,9 +16,9 @@ export const getShopData = async (quary, userId) => {
     if (price) {
         let [min, max] = price.split("-");
         if (max == "plus") {
-            filter.price = { $gte: parseInt(min) };
+            filter['variants.price'] = { $gte: parseInt(min) };
         } else {
-            filter.price = { $gte: parseInt(min), $lte: parseInt(max) }
+            filter['variants.price'] = { $gte: parseInt(min), $lte: parseInt(max) }
         }
     }
     let categories = await categoryModel.find({ isListed: true }).sort({ createdAt: -1 });
@@ -43,8 +40,8 @@ export const getShopData = async (quary, userId) => {
 
     let userWishlist = [];
     if (userId) {
-        const wishlistItems =userId? await wishlistModel.find({ userId: userId }).distinct('variantId') : [];;
-        userWishlist = wishlistItems.map(item => item.variantId.toString());
+        const wishlistItems = await wishlistModel.find({ userId: userId }).distinct('variantId');
+        userWishlist = wishlistItems.filter(Boolean).map(id => id.toString());
     }
     const [products, totalCount] = await Promise.all([
         productModel.find(filter)
@@ -64,7 +61,8 @@ export const getShopData = async (quary, userId) => {
         limit,
         search,
         selectedCategory: category,
-        selectedPrice: price
+        selectedPrice: price,
+        userWishlist
     }
 }
 
@@ -88,7 +86,7 @@ export const productDetailsePage = async (productId, userId) => {
     let wishlist = [];
     if (userId) {
         const wishlistData = await wishlistModel.find({ userId: userId }).distinct('variantId');
-        wishlist = wishlistData.map(id => id.toString());
+        wishlist = wishlistData.filter(Boolean).map(id => id.toString());
     }
     const variantAttributes = relatedProducts[0]?.variantAttributes;
     console.log(`variant attribute:${variantAttributes}`);
@@ -115,25 +113,37 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
     }
 }
 
-export const addToCart = async (productId, userId, variantId) => {
-    const existWislist = await wishlistModel.findOne({ userId, productId, variantId });
-    if (existWislist) {
-        await wishlistModel.deleteOne({ userId, productId, variantId });
-        return { action: "removed" }
+export const addToCart = async (productId, userId, variantId, quantity = 1) => {
+    if (!userId) {
+        throw new Error("Login required to add items to cart");
     }
 
+    const qty = parseInt(quantity) || 1;
     const existCart = await cartModel.findOne({ userId, productId, variantId });
-    console.log(existCart)
-    if (existCart && existCart.quantity >= 10) {
-        throw new Error("cart Limit reached");
-    } else if (existCart && existCart.quantity < 10) {
-        return await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: 1 } });
+
+    if (existCart) {
+        const newQuantity = existCart.quantity + qty;
+        if (newQuantity > 10) {
+            throw new Error("Maximum cart limit reached (10 per item)");
+        }
+        return await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } });
     }
-    console.log("new one")
+
+    const product = await productModel.findById(productId);
+    if (!product) throw new Error("Product not found");
+
+    const variant = product.variants.id(variantId);
+    if (!variant) throw new Error("Variant not found");
+
+    if (variant.stock < qty) {
+        throw new Error("Insufficient stock available");
+    }
+
     return await cartModel.create({
         userId: userId,
         productId: productId,
         variantId: variantId,
-        quantity: 1
-    })
+        quantity: qty,
+        price: variant.price
+    });
 }

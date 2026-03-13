@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZiGo | <%= product.productName %>
     </title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -409,8 +410,9 @@
                 <%- include('../partials/headerBeforeLogin') %>
                     <% } %>
 
-                        <% const defaultVariant=product.variants && product.variants.length> 0 ? product.variants[0] :
-                            {};
+                        <% const listedVariants=product.variants.filter(v=> v.isListed !== false);
+                            const defaultVariant = listedVariants.length > 0 ? listedVariants[0] : (product.variants[0]
+                            || {});
                             const variantAttributes = (product.category && product.category.variantAttributes) ?
                             product.category.variantAttributes : [];
 
@@ -423,7 +425,7 @@
 
                             const getUniqueAttributeValues = (attr) => {
                             if (!product.variants) return [];
-                            return [...new Set(product.variants.map(v => getAttrValue(v.attributes,
+                            return [...new Set(listedVariants.map(v => getAttrValue(v.attributes,
                             attr)))].filter(Boolean);
                             };
                             %>
@@ -433,23 +435,23 @@
                                     <!-- Gallery -->
                                     <div class="reveal">
                                         <div class="main-image-wrapper">
-                                            <button class="wishlist-btn"
-                                                onclick="toggleWishlist('<%= product._id %>', currentVariantId, this)">
-                                                <i class="fas fa-heart text-2xl"></i>
-                                            </button>
-                                            <% const defaultImg=(defaultVariant.images && defaultVariant.images[0]) ?
-                                                (defaultVariant.images[0].startsWith('http') ? defaultVariant.images[0]
-                                                : '/' + defaultVariant.images[0]) : '/public/landing/no-image.png' ; %>
-                                                <img id="mainImage" src="<%= defaultImg %>"
-                                                    data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
+                                            <% const isMainWishlisted=wishlist &&
+                                                wishlist.includes(defaultVariant._id.toString()); %>
+                                                <button class="wishlist-btn <%= isMainWishlisted ? 'active' : '' %>"
+                                                    onclick="toggleWishlist('<%= product._id %>', currentVariantId, this)">
+                                                    <i class="fas fa-heart text-2xl"></i>
+                                                </button>
+                                                <% const defaultImg=(defaultVariant.images && defaultVariant.images[0])
+                                                    ? defaultVariant.images[0] : '/public/landing/no-image.png' ; %>
+                                                    <img id="mainImage" src="<%= defaultImg %>"
+                                                        data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
                                         </div>
                                         <div class="thumbnail-grid">
                                             <% if (defaultVariant.images) { %>
                                                 <% defaultVariant.images.forEach((img, idx)=> { %>
                                                     <div class="thumb-btn <%= idx === 0 ? 'active' : '' %>"
                                                         onclick="updateImg('<%= img %>', this)">
-                                                        <img src="<%= img.startsWith('http') ? img : '/' + img %>"
-                                                            alt="">
+                                                        <img src="<%= img %>" alt="">
                                                     </div>
                                                     <% }) %>
                                                         <% } %>
@@ -629,17 +631,26 @@
                                                     onclick="window.location.href='/productDetailse/<%= rel._id %>'">
                                                     <div
                                                         class="aspect-square bg-gray-50 rounded-3xl p-8 flex items-center justify-center border border-transparent group-hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
-                                                        <img src="<%= (rel.variants && rel.variants[0] && rel.variants[0].images) ? '/' + rel.variants[0].images[0] : '/public/landing/no-image.png' %>"
-                                                            alt="<%= rel.productName %>"
-                                                            class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
-                                                        <% if (rel.variants[0].mrp> rel.variants[0].price) { %>
-                                                            <span
-                                                                class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
-                                                                <%= Math.round(((rel.variants[0].mrp -
-                                                                    rel.variants[0].price)/rel.variants[0].mrp)*100) %>
-                                                                    %
-                                                            </span>
-                                                            <% } %>
+                                                        <% const relImg=(rel.variants && rel.variants[0] &&
+                                                            rel.variants[0].images && rel.variants[0].images[0]) ?
+                                                            rel.variants[0].images[0] : '/public/landing/no-image.png' ;
+                                                            %>
+                                                            <button
+                                                                class="wishlist-heart-btn <%= wishlist && wishlist.includes(rel.variants[0]._id.toString()) ? 'active' : '' %>"
+                                                                title="Add to Wishlist" data-id="<%= rel._id %>"
+                                                                data-variant-id="<%= rel.variants[0]._id %>">
+                                                                <i class="fas fa-heart"></i>
+                                                            </button>
+                                                            <img src="<%= relImg %>" alt="<%= rel.productName %>"
+                                                                class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
+                                                            <% if (rel.variants[0].mrp> rel.variants[0].price) { %>
+                                                                <span
+                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                                                    -<%= Math.round(((rel.variants[0].mrp -
+                                                                        rel.variants[0].price)/rel.variants[0].mrp)*100)
+                                                                        %>%
+                                                                </span>
+                                                                <% } %>
                                                     </div>
                                                     <div class="mt-5">
                                                         <h3
@@ -701,6 +712,7 @@
                                         let i = document.getElementById('qty');
                                         let v = parseInt(i.value) + n;
                                         if (v > 0) i.value = v;
+                                        if (v == 10) return "limit reached"
                                     }
                                     function scrollToSection(id) {
                                         const el = document.getElementById(id);
@@ -834,10 +846,31 @@
                                     // Initial check
                                     window.addEventListener('load', () => {
                                         updateAvailability();
+
+                                        // Update Wishlist Heart Color for specific variant
+                                        const heartBtn = document.querySelector('.wishlist-btn');
+                                        if (heartBtn) {
+                                            const isWishlisted = userWishlist.some(id => id.toString() === currentVariantId.toString());
+                                            if (isWishlisted) {
+                                                heartBtn.classList.add('active');
+                                            } else {
+                                                heartBtn.classList.remove('active');
+                                            }
+                                        }
+
+                                        // Handle wishlist clicks for related products
+                                        document.querySelectorAll('.wishlist-heart-btn').forEach(btn => {
+                                            btn.addEventListener('click', (e) => {
+                                                e.stopPropagation();
+                                                const productId = btn.dataset.id;
+                                                const variantId = btn.dataset.variantId;
+                                                toggleWishlist(productId, variantId, btn);
+                                            });
+                                        });
                                     });
 
                                     function updateVariantUI(variant) {
-                                        currentVariantId = variant._id;
+                                        currentVariantId = variant._id.toString();
 
                                         // Update Price
                                         const priceEl = document.querySelector('.current-price');
@@ -878,7 +911,8 @@
                                         // Update Wishlist Heart Color
                                         const heartBtn = document.querySelector('.wishlist-btn');
                                         if (heartBtn) {
-                                            if (userWishlist.includes(variant._id)) {
+                                            const isWishlisted = userWishlist.some(id => id.toString() === variant._id.toString());
+                                            if (isWishlisted) {
                                                 heartBtn.classList.add('active');
                                             } else {
                                                 heartBtn.classList.remove('active');
@@ -912,10 +946,13 @@
                                             const result = await update.json();
                                             if (update.ok && result.success) {
                                                 // Update local wishlist state
+                                                const vIdStr = variantId.toString();
                                                 if (result.action === 'added') {
-                                                    userWishlist.push(variantId);
+                                                    if (!userWishlist.includes(vIdStr)) {
+                                                        userWishlist.push(vIdStr);
+                                                    }
                                                 } else {
-                                                    userWishlist = userWishlist.filter(id => id !== variantId);
+                                                    userWishlist = userWishlist.filter(id => id.toString() !== vIdStr);
                                                 }
 
                                                 if (btnElement) {
@@ -951,31 +988,30 @@
 
                                     async function addToCart(productId, variantId) {
                                         try {
-                                            console.log(productId)
-                                            let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
+                                            const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
+                                            console.log(`Adding to cart: ${productId}, Variant: ${variantId}, Qty: ${quantity}`);
+
+                                            let response = await fetch(`/shop/cart/${productId}?variantId=${variantId}&quantity=${quantity}`, {
                                                 method: "POST",
                                                 headers: { "Content-Type": "application/json" }
                                             });
 
-                                            if (update.status === 401) {
+                                            if (response.status === 401) {
                                                 Swal.fire({
                                                     icon: 'warning',
                                                     title: 'Login Required',
-                                                    text: 'You need to be logged in to manage your cart.',
+                                                    text: 'Please login to add items to your cart.',
                                                     showCancelButton: true,
                                                     confirmButtonColor: '#FF5A1F',
                                                     confirmButtonText: 'Login Now'
                                                 }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        window.location.href = '/login';
-                                                    }
+                                                    if (result.isConfirmed) window.location.href = '/login';
                                                 });
                                                 return;
                                             }
 
-                                            let result = await update.json();
-                                            console.log("result", result);
-                                            if (update.ok && result.success) {
+                                            let result = await response.json();
+                                            if (response.ok && result.success) {
                                                 Swal.fire({
                                                     icon: "success",
                                                     title: result.message,
@@ -983,10 +1019,11 @@
                                                     position: "top",
                                                     showConfirmButton: false,
                                                     timer: 3000
-                                                })
+                                                });
                                             } else {
                                                 throw new Error(result.message || "Could not add to cart");
                                             }
+
                                         } catch (error) {
                                             Swal.fire({
                                                 icon: "error",
@@ -1002,8 +1039,48 @@
                                         console.log('Add to cart:', productId);
                                     }
 
-                                    function buyNow(productId) {
-                                        console.log('Buy now:', productId, currentVariantId);
+                                    async function buyNow(productId) {
+                                        // Use the current exactly selected variant
+                                        const vId = currentVariantId;
+                                        try {
+                                            const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
+                                            let response = await fetch(`/shop/cart/${productId}?variantId=${currentVariantId}&quantity=${quantity}`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (response.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'info',
+                                                    title: 'Login Required',
+                                                    text: 'Please login to proceed with "Buy Now".',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) window.location.href = '/login';
+                                                });
+                                                return;
+                                            }
+
+                                            let result = await response.json();
+                                            if (response.ok && result.success) {
+                                                // If added to cart successfully, redirect to checkout/cart
+                                                window.location.href = '/user/cart';
+                                            } else {
+                                                throw new Error(result.message || "Checkout failed");
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message,
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+                                        }
                                     }
                                 </script>
 </body>

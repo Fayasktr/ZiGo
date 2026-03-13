@@ -10,6 +10,9 @@ const wishlistSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "productModel",
         required: true
+    },
+    variantId: {
+        type: mongoose.Schema.Types.ObjectId,
     }
 }, { timestamps: true });
 

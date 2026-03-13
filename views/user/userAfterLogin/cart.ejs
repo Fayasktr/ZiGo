@@ -289,8 +289,16 @@
                             <div class="cart-item" data-item-id="<%= item._id %>">
                                 <div class="item-img"
                                     onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
-                                    <img src="/<%= (item.productId.variants && item.productId.variants[0]) ? item.productId.variants[0].images[0] : 'public/landing/no-image.png' %>"
-                                        alt="<%= item.productId.productName %>">
+                                    <% const cartVariant=(item.productId.variants && item.variantId) ?
+                                        item.productId.variants.find(v=> v._id.toString() === item.variantId.toString())
+                                        :
+                                        (item.productId.variants ? item.productId.variants[0] : null);
+
+                                        const cartImg = (cartVariant && cartVariant.images && cartVariant.images[0]) ?
+                                        cartVariant.images[0] :
+                                        '/public/landing/no-image.png';
+                                        %>
+                                        <img src="<%= cartImg %>" alt="<%= item.productId.productName %>">
                                 </div>
                                 <div class="item-details">
                                     <h3 class="item-title"
