@@ -25,6 +25,9 @@ export const updateProfile = asynchandler(async (req, res) => {
     try {
         const { userName, phoneNumber } = req.body;
         const userId = req.session?.user?.id || req.user?.id;
+        if(phoneNumber.length!=10){
+            throw new Error("phone number should be 10 digit");
+        }
         await addressService.updatedProfileBasic(userId, userName, phoneNumber);
         if (req.session?.user) req.session.user.userName = userName;
         if (req.user) req.user.userName = userName;

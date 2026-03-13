@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="/public/frendend.js/profileEdit.js" defer></script>
     <style>
         :root {
@@ -393,10 +395,6 @@
                         </label>
                     </div>
                     <p class="text-xs font-bold opacity-30">UPLOAD NEW PHOTO</p>
-                    <button type="button" onclick="uploadProfileImage()"
-                        class="mt-4 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black tracking-widest py-2 px-6 rounded-xl transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 uppercase">
-                        Save Profile Photo
-                    </button>
 
                     <div class="mt-8 pt-8 border-t border-gray-100 w-full">
                         <form id="basicInfoForm" class="space-y-6">
@@ -405,6 +403,8 @@
                                     <label class="form-label text-left">Username</label>
                                     <input type="text" id="userName" class="form-input" placeholder="e.g. fayas_kp"
                                         value="<%= userData.userName %>">
+                                    <span id="error-userName"
+                                        class="text-red-500 text-[10px] mt-1 hidden font-bold"></span>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label text-left">Phone Number</label>
@@ -413,6 +413,8 @@
                                         <input type="tel" id="phoneNumber" class="form-input pl-16"
                                             placeholder="9876543210" value="<%= userData.phoneNumber || '' %>">
                                     </div>
+                                    <span id="error-phoneNumber"
+                                        class="text-red-500 text-[10px] mt-1 hidden font-bold"></span>
                                 </div>
                             </div>
                             <button type="button" onclick="updateBasicInfo()"
@@ -444,10 +446,11 @@
                             <i class="fas fa-edit"></i> Change Email
                         </button>
                     </div>
-                    
+
                 </section>
 
-                <!-- Security Section (Local Only) -->
+               <%}else if(userData.password){%>
+                     <!-- Security Section (Local Only) -->
                 <section class="edit-card">
                     <div class="card-header flex items-center justify-between">
                         <h1 class="section-title">Security <span class="text-orange-500">Settings</span></h1>
@@ -523,6 +526,32 @@
                 </form>
             </div>
         </div>
+        </div>
+
+        <!-- Cropping Modal -->
+        <div id="cropperModal" class="modal-overlay">
+            <div class="modal-content max-w-2xl">
+                <button type="button" onclick="cancelCrop()" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h3>Crop <span class="text-orange-500">Photo</span></h3>
+                </div>
+                <div
+                    class="max-h-[400px] overflow-hidden rounded-2xl mb-6 bg-gray-100 flex items-center justify-center">
+                    <img id="cropperImage" src="" class="max-w-full">
+                </div>
+                <div class="flex gap-4">
+                    <button type="button" onclick="confirmCrop()" class="save-btn w-full">
+                        <i class="fas fa-crop"></i> Crop & Save
+                    </button>
+                    <button type="button" onclick="cancelCrop()"
+                        class="save-btn w-[150px] bg-gray-200 !text-black hover:bg-gray-300">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <%- include('../../partials/footer') %>
 
@@ -533,57 +562,103 @@
             </div>
 
             <script>
-                async function uploadProfileImage() {
-                    const fileInput = document.getElementById('imageUpload');
-                    if (!fileInput.files[0]) return;
-
-                    const formData = new FormData();
-                    formData.append('profileImage', fileInput.files[0]);
-
-                    try {
-                        Swal.fire({
-                            title: 'Uploading...',
-                            allowOutsideClick: false,
-                            didOpen: () => Swal.showLoading()
-                        });
-
-                        const response = await fetch('/user/profile/image', {
-                            method: 'PATCH',
-                            body: formData
-                        });
-
-                        const result = await response.json();
-                        if (response.ok) {
-                            if (result.imageUrl) {
-                                document.getElementById('profileImage').src = result.imageUrl;
-                                const headerAvatar = document.getElementById('headerProfileImage');
-                                if (headerAvatar) headerAvatar.src = result.imageUrl;
-                            }
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: result.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            throw new Error(result.message);
-                        }
-                    } catch (error) {
-                        Swal.fire('Error', error.message, 'error');
-                    }
-                }
+                let cropper;
 
                 function previewAvatar(input) {
                     if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        if (!file.type.startsWith('image/')) {
+                            Swal.fire('Error', 'Please select an image file.', 'error');
+                            return;
+                        }
+
                         const reader = new FileReader();
                         reader.onload = function (e) {
-                            document.getElementById('profileImage').src = e.target.result;
+                            const cropperModal = document.getElementById('cropperModal');
+                            const cropperImage = document.getElementById('cropperImage');
+
+                            cropperImage.src = e.target.result;
+                            cropperModal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+
+                            if (cropper) {
+                                cropper.destroy();
+                            }
+
+                            cropper = new Cropper(cropperImage, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                guides: true,
+                                background: false,
+                                autoCropArea: 1,
+                                responsive: true
+                            });
                         }
-                        reader.readAsDataURL(input.files[0]);
+                        reader.readAsDataURL(file);
                     }
                 }
+
+                function cancelCrop() {
+                    const cropperModal = document.getElementById('cropperModal');
+                    cropperModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                    document.getElementById('imageUpload').value = '';
+                }
+
+                async function confirmCrop() {
+                    if (!cropper) return;
+
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    });
+
+                    canvas.toBlob(async (blob) => {
+                        const formData = new FormData();
+                        formData.append('profileImage', blob, 'profile-cropped.jpg');
+
+                        try {
+                            Swal.fire({
+                                title: 'Uploading...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+
+                            const response = await fetch('/user/profile/image', {
+                                method: 'PATCH',
+                                body: formData
+                            });
+
+                            const result = await response.json();
+                            if (response.ok) {
+                                if (result.imageUrl) {
+                                    document.getElementById('profileImage').src = result.imageUrl;
+                                    const headerAvatar = document.getElementById('headerProfileImage');
+                                    if (headerAvatar) headerAvatar.src = result.imageUrl;
+                                }
+
+                                cancelCrop();
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: result.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            Swal.fire('Error', error.message, 'error');
+                        }
+                    }, 'image/jpeg', 0.9);
+                }
+
 
                 const Toast = Swal.mixin({
                     toast: true,
@@ -635,7 +710,7 @@
                     }
 
                     try {
-                       
+
                         const response = await fetch('/user/profile/emailRequest', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -715,12 +790,58 @@
                     }
                 }
 
+                // Capture initial state for change detection
+                let initialProfileData = {
+                    userName: document.getElementById('userName').value.trim(),
+                    phoneNumber: document.getElementById('phoneNumber').value.trim()
+                };
+
                 async function updateBasicInfo() {
                     const userName = document.getElementById('userName').value.trim();
                     const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
+                    const nameError = document.getElementById('error-userName');
+                    const phoneError = document.getElementById('error-phoneNumber');
+
+                    // Reset errors
+                    nameError.textContent = '';
+                    nameError.classList.add('hidden');
+                    phoneError.textContent = '';
+                    phoneError.classList.add('hidden');
+
+                    let hasError = false;
+
+                    // Username validation
                     if (!userName) {
-                        Swal.fire('Error', 'Username is required', 'error');
+                        nameError.textContent = 'Username is required';
+                        nameError.classList.remove('hidden');
+                        hasError = true;
+                    } else if (userName.length < 3) {
+                        nameError.textContent = 'Name must be at least 3 characters';
+                        nameError.classList.remove('hidden');
+                        hasError = true;
+                    }
+
+                    // Phone validation
+                    const phoneRegex = /^[0-9]{10}$/;
+                    if (!phoneNumber) {
+                        phoneError.textContent = 'Phone number is required';
+                        phoneError.classList.remove('hidden');
+                        hasError = true;
+                    } else if (!phoneRegex.test(phoneNumber)) {
+                        phoneError.textContent = 'Phone number must be exactly 10 digits';
+                        phoneError.classList.remove('hidden');
+                        hasError = true;
+                    }
+
+                    if (hasError) return;
+
+                    // Change Detection: Check if anything actually changed
+                    if (userName === initialProfileData.userName && phoneNumber === initialProfileData.phoneNumber) {
+                        Toast.fire({
+                            icon: 'info',
+                            title: 'No changes detected'
+                        });
                         return;
                     }
 
@@ -740,6 +861,9 @@
                         const result = await response.json();
 
                         if (response.ok) {
+                            // Update initial state after success
+                            initialProfileData = { userName, phoneNumber };
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Updated!',
