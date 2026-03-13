@@ -1,5 +1,5 @@
-import passport from "passport";
 import addressModel from "../models/addressModel.js";
+import mongoose from "mongoose";
 import User from '../models/userModel.js';
 import checkPass from "../utils/checkPassword.js"
 import { hashPassword } from "../utils/hashPassword.js";
@@ -161,7 +161,12 @@ export const deleteAddress = async (userId, addressId) => {
 }
 
 export const wishlistPage = async (userId) => {
-    return await wishlistModel.find({ userId }).populate({
+    if (!userId) return [];
+
+    // Ensure userId is an ObjectId if it's a string
+    const queryId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+
+    return await wishlistModel.find({ userId: queryId }).populate({
         path: 'productId',
         populate: { path: 'category' }
     });
@@ -174,14 +179,14 @@ export const getCartPage = async (userId) => {
     });
 
     const totalPrice = cartItems.reduce((acc, item) => {
-        if (!item.productId) return acc;
+        if (!item.productId || !item.productId.variants) return acc;
         let cPrice = 0;
         let targetVid = item.variantId ? item.variantId.toString() : null;
-        if (item.productId.variants) {
-            let selectedVariant = item.productId.variants.find(v => v._id.toString() === targetVid);
-            if (!selectedVariant) selectedVariant = item.productId.variants[0];
-            if (selectedVariant) cPrice = selectedVariant.price;
-        }
+
+        let selectedVariant = item.productId.variants.find(v => v._id && targetVid && v._id.toString() === targetVid);
+        if (!selectedVariant) selectedVariant = item.productId.variants[0];
+        if (selectedVariant) cPrice = selectedVariant.price;
+
         return acc + (cPrice * item.quantity);
     }, 0);
     return { items: cartItems, totalPrice };

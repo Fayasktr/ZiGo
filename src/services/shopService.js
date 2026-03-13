@@ -3,7 +3,6 @@ import categoryModel from "../models/categoryModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
 import mongoose from "mongoose";
-import cartModel from "../models/cartModel.js";
 
 export const getShopData = async (quary, userId) => {
     let { page = 1, search = "", category = "", price = "" } = quary;

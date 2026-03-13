@@ -565,33 +565,35 @@
                                 });
 
                                 //select product
-                                productGrid.addEventListener("click", (event) => {
-                                    const card = event.target.closest(".product-card");
-                                    if (!card) return;
-                                    const productId = card.dataset.id;
-                                    const variantId = card.dataset.variantId;
+                                if (productGrid) {
+                                    productGrid.addEventListener("click", (event) => {
+                                        const card = event.target.closest(".product-card");
+                                        if (!card) return;
+                                        const productId = card.dataset.id;
+                                        const variantId = card.dataset.variantId;
 
-                                    // Check IF they clicked the Wishlist Button
-                                    const wishlistBtn = event.target.closest('.wishlist-heart-btn');
-                                    if (wishlistBtn) {
-                                        event.stopPropagation();
-                                        const variantId = wishlistBtn.dataset.variantId;
-                                        toggleWishlist(productId, variantId, wishlistBtn);
-                                        return;
-                                    }
+                                        // Check IF they clicked the Wishlist Button
+                                        const wishlistBtn = event.target.closest('.wishlist-heart-btn');
+                                        if (wishlistBtn) {
+                                            event.stopPropagation();
+                                            const variantId = wishlistBtn.dataset.variantId;
+                                            toggleWishlist(productId, variantId, wishlistBtn);
+                                            return;
+                                        }
 
-                                    // Check IF they clicked the Cart Button
-                                    const cartBtn = event.target.closest('.add-cart-btn');
-                                    if (cartBtn) {
-                                        event.stopPropagation();
-                                        const variantId = cartBtn.dataset.variantId;
-                                        addToCart(productId, variantId);
-                                        return;
-                                    }
+                                        // Check IF they clicked the Cart Button
+                                        const cartBtn = event.target.closest('.add-cart-btn');
+                                        if (cartBtn) {
+                                            event.stopPropagation();
+                                            const variantId = cartBtn.dataset.variantId;
+                                            addToCart(productId, variantId);
+                                            return;
+                                        }
 
-                                    // Otherwise redirect to product details
-                                    window.location.href = `/productDetailse/${productId}`;
-                                })
+                                        // Otherwise redirect to product details
+                                        window.location.href = `/productDetailse/${productId}`;
+                                    });
+                                }
 
                                 async function toggleWishlist(productId, variantId, btnElement) {
                                     try {
@@ -690,46 +692,7 @@
                                         Swal.fire({
                                             icon: "error",
                                             title: "Action failed",
-                                            text: error.message || "Could not able to add to cart",
-                                            toast: true,
-                                            position: 'top',
-                                            showConfirmButton: false,
-                                            timer: 3000
-                                        });
-
-                                        if (response.status === 401) {
-                                            Swal.fire({
-                                                icon: 'warning',
-                                                title: 'Login Required',
-                                                text: 'Please login to add items to cart.',
-                                                showCancelButton: true,
-                                                confirmButtonColor: '#FF5A1F',
-                                                confirmButtonText: 'Login'
-                                            }).then((result) => {
-                                                if (result.isConfirmed) window.location.href = '/login';
-                                            });
-                                            return;
-                                        }
-
-                                        let result = await response.json();
-                                        if (response.ok && result.success) {
-                                            Swal.fire({
-                                                icon: 'success',
-                                                title: 'Added to Cart',
-                                                text: result.message,
-                                                toast: true,
-                                                position: 'top',
-                                                showConfirmButton: false,
-                                                timer: 3000
-                                            });
-                                        } else {
-                                            throw new Error(result.message || "Failed to add to cart");
-                                        }
-                                    } catch (error) {
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Error',
-                                            text: error.message,
+                                            text: error.message || "Could not add to cart",
                                             toast: true,
                                             position: 'top',
                                             showConfirmButton: false,

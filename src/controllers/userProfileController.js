@@ -215,7 +215,9 @@ export const wishlistPage=asynchandler(async(req,res)=>{
     try {
         const user = req.session?.user || req.user;
         const userId = user?.id || user?._id;
+        console.log(userId)
         const wishlist = await addressService.wishlistPage(userId);
+        console.log(wishlist)
         res.render("user/userAfterLogin/wishlist", { wishlist, user: req.session.user || req.user });
     } catch (error) {
         req.flash("error",error.message);
