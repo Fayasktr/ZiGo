@@ -302,8 +302,7 @@
             </h1>
         </header>
 
-        <form class="form-card"
-            action="<%= locals.isEdit ? '/admin/products/update/' + product._id : '/admin/addProducts/add' %>"
+        <form class="form-card" action="<%= locals.isEdit ? '/admin/products/update' : '/admin/addProducts/add' %>"
             method="POST" enctype="multipart/form-data">
             <% if (locals.isEdit) { %>
                 <input type="hidden" name="id" value="<%= product._id %>">
@@ -692,6 +691,25 @@
 
                         // 2. Show newly selected files
 
+                        // Show existing images (URLs from server)
+                        const existingImages = variantData ? (variantData.images || []) : [];
+                        existingImages.forEach((imgUrl, idx) => {
+                            const container = document.createElement('div');
+                            container.className = 'relative group shrink-0';
+                            container.innerHTML = `
+                                <img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                                <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                                    <i class="fas fa-times text-[8px]"></i>
+                                </button>
+                            `;
+                            container.querySelector('button').addEventListener('click', () => {
+                                variantData.images.splice(idx, 1);
+                                renderVariantPreview();
+                            });
+                            previewBox.appendChild(container);
+                        });
+
+                        // Show newly selected files (as previews)
                         currentVariantFiles.forEach((file, idx) => {
                             const reader = new FileReader();
                             reader.onload = (e) => {
@@ -741,7 +759,8 @@
                     });
 
                     // --- Variant Image Validation ---
-                    const totalImages = existingImages.length + currentVariantFiles.length;
+                    const existingCount = variantData ? (variantData.images || []).length : 0;
+                    const totalImages = existingCount + currentVariantFiles.length;
 
                     if (totalImages < 3) {
                         Swal.showValidationMessage('Each variant must have at least 3 images');
@@ -750,6 +769,10 @@
 
                     // Capture images as base64 for the variant table preview
                     const tempImages = [];
+                    // Keep the remaining existing URLs
+                    const keptImages = variantData ? (variantData.images || []) : [];
+                    tempImages.push(...keptImages);
+
                     for (const file of currentVariantFiles) {
                         const b64 = await new Promise((resolve) => {
                             const r = new FileReader();

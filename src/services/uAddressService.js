@@ -86,8 +86,8 @@ export const addAddress = async (userEmail, addressData) => {
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
 
     let shouldBeDefault = addressData.isDefault || !defaultAddres;
-    if(shouldBeDefault && defaultAddres){
-        await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
+    if (shouldBeDefault && defaultAddres) {
+        await addressModel.updateMany({ userId: user._id }, { $set: { isDefault: false } });
     }
 
 
@@ -108,7 +108,14 @@ export const addAddress = async (userEmail, addressData) => {
 export const editAddressPage = async (addressId) => await addressModel.findOne({ _id: addressId });
 
 
-export const editAddress = async (addressId, addressData) => {
+export const editAddress = async (userId, addressId, addressData) => {
+    if (addressData.isDefault) {
+        await addressModel.updateMany(
+            { userId: userId },
+            { $set: { isDefault: false } }
+        );
+    }
+
     return await addressModel.findByIdAndUpdate(
         { _id: addressId },
         {
@@ -120,6 +127,7 @@ export const editAddress = async (addressId, addressData) => {
                 city: addressData.city,
                 pincode: addressData.pincode,
                 phoneNumber: addressData.phoneNumber,
+                isDefault: addressData.isDefault === true || addressData.isDefault === 'on'
             }
         },
         { new: true }
@@ -165,6 +173,16 @@ export const getCartPage = async (userId) => {
         populate: { path: 'category' }
     });
 
-    const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const totalPrice = cartItems.reduce((acc, item) => {
+        if (!item.productId) return acc;
+        let cPrice = 0;
+        let targetVid = item.variantId ? item.variantId.toString() : null;
+        if (item.productId.variants) {
+            let selectedVariant = item.productId.variants.find(v => v._id.toString() === targetVid);
+            if (!selectedVariant) selectedVariant = item.productId.variants[0];
+            if (selectedVariant) cPrice = selectedVariant.price;
+        }
+        return acc + (cPrice * item.quantity);
+    }, 0);
     return { items: cartItems, totalPrice };
 }

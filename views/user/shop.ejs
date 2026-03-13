@@ -448,7 +448,8 @@
                                     <% if (products && products.length> 0) { %>
                                         <div class="product-grid">
                                             <% products.forEach((product, index)=> { %>
-                                                <div class="product-card reveal active" data-id="<%=product._id%>">
+                                                <div class="product-card reveal active" data-id="<%=product._id%>"
+                                                    data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
                                                     <div class="img-container">
                                                         <% const listedVariants=product.variants.filter(v=> v.isListed
                                                             !== false);
@@ -568,6 +569,7 @@
                                     const card = event.target.closest(".product-card");
                                     if (!card) return;
                                     const productId = card.dataset.id;
+                                    const variantId = card.dataset.variantId;
 
                                     // Check IF they clicked the Wishlist Button
                                     const wishlistBtn = event.target.closest('.wishlist-heart-btn');
@@ -587,6 +589,7 @@
                                         return;
                                     }
 
+                                    // Otherwise redirect to product details
                                     window.location.href = `/productDetailse/${productId}`;
                                 })
 
@@ -647,9 +650,51 @@
 
                                 async function addToCart(productId, variantId) {
                                     try {
-                                        let response = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' }
+                                        console.log(productId)
+                                        let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" }
+                                        });
+
+                                        if (update.status === 401) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Login Required',
+                                                text: 'You need to be logged in to manage your cart.',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#FF5A1F',
+                                                confirmButtonText: 'Login Now'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = '/login';
+                                                }
+                                            });
+                                            return;
+                                        }
+
+                                        let result = await update.json();
+                                        console.log("result", result);
+                                        if (update.ok && result.success) {
+                                            Swal.fire({
+                                                icon: "success",
+                                                title: result.message,
+                                                toast: true,
+                                                position: "top",
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            })
+                                        } else {
+                                            throw new Error(result.message || "Could not add to cart");
+                                        }
+                                    } catch (error) {
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Action failed",
+                                            text: error.message || "Could not able to add to cart",
+                                            toast: true,
+                                            position: 'top',
+                                            showConfirmButton: false,
+                                            timer: 3000
                                         });
 
                                         if (response.status === 401) {

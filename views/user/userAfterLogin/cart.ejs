@@ -320,34 +320,61 @@
                                             <button class="qty-btn"
                                                 onclick="updateQuantity('<%= item.productId._id %>', 1, '<%= item.quantity %>')">+</button>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="item-price-block">
-                                    <p class="item-price">₹<%= (item.price * item.quantity).toLocaleString() %>
-                                    </p>
-                                    <button class="remove-btn mt-4"
-                                        onclick="removeFromCart('<%= item.productId._id %>')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <% }) %>
-                                <% } else { %>
-                                    <div
-                                        class="bg-white p-12 rounded-[32px] border border-dashed border-gray-300 text-center">
-                                        <div
-                                            class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                                            <i class="fas fa-shopping-cart text-3xl"></i>
+                                        <div class="item-details">
+                                            <h3 class="item-title"
+                                                onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
+                                                <%= item.productId.productName %>
+                                                    <% if (cVariant && cVariant.color) { %>
+                                                        <span class="text-xs text-orange-500 font-bold ml-2">(<%=
+                                                                cVariant.color %> / <%= cVariant.storage %>)</span>
+                                                        <% } %>
+                                            </h3>
+                                            <div class="item-meta">
+                                                <span>Brand: <%= item.productId.brand || 'Premium Tech' %></span>
+                                                <span>Category: <%= (item.productId.category &&
+                                                        item.productId.category.categoryName) ?
+                                                        item.productId.category.categoryName : 'Electronics' %></span>
+                                            </div>
+                                            <div class="flex items-center mt-4 gap-6">
+                                                <div class="qty-control">
+                                                    <button class="qty-btn"
+                                                        onclick="updateQuantity('<%= item.productId._id %>', -1, '<%= item.quantity %>')">-</button>
+                                                    <span class="font-bold">
+                                                        <%= item.quantity %>
+                                                    </span>
+                                                    <button class="qty-btn"
+                                                        onclick="updateQuantity('<%= item.productId._id %>', 1, '<%= item.quantity %>')">+</button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h2 class="text-2xl font-bold mb-4">Your cart is empty</h2>
-                                        <p class="text-gray-500 mb-8">Looks like you haven't added anything to your cart
-                                            yet.</p>
-                                        <a href="/shop"
-                                            class="bg-orange-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-orange-600 transition-all inline-block">
-                                            Start Shopping
-                                        </a>
-                                    </div>
-                                    <% } %>
+                                        <div class="item-price-block">
+                                            <p class="item-price">₹<%= itemTotal.toLocaleString() %>
+                                            </p>
+                                            <button class="remove-btn mt-4"
+                                                onclick="removeFromCart('<%= item.productId._id %>')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                </div>
+                                <% } %>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <div
+                                                class="bg-white p-12 rounded-[32px] border border-dashed border-gray-300 text-center">
+                                                <div
+                                                    class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                                                    <i class="fas fa-shopping-cart text-3xl"></i>
+                                                </div>
+                                                <h2 class="text-2xl font-bold mb-4">Your cart is empty</h2>
+                                                <p class="text-gray-500 mb-8">Looks like you haven't added anything to
+                                                    your cart
+                                                    yet.</p>
+                                                <a href="/shop"
+                                                    class="bg-orange-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-orange-600 transition-all inline-block">
+                                                    Start Shopping
+                                                </a>
+                                            </div>
+                                            <% } %>
                 </div>
 
                 <!-- Sidebar Summary -->
@@ -365,7 +392,8 @@
                             <span>Estimated Shipping</span>
                             <span class="text-green-500 font-bold">FREE</span>
                         </div>
-                        <% let subtotal=(typeof cart !=='undefined' && cart) ? cart.totalPrice : 0; %>
+                        <% let subtotal=(typeof cart !=='undefined' && cart && cart.totalPrice) ? cart.totalPrice : 0;
+                            %>
                             <% let tax=subtotal * 0.18; %>
                                 <div class="summary-row">
                                     <span>Tax (GST 18%)</span>

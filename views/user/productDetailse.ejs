@@ -349,12 +349,14 @@
             transition: var(--transition);
         }
 
-        /* --- Tabs --- */
+        /* --- Scroll Navigation --- */
         .tabs-nav {
             display: flex;
             gap: 4rem;
             border-bottom: 2px solid var(--gray-light);
             margin-bottom: 3rem;
+            background: var(--white);
+            padding-top: 1rem;
         }
 
         .tab-trigger {
@@ -363,6 +365,7 @@
             opacity: 0.4;
             cursor: pointer;
             position: relative;
+            transition: var(--transition);
         }
 
         .tab-trigger.active {
@@ -378,13 +381,10 @@
             width: 100%;
             height: 3px;
             background: var(--primary-orange);
+            transition: var(--transition);
         }
 
         .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
             display: block;
             scroll-margin-top: 160px;
             margin-bottom: 80px;
@@ -571,19 +571,23 @@
 
                                 <section class="reveal">
                                     <div class="tabs-nav">
-                                        <div class="tab-trigger active" onclick="switchTab('desc', this)">Description
-                                        </div>
-                                        <div class="tab-trigger" onclick="switchTab('specs', this)">Specifications</div>
-                                        <div class="tab-trigger" onclick="switchTab('reviews', this)">Reviews</div>
+                                        <div class="tab-trigger active" data-target="desc-panel"
+                                            onclick="scrollToSection('desc-panel')">Description</div>
+                                        <div class="tab-trigger" data-target="specs-panel"
+                                            onclick="scrollToSection('specs-panel')">Specifications</div>
+                                        <div class="tab-trigger" data-target="reviews-panel"
+                                            onclick="scrollToSection('reviews-panel')">Reviews</div>
                                     </div>
 
-                                    <div id="desc-panel" class="tab-panel active">
+                                    <div id="desc-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Description</h3>
                                         <p class="text-lg opacity-70 leading-relaxed max-w-4xl">
                                             <%= product.description %>
                                         </p>
                                     </div>
 
                                     <div id="specs-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Specifications</h3>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl">
                                             <% if (product.specifications) { %>
                                                 <% product.specifications.forEach(spec=> { %>
@@ -601,6 +605,7 @@
                                     </div>
 
                                     <div id="reviews-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
                                         <div class="flex items-center gap-12 p-8 bg-gray-50 rounded-3xl mb-12">
                                             <div class="text-center">
                                                 <h2 class="text-5xl font-extrabold mb-2">4.8</h2>
@@ -609,6 +614,7 @@
                                             <p class="opacity-50">"Premium build quality and exceptional performance.
                                                 ZiGo never disappoints!" - <i>Verified User</i></p>
                                         </div>
+                                    </div>
                                 </section>
 
                                 <% if (relatedProducts && relatedProducts.length> 0) { %>
@@ -631,24 +637,28 @@
                                                     onclick="window.location.href='/productDetailse/<%= rel._id %>'">
                                                     <div
                                                         class="aspect-square bg-gray-50 rounded-3xl p-8 flex items-center justify-center border border-transparent group-hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
-                                                        <% const relImg=(rel.variants && rel.variants[0] &&
-                                                            rel.variants[0].images && rel.variants[0].images[0]) ?
-                                                            rel.variants[0].images[0] : '/public/landing/no-image.png' ;
+                                                        <% let relImgSrc='/public/landing/no-image.png' ; if
+                                                            (rel.variants && rel.variants.length> 0 &&
+                                                            rel.variants[0].images && rel.variants[0].images.length > 0)
+                                                            {
+                                                            let relUrl = rel.variants[0].images[0];
+                                                            if (relUrl.startsWith('http') || relUrl.startsWith('/')) {
+                                                            relImgSrc = relUrl;
+                                                            } else {
+                                                            relImgSrc = '/' + relUrl;
+                                                            }
+                                                            }
                                                             %>
-                                                            <button
-                                                                class="wishlist-heart-btn <%= wishlist && wishlist.includes(rel.variants[0]._id.toString()) ? 'active' : '' %>"
-                                                                title="Add to Wishlist" data-id="<%= rel._id %>"
-                                                                data-variant-id="<%= rel.variants[0]._id %>">
-                                                                <i class="fas fa-heart"></i>
-                                                            </button>
-                                                            <img src="<%= relImg %>" alt="<%= rel.productName %>"
+                                                            <img src="<%= relImgSrc %>" alt="<%= rel.productName %>"
                                                                 class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
-                                                            <% if (rel.variants[0].mrp> rel.variants[0].price) { %>
+                                                            <% if (rel.variants && rel.variants[0] &&
+                                                                rel.variants[0].mrp> rel.variants[0].price) { %>
                                                                 <span
-                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                                                                    -<%= Math.round(((rel.variants[0].mrp -
+                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
+                                                                    <%= Math.round(((rel.variants[0].mrp -
                                                                         rel.variants[0].price)/rel.variants[0].mrp)*100)
-                                                                        %>%
+                                                                        %>
+                                                                        %
                                                                 </span>
                                                                 <% } %>
                                                     </div>
@@ -729,7 +739,7 @@
                                         let currentPanel = '';
                                         panels.forEach(panel => {
                                             const panelTop = panel.getBoundingClientRect().top;
-                                            if (panelTop <= 180) {
+                                            if (panelTop <= 150) {
                                                 currentPanel = panel.getAttribute('id');
                                             }
                                         });

@@ -188,61 +188,13 @@ export const editProductPage = asynchandler(async (req, res) => {
     }
 })
 
+
 export const updateProduct = asynchandler(async (req, res) => {
     try {
-        const { id, name, description, brand, category, isListed, variantsData } = req.body;
-
-        const variantsNewImageUrls = {};
-
-        if (req.files && req.files.length > 0) {
-            for (let file of req.files) {
-                const webpBuffer = await sharp(file.buffer).webp().toBuffer();
-                const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
-
-                if (file.fieldname.startsWith("variant_")) {
-                    if (!variantsNewImageUrls[file.fieldname]) {
-                        variantsNewImageUrls[file.fieldname] = [];
-                    }
-                    variantsNewImageUrls[file.fieldname].push(url);
-                }
-            }
-        }
-        let parsedVariants = [];
-        if (variantsData) {
-            parsedVariants = JSON.parse(variantsData);
-        }
-
-        const finalVariants = parsedVariants.map((variant, index) => {
-            const existingVariantImages = variant.images || []; 
-            const newVariantImages = variantsNewImageUrls[`variant_${index}_images`] || [];
-
-            return {
-                price: Number(variant.price),
-                stock: Number(variant.stock),
-                attributes: variant.attributes || {},
-                images: [...existingVariantImages, ...newVariantImages],
-                isListed: variant.isListed !== undefined ? variant.isListed : true
-            };
-        });
-
-        if (finalVariants.length === 0) {
-            throw new Error("at least 1 variant is required.");
-        }
-
-        const updateData = {
-            id,
-            productName: name,
-            description,
-            brand,
-            category,
-            basePrice: finalVariants[0].price,
-            isListed: isListed === "on",
-            variants: finalVariants
-        };
-
-        await serviceOfProductAndCategory.updateProduct(updateData);
+        const update = await serviceOfProductAndCategory.updateProduct(req.body);
         res.status(200).json({ success: true, message: "product update success.." })
     } catch (error) {
-        res.status(400).json({ success: false, message: "product update failed" });
+        console.error("Update Product Error:", error);
+        res.status(400).json({ success: false, message: error.message || "product update failed" });
     }
 })

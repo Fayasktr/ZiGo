@@ -3,6 +3,7 @@ import categoryModel from "../models/categoryModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
 import mongoose from "mongoose";
+import cartModel from "../models/cartModel.js";
 
 export const getShopData = async (quary, userId) => {
     let { page = 1, search = "", category = "", price = "" } = quary;
@@ -53,6 +54,7 @@ export const getShopData = async (quary, userId) => {
     ]);
 
     return {
+        userWishlist,
         products,
         categories,
         totalCount,
@@ -107,7 +109,7 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
         await wishlistModel.create({
             userId: userId,
             productId: productId,
-            variantId: variantId
+            variantId:variantId
         })
         return { action: "added" }
     }

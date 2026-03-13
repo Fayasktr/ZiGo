@@ -86,6 +86,7 @@ export const listAndUnlistProduct = async (productId, isListed) => {
 
 export const addProduct = async (productData) => {
     const existProduct = await productModel.find({ productName: productData.productName });
+    console.log("exist", existProduct)
     if (existProduct.length > 0) {
         throw new Error("this product name alread exist");
     }
@@ -98,6 +99,15 @@ export const editProductPage = async (productId) => {
     return { productForEdit, category };
 }
 
-export const updateProduct = async (reqData) => {
-    console.log("req data:", reqData);
+export const updateProduct = async (productData) => {
+    const { id, ...updateFields } = productData;
+    const updatedProduct = await productModel.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true, runValidators: true }
+    );
+    if (!updatedProduct) {
+        throw new Error("Product not found");
+    }
+    return updatedProduct;
 }
