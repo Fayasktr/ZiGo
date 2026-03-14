@@ -163,13 +163,40 @@ export const deleteAddress = async (userId, addressId) => {
 
 export const wishlistPage = async (userId) => {
     if (!userId) return [];
-    const queryId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+    const wishlist = await wishlistModel.aggregate([
+    { $match: { userId: new mongoose.Types.ObjectId(userId) } },
 
-    return await wishlistModel.find({ userId: queryId }).populate({
-        path: 'productId',
-        populate: { path: 'category' }
-    });
-}
+    { $lookup: {
+        from: "productmodels",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product"
+    }},
+
+    { $unwind: "$product" },
+
+    { $lookup: {
+        from: "categories",
+        localField: "product.category",
+        foreignField: "_id",
+        as: "category"
+    }},
+
+    { $unwind: "$category" },
+    { $unwind: "$product.variants" },
+
+    { $match: {
+        $expr: { $eq: ["$product.variants._id", "$variantId"] },
+        "product.isListed": true,
+        "category.isListed": true,
+        "product.variants.isListed": true
+    }}
+
+  ]).sort({ createdAt: -1 });
+
+  return wishlist;
+};
+
 
 export const deleteWishlistItem = async (userId, productId, variantId) => {
     const item = await wishlistModel.findOneAndDelete({ userId, productId, variantId });
@@ -199,22 +226,17 @@ export const addToCart = async (userId, productId, variantId) => {
 
 export const getCartPage = async (userId) => {
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
-    console.log(typeof userId)
     const cartItems = await cartModel.aggregate([
-
-        { $match: { userId } },
-
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
         {
             $lookup: {
-                from: "products",
+                from: "productmodels",
                 localField: "productId",
                 foreignField: "_id",
                 as: "product"
             }
         },
-
         { $unwind: "$product" },
-
         {
             $lookup: {
                 from: "categories",
@@ -223,52 +245,29 @@ export const getCartPage = async (userId) => {
                 as: "category"
             }
         },
-
         { $unwind: "$category" },
-
+        { $unwind: "$product.variants" },
         {
-            $addFields: {
-                variant: {
-                    $arrayElemAt: [
-                        {
-                            $filter: {
-                                input: "$product.variants",
-                                as: "v",
-                                cond: {
-                                    $eq: [
-                                        { $toString: "$$v._id" },
-                                        { $toString: "$variantId" }
-                                    ]
-                                }
-                            }
-                        },
-                        0
-                    ]
+            $match: {
+                $expr: {
+                    $eq: [{ $toString: "$product.variants._id" }, { $toString: "$variantId" }]
                 }
             }
         },
-
         {
             $match: {
                 "product.isListed": true,
                 "category.isListed": true,
-                "variant.isListed": true
+                "product.variants.isListed": true
             }
         }
+    ]).sort({createdAt:-1});
 
-    ]);
-    console.log(cartItems)
     const totalPrice = cartItems.reduce((acc, item) => {
-        if (!item.productId || !item.productId.variants) return acc;
-        let cPrice = 0;
-        let targetVid = item.variantId ? item.variantId.toString() : null;
-
-        let selectedVariant = item.productId.variants.find(v => v._id && targetVid && v._id.toString() === targetVid);
-        if (!selectedVariant) selectedVariant = item.productId.variants[0];
-        if (selectedVariant) cPrice = selectedVariant.price;
-
-        return acc + (cPrice * item.quantity);
+        const price = item.product.variants.price || 0;
+        return acc + (price * item.quantity);
     }, 0);
+
     return { items: cartItems, totalPrice };
 }
 
@@ -278,7 +277,7 @@ export const deleteCart = async (userId, productId, variantId) => {
 
 export const changeCartQuantity = async (userId, change, productId, variantId) => {
     const product = await productModal.findById(productId);
-    const variant=product.variants.find(v => v._id === variantId)
+    const variant = product.variants.find(v => v._id === variantId)
     if (product && product.quantity <= 0) {
         throw new Error("item Stock out");
     }
@@ -287,7 +286,7 @@ export const changeCartQuantity = async (userId, change, productId, variantId) =
         if (existCart && existCart.quantity >= 10) {
             throw new Error("cart maximum limit reached");
         } else {
-            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } },{new:true});
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } }, { new: true });
         }
     } else {
         if (existCart && existCart.quantity <= 1) {

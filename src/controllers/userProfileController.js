@@ -284,7 +284,6 @@ export const deleteCartItem =asynchandler(async(req,res)=>{
 
 export const changeCartQty=asynchandler(async(req,res)=>{
     try {
-        console.log("reqch qty")
         const {change,productId,variantId}=req.query;
         const userId=req.session?.user.id||req?.user.id;
         const update=await addressService.changeCartQuantity(userId,change,productId,variantId);
