@@ -448,61 +448,72 @@
                                     <% if (products && products.length> 0) { %>
                                         <div class="product-grid">
                                             <% products.forEach((product, index)=> { %>
-                                                <div class="product-card reveal active" data-id="<%=product._id%>"
-                                                    data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
-                                                    <div class="img-container">
-                                                        <% const listedVariants=product.variants.filter(v=> v.isListed
-                                                            !== false);
-                                                            const displayVariant = listedVariants.length > 0 ?
-                                                            listedVariants[0] : (product.variants[0] || {});
-                                                            const firstVariantId = displayVariant._id ?
-                                                            displayVariant._id.toString() : "";
-                                                            const isWishlisted = userWishlist &&
-                                                            userWishlist.includes(firstVariantId);
-                                                            %>
-                                                            <button
-                                                                class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
-                                                                title="Add to Wishlist"
-                                                                data-variant-id="<%= firstVariantId %>">
-                                                                <i class="fas fa-heart"></i>
-                                                            </button>
-                                                            <% const prodImg=(displayVariant.images &&
-                                                                displayVariant.images[0]) ? displayVariant.images[0]
-                                                                : '/public/landing/no-image.png' ; %>
-                                                                <img src="<%= prodImg %>"
-                                                                    alt="<%= product.productName %>">
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <span class="p-cat">
-                                                            <%= product.category ? product.category.categoryName
-                                                                : 'Electronics' %>
-                                                        </span>
-                                                        <a href="/productDetailse/<%= product._id %>" class="p-title">
-                                                            <%= product.productName %>
-                                                        </a>
-                                                        <div class="p-bottom">
-                                                            <div>
-                                                                <div class="flex items-center">
-                                                                    <p class="p-price">₹<%= (product.variants &&
-                                                                            product.variants[0]) ?
-                                                                            product.variants[0].price.toLocaleString()
-                                                                            : '0' %>
-                                                                    </p>
-                                                                    <!-- Discount badge logic if applicable -->
+                                                    <div class="product-card reveal active" data-id="<%=product._id%>"
+                                                        data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
+                                                        <div class="img-container">
+                                                            <% const listedVariants=product.variants.filter(v=>
+                                                                v.isListed
+                                                                !== false);
+                                                                const displayVariant = listedVariants.length > 0 ?
+                                                                listedVariants[0] : (product.variants[0] || {});
+                                                                const firstVariantId = displayVariant._id ?
+                                                                displayVariant._id.toString() : "";
+                                                                const isWishlisted = userWishlist &&
+                                                                userWishlist.includes(firstVariantId);
+                                                                %>
+                                                                <button
+                                                                    class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
+                                                                    title="Add to Wishlist"
+                                                                    data-variant-id="<%= firstVariantId %>">
+                                                                    <i class="fas fa-heart"></i>
+                                                                </button>
+                                                                <% const prodImg=(displayVariant.images &&
+                                                                    displayVariant.images[0]) ? displayVariant.images[0]
+                                                                    : '/public/landing/no-image.png' ; %>
+                                                                    <img src="<%= prodImg %>"
+                                                                        alt="<%= product.productName %>">
+                                                        </div>
+                                                        <div class="product-info">
+                                                            <span class="p-cat">
+                                                                <%= product.category ? product.category.categoryName
+                                                                    : 'Electronics' %>
+                                                            </span>
+                                                            <a href="/productDetailse/<%= product._id %>"
+                                                                class="p-title">
+                                                                <%= product.productName %>
+                                                            </a>
+                                                            <div class="p-bottom">
+                                                                <div>
+                                                                    <div class="flex flex-col">
+                                                                        <div class="flex items-center">
+                                                                            <p class="p-price">₹<%= (product.variants &&
+                                                                                    product.variants[0]) ?
+                                                                                    product.variants[0].price.toLocaleString()
+                                                                                    : '0' %>
+                                                                            </p>
+                                                                        </div>
+                                                                        <% if (displayVariant.stock <=0) { %>
+                                                                            <span
+                                                                                class="text-red-500 font-bold text-xs mt-1">Out
+                                                                                of Stock</span>
+                                                                            <% } %>
+                                                                    </div>
                                                                 </div>
-                                                                <!-- MRP if applicable -->
+                                                                <button class="add-cart-btn"
+                                                                    data-variant-id="<%= firstVariantId %>" <%-
+                                                                    displayVariant.stock <=0
+                                                                    ? 'disabled style="opacity:0.5; cursor:not-allowed;"'
+                                                                    : '' %>>
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24"
+                                                                        fill="none" stroke="currentColor"
+                                                                        stroke-width="2">
+                                                                        <path d="M12 5v14M5 12h14"></path>
+                                                                    </svg>
+                                                                </button>
                                                             </div>
-                                                            <button class="add-cart-btn"
-                                                                data-variant-id="<%= firstVariantId %>">
-                                                                <svg width="20" height="20" viewBox="0 0 24 24"
-                                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                                    <path d="M12 5v14M5 12h14"></path>
-                                                                </svg>
-                                                            </button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <% }) %>
+                                                    <% }) %>
                                         </div>
 
                                         <div class="mt-12">
@@ -585,8 +596,10 @@
                                         const cartBtn = event.target.closest('.add-cart-btn');
                                         if (cartBtn) {
                                             event.stopPropagation();
-                                            const variantId = cartBtn.dataset.variantId;
-                                            addToCart(productId, variantId);
+                                            if (!cartBtn.hasAttribute('disabled')) {
+                                                const variantId = cartBtn.dataset.variantId;
+                                                addToCart(productId, variantId);
+                                            }
                                             return;
                                         }
 

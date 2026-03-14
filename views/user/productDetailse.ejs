@@ -540,11 +540,16 @@
                                                 <button class="qty-btn" onclick="changeQty(1)">+</button>
                                             </div>
                                             <button class="add-to-cart-btn-large flex-1"
-                                                onclick="addToCart('<%= product._id %>', currentVariantId)">Add to
+                                                onclick="addToCart('<%= product._id %>', currentVariantId)" <%-
+                                                defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>>Add to
                                                 Cart</button>
                                             <button class="buy-now-btn-large flex-1"
-                                                onclick="buyNow('<%= product._id %>')">Buy
-                                                Now</button>
+                                                onclick="buyNow('<%= product._id %>')" <%- defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>><%=
+                                                    defaultVariant.stock <=0 ? 'Out of Stock'
+                                                    : 'Buy\n                                                Now' %>
+                                                    </button>
                                         </div>
 
                                         <!-- Quick Specs -->
@@ -886,15 +891,42 @@
                                         const priceEl = document.querySelector('.current-price');
                                         if (priceEl) priceEl.innerText = '₹' + variant.price.toLocaleString();
 
-                                        // Update Stock Status
+                                        // Update Stock Status and Buttons
                                         const stockEl = document.querySelector('.stock-status');
+                                        const buyNowBtn = document.querySelector('.buy-now-btn-large');
+                                        const addToCartBtn = document.querySelector('.add-to-cart-btn-large');
+
                                         if (stockEl) {
                                             if (variant.stock > 0) {
                                                 stockEl.innerText = 'In Stock';
                                                 stockEl.className = 'stock-status in-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Buy\n                                                Now';
+                                                    buyNowBtn.disabled = false;
+                                                    buyNowBtn.style.opacity = '1';
+                                                    buyNowBtn.style.cursor = 'pointer';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = false;
+                                                    addToCartBtn.style.opacity = '1';
+                                                    addToCartBtn.style.cursor = 'pointer';
+                                                }
                                             } else {
                                                 stockEl.innerText = 'Out of Stock';
                                                 stockEl.className = 'stock-status out-of-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Out of Stock';
+                                                    buyNowBtn.disabled = true;
+                                                    buyNowBtn.style.opacity = '0.7';
+                                                    buyNowBtn.style.cursor = 'not-allowed';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = true;
+                                                    addToCartBtn.style.opacity = '0.7';
+                                                    addToCartBtn.style.cursor = 'not-allowed';
+                                                }
                                             }
                                         }
 
