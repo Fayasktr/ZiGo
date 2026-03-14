@@ -37,7 +37,10 @@ router.get("/user/wishlist",userProfile.wishlistPage);
 
 router.get("/user/wishlist", userProfile.wishlistPage);
 router.patch("/user/wishlist/:id", userProfile.removeWishlist);
+
 router.patch("/user/wishlist/cart/:id",userProfile.addToCart);
 router.get("/user/cart", userProfile.cartPage);
+router.patch("/user/cart/delete/:id",userProfile.deleteCartItem)
+router.patch("/user/cart/changeQty",userProfile.changeCartQty);
 
 export default router;

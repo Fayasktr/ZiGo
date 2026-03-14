@@ -269,3 +269,28 @@ export const cartPage=asynchandler(async(req,res)=>{
         res.redirect("/user/profile");
     }
 })
+
+export const deleteCartItem =asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session.user?.id||req.user?.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        const update=await addressService.deleteCart(userId,productId,variantId);
+        res.status(200).json({success:true,message:"item removed"});
+    } catch (error) {
+        res.status(400).json({success:false,message:"item not removed"});
+    }
+})
+
+export const changeCartQty=asynchandler(async(req,res)=>{
+    try {
+        console.log("reqch qty")
+        const {change,productId,variantId}=req.query;
+        const userId=req.session?.user.id||req?.user.id;
+        const update=await addressService.changeCartQuantity(userId,change,productId,variantId);
+        res.status(200).json({success:true,message:"quantity changed",update:update});
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({success:false,message:error.message||"cannot change the quatity"});
+    }
+})

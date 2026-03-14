@@ -337,7 +337,7 @@
                                         <div class="qty-control">
                                             <button class="qty-btn"
                                                 onclick="updateQuantity('<%= item.productId._id %>', -1, '<%= item.quantity %>', '<%= item.variantId %>')">-</button>
-                                            <span class="font-bold">
+                                            <span class="font-bold" id="qtyValue-<%=item.variantId%>">
                                                 <%= item.quantity %>
                                             </span>
                                             <button class="qty-btn"
@@ -422,8 +422,54 @@
             <script>
                 // Placeholder for the logic you will implement
                 async function updateQuantity(productId, change, currentQty, variantId) {
-                    console.log('Update quantity:', productId, change, variantId);
-                    // TODO: Implement fetch call to update cart quantity
+                    let quantityValue=document.getElementById(`qtyValue-${variantId}`)
+                    currentQty = parseInt(currentQty);
+                    if (currentQty >= 10 && change == 1) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: "Quantity maximum reached",
+                            text: "(10 per product)",
+                            timer: 2000,
+                            position: "top",
+                            toast: true,
+                            showConfirmButton: false
+                        });
+                    } else if (currentQty <= 1 && change == -1) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: "Minimum quantity is 1",
+                            text: "Cannot reduce quantity below 1",
+                            timer: 2000,
+                            position: "top",
+                            toast: true,
+                            showConfirmButton: false
+                        });
+                    }
+
+                    try {
+                        const response = await fetch(`/user/cart/changeQty/?productId=${productId}&change=${change}&variantId=${variantId}`, {
+                            method: 'PATCH',
+                            headers: { "Content-Type": "application/json" }
+                        });
+
+                        const result = await response.json();
+                        console.log(result.update.quantity)
+                        if (response.ok && result.success) {
+                            quantityValue.innerHTML=result.update.quantity
+                        } else {
+                            throw new Error(result.message || "Failed to update quantity");
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: "Cannot change quantity",
+                            text: error.message,
+                            timer: 2000,
+                            position: "top",
+                            toast: true,
+                            showConfirmButton: false
+                        });
+                    }
                 }
 
                 async function removeFromCart(productId, variantId) {
@@ -436,10 +482,36 @@
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Yes, remove it!'
                     });
-
+                    console.log(productId, variantId)
                     if (result.isConfirmed) {
-                        console.log('Remove product:', productId, variantId);
-                        // TODO: Implement fetch call to remove from cart
+                        try {
+                            const update = await fetch(`/user/cart/delete/${productId}?variantId=${variantId}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" }
+                            })
+
+                            const result = await update.json();
+                            if (update.ok && result.success) {
+                                await Swal.fire({
+                                    title: "item removed",
+                                    icon: "success",
+                                    position: "top",
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                })
+                                window.location.href = "/user/cart";
+                            } else {
+                                throw new Error("item not delted");
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: "error",
+                                title: "item not removed",
+                                text: "Could not delete the item from cart",
+                                position: "top",
+                                timer: 2000,
+                            })
+                        }
                     }
                 }
             </script>

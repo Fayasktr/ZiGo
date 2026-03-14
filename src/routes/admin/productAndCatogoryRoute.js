@@ -4,6 +4,8 @@ import upload from "../../middlewares/uploadMiddleware.js"
 
 const router = express.Router();
 
+
+
 router.get("/admin/category", cateAndProdController.getCategory);
 router.get("/admin/category/add", cateAndProdController.addCategoryPage);
 router.post("/admin/category/add", cateAndProdController.addNewCategory);

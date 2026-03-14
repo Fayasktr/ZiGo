@@ -8,6 +8,7 @@ import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
+import productModal from "../models/productModel.js"
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -170,38 +171,35 @@ export const wishlistPage = async (userId) => {
     });
 }
 
-export const deleteWishlistItem=async(userId,productId,variantId)=>{
-    const item=await wishlistModel.findOneAndDelete({userId,productId,variantId});
+export const deleteWishlistItem = async (userId, productId, variantId) => {
+    const item = await wishlistModel.findOneAndDelete({ userId, productId, variantId });
     return true;
 }
 
-export const addToCart=async(userId,productId,variantId)=>{
-    const existCart=await cartModel.findOne({userId,productId,variantId});
-    
-    if(existCart){
-        if(existCart.quantity<10){
-            await cartModel.findOneAndUpdate({userId,productId,variantId},{$inc:{quantity:1}})
-        }else{
+export const addToCart = async (userId, productId, variantId) => {
+    const existCart = await cartModel.findOne({ userId, productId, variantId });
+
+    if (existCart) {
+        if (existCart.quantity < 10) {
+            await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } })
+        } else {
             throw new Error("Maximum cart limit reached (10 per item)");
         }
-    }else {
+    } else {
         await cartModel.create({
-            userId:userId,
-            productId:productId,
-            variantId:variantId,
-            quantity:1
+            userId: userId,
+            productId: productId,
+            variantId: variantId,
+            quantity: 1
         })
     }
-    const deleteItem=await wishlistModel.findOneAndDelete({userId,productId,variantId});
+    const deleteItem = await wishlistModel.findOneAndDelete({ userId, productId, variantId });
     return true;
 }
 
 export const getCartPage = async (userId) => {
-    const cartItems = await cartModel.find({ userId }).populate({
-        path: 'productId',
-        populate: { path: 'category' }
-    });
-
+    const cartItems = await cartModel.
+    console.log()
     const totalPrice = cartItems.reduce((acc, item) => {
         if (!item.productId || !item.productId.variants) return acc;
         let cPrice = 0;
@@ -214,4 +212,30 @@ export const getCartPage = async (userId) => {
         return acc + (cPrice * item.quantity);
     }, 0);
     return { items: cartItems, totalPrice };
+}
+
+export const deleteCart = async (userId, productId, variantId) => {
+    return cartModel.findOneAndDelete({ userId, productId, variantId });
+}
+
+export const changeCartQuantity = async (userId, change, productId, variantId) => {
+    const product = await productModal.findById(productId);
+    const variant=product.variants.find(v => v._id === variantId)
+    if (product && product.quantity <= 0) {
+        throw new Error("item Stock out");
+    }
+    const existCart = await cartModel.findOne({ userId, productId, variantId });
+    if (change == 1) {
+        if (existCart && existCart.quantity >= 10) {
+            throw new Error("cart maximum limit reached");
+        } else {
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } },{new:true});
+        }
+    } else {
+        if (existCart && existCart.quantity <= 1) {
+            throw new Error("minimum cart Qautity is 1");
+        } else {
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: -1 } },{new:true});
+        }
+    }
 }

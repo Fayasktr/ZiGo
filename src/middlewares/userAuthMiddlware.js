@@ -20,6 +20,7 @@ const isOtpPending = (req,res,next)=>{
     }
     res.redirect("signUp");
 }
+
 const checkBlocked = async (req, res, next) => {
     try {
         const userId = req.session?.user?.id || req.user?._id;

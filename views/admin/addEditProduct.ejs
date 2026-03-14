@@ -439,7 +439,7 @@
     </main>
     <!-- Custom Cropper Overlay (Placed outside SweetAlert logic) -->
     <div id="customCropperOverlay"
-        class="fixed inset-0 bg-black/95 z-[99999] hidden flex-col items-center justify-center p-4">
+        class="fixed inset-0 bg-black/95 z-[1000000] hidden flex-col items-center justify-center p-4">
         <h2 id="cropperTitle" class="text-2xl font-bold mb-6 text-white tracking-wide">Crop Image</h2>
         <div
             class="w-full max-w-4xl max-h-[60vh] bg-black border border-white/10 rounded-xl overflow-hidden flex justify-center items-center shadow-2xl">
@@ -457,8 +457,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
-        const categories = <%- JSON.stringify(locals.category || []) %>;
-        let productVariants = <%- locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
+        const categories = <% - JSON.stringify(locals.category || []) %>;
+        let productVariants = <% - locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
         console.log("ZiGo Add/Edit Product Script Loaded.");
 
         const categorySelect = document.querySelector('select[name="category"]');
@@ -735,6 +735,14 @@
 
                     imgInput.addEventListener('change', async (e) => {
                         const files = Array.from(e.target.files);
+
+                        const currentTotal = existingImages.length + currentVariantFiles.length;
+                        if (currentTotal + files.length > 3) {
+                            Swal.showValidationMessage(`You can only have up to 3 images per variant. Please select ${Math.max(0, 3 - currentTotal)} or fewer images.`);
+                            imgInput.value = '';
+                            return;
+                        }
+
                         if (files.length > 0) {
                             const croppedFiles = await processCropQueue(files);
                             currentVariantFiles = [...currentVariantFiles, ...croppedFiles];
@@ -759,11 +767,15 @@
                     });
 
                     // --- Variant Image Validation ---
-                    const existingCount = variantData ? (variantData.images || []).length : 0;
-                    const totalImages = existingCount + currentVariantFiles.length;
+                    const totalExisting = existingImages.length;
+                    const totalImages = totalExisting + currentVariantFiles.length;
 
-                    if (totalImages < 3) {
-                        Swal.showValidationMessage('Each variant must have at least 3 images');
+                    if (totalImages === 0) {
+                        Swal.showValidationMessage('Each variant must have at least 1 image');
+                        return false;
+                    }
+                    if (totalImages > 3) {
+                        Swal.showValidationMessage('Each variant can have a maximum of 3 images');
                         return false;
                     }
 
