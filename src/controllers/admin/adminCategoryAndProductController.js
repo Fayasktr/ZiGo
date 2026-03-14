@@ -1,6 +1,7 @@
 import asynchandler from 'express-async-handler';
 import * as serviceOfProductAndCategory from '../../services/admin/categoryAndProductService.js';
 import { uploadToCloudinary } from '../../config/cloudinary.js';
+import productModel from '../../models/productModel.js';
 import sharp from "sharp";
 
 export const getCategory = asynchandler(async (req, res) => {
@@ -123,6 +124,11 @@ export const listAndUnlistProduct = asynchandler(async (req, res) => {
 
 export const addProduct = asynchandler(async (req, res) => {
     try {
+        let productName=req.body.name;
+        const existProduct = await productModel.find({ productName:productName });
+        if (existProduct.length > 0) {
+            throw new Error("this product name alread exist");
+        }
         const variantsImageUrls = {}
         if (req.files && req.files.length > 0) {
             for (let file of req.files) {
@@ -190,6 +196,11 @@ export const editProductPage = asynchandler(async (req, res) => {
 
 export const updateProduct = asynchandler(async (req, res) => {
     try {
+        let productName=req.body.name;
+        const existProduct = await productModel.find({ productName:productName });
+        if (existProduct.length > 0) {
+            throw new Error("this product name alread exist");
+        }
         const variantsImageUrls = {}
         if (req.files && req.files.length > 0) {
             for (let file of req.files) {

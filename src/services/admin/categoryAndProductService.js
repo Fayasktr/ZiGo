@@ -89,11 +89,7 @@ export const listAndUnlistProduct = async (productId, isListed) => {
 }
 
 export const addProduct = async (productData) => {
-    const existProduct = await productModel.find({ productName: productData.productName });
-    console.log("exist", existProduct)
-    if (existProduct.length > 0) {
-        throw new Error("this product name alread exist");
-    }
+    
     return await productModel.create(productData);
 }
 
