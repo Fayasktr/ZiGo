@@ -275,14 +275,21 @@ export const deleteCart = async (userId, productId, variantId) => {
     return cartModel.findOneAndDelete({ userId, productId, variantId });
 }
 
-export const changeCartQuantity = async (userId, change, productId, variantId) => {
+export const changeCartQuantity = async (userId, change, productId, variantId,currentQty) => {
     const product = await productModal.findById(productId);
-    const variant = product.variants.find(v => v._id === variantId)
-    if (product && product.quantity <= 0) {
+    const variant = product.variants.find(v => v._id.toString() === variantId)
+    console.log(variant)
+    if(!variant){
+        throw new Error("this variant not found")
+    }
+    if (variant.stock <= 0) {
         throw new Error("item Stock out");
     }
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     if (change == 1) {
+        if(variant.stock<=currentQty){
+            throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
+        }
         if (existCart && existCart.quantity >= 10) {
             throw new Error("cart maximum limit reached");
         } else {

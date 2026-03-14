@@ -436,7 +436,7 @@
                     }
 
                     try {
-                        const response = await fetch(`/user/cart/changeQty/?productId=${productId}&change=${change}&variantId=${variantId}`, {
+                        const response = await fetch(`/user/cart/changeQty/?productId=${productId}&change=${change}&variantId=${variantId}&currentQty=${currentQty}`, {
                             method: 'PATCH',
                             headers: { "Content-Type": "application/json" }
                         });

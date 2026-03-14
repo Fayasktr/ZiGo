@@ -70,7 +70,7 @@ export const updateCategory = asynchandler(async (req, res) => {
         await serviceOfProductAndCategory.updateCategory(categoryData);
         res.status(200).json({ success: true, message: "updated category" });
     } catch (error) {
-        res.status(400).json({ success: false, messge: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 })
 
@@ -82,7 +82,6 @@ export const productPage = asynchandler(async (req, res) => {
         let limit = 10;
         let { products, totalCountOfProducts } = await serviceOfProductAndCategory.productPage(page, limit, search);
         let totalPages = Math.ceil(totalCountOfProducts / limit)
-        // console.log("products detailse:-", products)
         res.render("admin/products", {
             products,
             totalCount: totalCountOfProducts,

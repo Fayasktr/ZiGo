@@ -313,15 +313,19 @@
                         <div class="space-y-6">
                             <div class="form-group">
                                 <label class="form-label">Product Name</label>
-                                <input id="productName" type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
-                                    value="<%= locals.isEdit ? product.productName : '' %>" >
-                                <div id="error">0</div>
+                                <input id="productName" type="text" name="name" class="form-input"
+                                    placeholder="e.g. ZiGo Neo 2 Pro"
+                                    value="<%= locals.isEdit ? product.productName : '' %>">
+                                <p id="productNameError"
+                                    class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                </p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label id="categorySelect" class="form-label">Category</label>
-                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto" >
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
                                         <option value="">Select Category</option>
                                         <% if (locals.category && category.length> 0) { %>
                                             <% category.forEach((cat, index)=> { %>
@@ -336,10 +340,14 @@
                                                         </option>
                                                         <% } %>
                                     </select>
+                                    <p id="categoryError"
+                                        class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Please select a category.
+                                    </p>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Brand</label>
-                                    <input type="text" name="brand" class="form-input"
+                                    <input id="brand" type="text" name="brand" class="form-input"
                                         value="<%= locals.isEdit ? product.brand : '' %>">
                                 </div>
                             </div>
@@ -349,7 +357,8 @@
                         <div class="space-y-6">
                             <div class="form-group">
                                 <label class="form-label">Full Description</label>
-                                <textarea name="description" class="form-input h-[200px]" style="resize: none;"
+                                <textarea id="description" name="description" class="form-input h-[200px]"
+                                    style="resize: none;"
                                     placeholder="Enter product details..."><%= locals.isEdit ? product.description : '' %></textarea>
                             </div>
                         </div>
@@ -458,8 +467,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
-        const categories = <%- JSON.stringify(locals.category || []) %>;
-        let productVariants = <%- locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
+        const categories = <%-JSON.stringify(locals.category || []) %>;
+        let productVariants = <%- locals.isEdit ? JSON.stringify(locals.product.variants || []) : '[]' %>;
         console.log("ZiGo Add/Edit Product Script Loaded.");
 
         const categorySelect = document.querySelector('select[name="category"]');
@@ -577,7 +586,7 @@
         });
 
         function updateTableHeader() {
-            
+
             const category = getSelectedCategory();
             console.log("selected category", category);
             let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
@@ -596,6 +605,7 @@
             const category = getSelectedCategory();
             console.log("Selected category for modal:", category);
             const variantData = editIndex !== null ? productVariants[editIndex] : null;
+
 
             if (!category) {
                 console.warn("Modal blocked: No category detected.");
@@ -810,11 +820,7 @@
         }
 
         function renderVariantsList() {
-            const productName=document.getElementById("productName");
-            const errorArea=document.getElementById("error");
-            if(productName==""){
-                errorArea.innerHTML="must need add product name"
-            }
+
             if (productVariants.length > 0) {
                 noVariantsPlaceholder.classList.add('hidden');
             } else {
@@ -906,17 +912,32 @@
             e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
 
             // --- Reset Messages ---
-            const variantsError = document.getElementById('variantsError');
-            variantsError.classList.add('hidden');
+            const errorIds = ['productNameError', 'categoryError', 'variantsError'];
+            errorIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
 
             // --- Frontend Validation ---
             let hasError = false;
 
+            const name = document.getElementById('productName').value.trim();
+            const category = categorySelect.value;
 
+            if (name.length < 3) {
+                document.getElementById('productNameError').innerText = 'Product name must be at least 3 characters.';
+                document.getElementById('productNameError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (!category) {
+                document.getElementById('categoryError').classList.remove('hidden');
+                hasError = true;
+            }
 
             // 2. Check for at least 1 variant
             if (productVariants.length === 0) {
-                variantsError.classList.remove('hidden');
+                document.getElementById('variantsError').classList.remove('hidden');
                 hasError = true;
             }
 
@@ -948,6 +969,7 @@
             });
 
             try {
+                // Show SweetAlert loading overlay
                 Swal.fire({
                     title: 'Saving Product...',
                     text: 'Please wait while your product and images upload.',
@@ -963,14 +985,28 @@
                     body: formData
                 });
 
-                // Since we rely on your Express backend to either redirect or return JSON
-                if (res.redirected) {
-                    window.location.href = res.url;
-                } else if (res.ok) {
-                    window.location.href = '/admin/products';
+                const contentType = res.headers.get("content-type");
+                let responseData;
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    responseData = await res.json();
+                }
+
+                if (res.ok) {
+                    if (responseData && responseData.success === false) {
+                        Swal.fire('Error', responseData.message || 'Failed to save product.', 'error');
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: responseData?.message || 'Product saved successfully.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/admin/products';
+                        });
+                    }
                 } else {
-                    const errorJson = await res.json().catch(() => ({}));
-                    Swal.fire('Error', errorJson.message || 'Failed to save product.', 'error');
+                    Swal.fire('Error', responseData?.message || 'Failed to save product.', 'error');
                 }
             } catch (err) {
                 console.error(err);

@@ -268,9 +268,9 @@
             action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
             method="POST">
             <div class="form-group">
-                <label class="form-label">Category Name</label>
-                <input type="text" name="categoryName" class="form-input" placeholder="e.g. Smart Watches"
-                    value="<%= locals.isEdit ? category.categoryName : '' %>" required>
+                <input type="text" name="categoryName" id="categoryName" class="form-input"
+                    placeholder="e.g. Smart Watches" value="<%= locals.isEdit ? category.categoryName : '' %>">
+                <div id="categoryNameError" class="text-red-500 text-[11px] font-bold mt-1"></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -283,6 +283,7 @@
                             <i class="<%= locals.isEdit ? category.iconClass : 'fas fa-tag' %>"></i>
                         </div>
                     </div>
+                    <div id="iconClassError" class="text-red-500 text-[11px] font-bold mt-1"></div>
                 </div>
 
                 <div class="form-group">
@@ -307,55 +308,63 @@
             <div class="form-group relative">
                 <div class="flex justify-between items-center mb-3">
                     <label class="form-label !mb-0">Variant Attributes</label>
-                    <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
+                    <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd
+                            class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
                 </div>
 
                 <!-- Input area -->
                 <div class="relative flex items-center mb-5">
                     <div class="absolute left-5 text-white/40"><i class="fas fa-magic"></i></div>
-                    <input type="text" id="newAttributeInput" class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50" placeholder="Type attribute (e.g., RAM, Color) and press Enter..." onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
-                    <button type="button" onclick="addVariantAttributeInline()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                    <input type="text" id="newAttributeInput"
+                        class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50"
+                        placeholder="Type attribute (e.g., RAM, Color) and press Enter..."
+                        onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
+                    <button type="button" onclick="addVariantAttributeInline()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
                         <i class="fas fa-plus"></i> Add
                     </button>
                 </div>
 
                 <!-- Tags container -->
-                <div id="variantAttributesContainer" class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
+                <div id="variantAttributesContainer"
+                    class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
                     <!-- Glassmorphic glow effect -->
-                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none"></div>
-                    
-                    <% 
-                        let attributesToDisplay = [];
-                        if (locals.isEdit) {
-                            attributesToDisplay = category.variantAttributes || [];
-                        } else {
-                            attributesToDisplay = ['Price', 'Stock'];
-                        }
-                    %>
+                    <div
+                        class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none">
+                    </div>
 
-                    <% if (attributesToDisplay.length > 0) { %>
-                        <% attributesToDisplay.forEach((attr, index) => { %>
-                            <div class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
-                                <span class="font-bold text-sm tracking-wide"><%= attr %></span>
-                                <button type="button" onclick="removeVariantAttribute(this)" class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
-                                    <i class="fas fa-times text-[10px]"></i>
-                                </button>
-                                <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div id="noAttributesText" class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
-                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
-                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes defined yet</p>
-                        </div>
-                    <% } %>
+                    <% let attributesToDisplay=[]; if (locals.isEdit) { attributesToDisplay=category.variantAttributes
+                        || []; } else { attributesToDisplay=[]; } %>
+
+                        <% if (attributesToDisplay.length> 0) { %>
+                            <% attributesToDisplay.forEach((attr, index)=> { %>
+                                <div
+                                    class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
+                                    <span class="font-bold text-sm tracking-wide">
+                                        <%= attr %>
+                                    </span>
+                                    <button type="button" onclick="removeVariantAttribute(this)"
+                                        class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                                        <i class="fas fa-times text-[10px]"></i>
+                                    </button>
+                                    <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <div id="noAttributesText"
+                                            class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes
+                                                defined yet</p>
+                                        </div>
+                                        <% } %>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Description (Optional)</label>
-                <textarea name="description" class="form-input h-32" style="resize: none;"
+                <textarea name="description" id="categoryDescription" class="form-input h-32" style="resize: none;"
                     placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
+                <div id="categoryDescriptionError" class="text-red-500 text-[11px] font-bold mt-1"></div>
             </div>
 
             <button type="button" onclick="handleCategorySubmit('<%= locals.isEdit ? category._id : '' %>')"
@@ -398,7 +407,7 @@
             if (noText) noText.remove();
 
             const container = document.getElementById('variantAttributesContainer');
-            
+
             // Check for duplicates
             const existingInputs = container.querySelectorAll('input[name="variantAttributes[]"]');
             let isDuplicate = false;
@@ -433,7 +442,7 @@
             `;
 
             container.appendChild(tagDiv);
-            
+
             // Trigger animation after append
             requestAnimationFrame(() => {
                 tagDiv.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -446,17 +455,17 @@
 
         function escapeHtml(unsafe) {
             return unsafe
-                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function removeVariantAttribute(button) {
             const tag = button.closest('.variant-tag');
-            
+
             // Animate scale out before removing
             tag.style.transform = 'scale(0.9)';
             tag.style.opacity = '0';
-            
+
             setTimeout(() => {
                 tag.remove();
                 const container = document.getElementById('variantAttributesContainer');
@@ -479,31 +488,59 @@
             data.isListed = form.isListed.checked ? "on" : "off"; // Match service logic
             data.variantAttributes = formData.getAll('variantAttributes[]');
             delete data['variantAttributes[]']; // Clean up to avoid confusion
-            
+
+            // --- Frontend Validation ---
+            let isValid = true;
+            document.querySelectorAll('[id$="Error"]').forEach(el => el.innerText = '');
+
+            if (data.categoryName.trim() === "") {
+                document.getElementById('categoryNameError').innerText = "Category name is required";
+                isValid = false;
+            } else if (data.categoryName.trim().length < 3) {
+                document.getElementById('categoryNameError').innerText = "Category name must be at least 3 characters";
+                isValid = false;
+            }
+
+            if (data.iconClass.trim() === "") {
+                document.getElementById('iconClassError').innerText = "Icon class is required";
+                isValid = false;
+            }
+
+            if (data.description.trim() !== "" && data.description.trim().length < 10) {
+                document.getElementById('categoryDescriptionError').innerText = "Description must be at least 10 characters if provided";
+                isValid = false;
+            }
+
+            if (!isValid) {
+                const firstError = document.querySelector('.text-red-500:not(:empty)');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
             if (categoryId) {
                 try {
                     const response = await fetch(`/admin/category/edit/${categoryId}`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
-                    })
+                    });
                     const result = await response.json();
-                    if (result.success) {
-                        window.location.href = "/admin/category";
-                        Swal.fire({
-                            icon: "success",
-                            title: "Update category",
-                            text: "updated successfully...",
-                            timer: 1500
-                        })
+                    if (!response.ok) {
+                        throw new Error(result.message || "Update failed");
                     }
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Update Category",
+                        text: result.message || "Category updated successfully",
+                        timer: 1500
+                    });
+                    window.location.href = "/admin/category";
                 } catch (error) {
                     Swal.fire({
                         icon: "error",
-                        title: "Error..",
-                        text: error.message,
-                        timer: 1500
-                    })
+                        title: "Error",
+                        text: error.message
+                    });
                 }
             } else {
                 try {
@@ -512,23 +549,26 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
                     });
+
                     const result = await response.json();
-                    if (result.success) {
-                        window.location.href = "/admin/category";
-                        Swal.fire({
-                            icon: "success",
-                            title: "Add category",
-                            text: "category added seccesfully..",
-                            timer: 1500
-                        })
+
+                    if (!response.ok) {
+                        throw new Error(result.message || "Server error");
                     }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Category added"
+                    });
+
                 } catch (error) {
+
                     Swal.fire({
                         icon: "error",
-                        title: "Error..",
-                        text: error.message,
-                        timer: 1500
-                    })
+                        title: "Error",
+                        text: error.message
+                    });
+
                 }
                 console.log('Adding new category:', data);
             }

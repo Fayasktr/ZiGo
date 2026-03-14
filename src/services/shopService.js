@@ -121,7 +121,12 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
 
     const qty = parseInt(quantity) || 1;
     const existCart = await cartModel.findOne({ userId, productId, variantId });
-
+    const product = await productModel.findById(productId);
+    const variant = product.variants.find(v => v._id.toString() === variantId)
+    if(existCart.quantity<=variant.stock){
+        throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
+    }
+    
     if (existCart) {
         const newQuantity = existCart.quantity + qty;
         if (newQuantity > 10) {
@@ -129,11 +134,9 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
         }
         return await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } });
     }
-
-    const product = await productModel.findById(productId);
+    
     if (!product) throw new Error("Product not found");
 
-    const variant = product.variants.id(variantId);
     if (!variant) throw new Error("Variant not found");
 
     if (variant.stock < qty) {

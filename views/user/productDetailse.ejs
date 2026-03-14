@@ -413,8 +413,11 @@
                         <% const listedVariants=product.variants.filter(v=> v.isListed !== false);
                             const defaultVariant = listedVariants.length > 0 ? listedVariants[0] : (product.variants[0]
                             || {});
-                            const variantAttributes = (product.category && product.category.variantAttributes) ?
-                            product.category.variantAttributes : [];
+                            const variantAttributes = (product.category && product.category.variantAttributes)
+                            ? product.category.variantAttributes
+                            : [];
+
+                            const hasAttributes = variantAttributes.length > 0;
 
                             const getAttrValue = (attributes, attr) => {
                             if (!attributes) return null;
@@ -509,28 +512,66 @@
                                         </div>
 
                                         <div id="variant-selectors">
-                                            <% variantAttributes.forEach(attr=> {
-                                                const values = getUniqueAttributeValues(attr);
-                                                if (values.length > 0) { %>
-                                                <div class="mb-8 variant-group" data-attribute="<%= attr %>">
-                                                    <span
-                                                        class="block font-bold mb-4 text-sm uppercase opacity-60">Select
-                                                        <%= attr %>
-                                                    </span>
-                                                    <div class="flex flex-wrap gap-4">
-                                                        <% values.forEach(val=> {
-                                                            const isActive = getAttrValue(defaultVariant.price,
-                                                            attr) === val;
-                                                            %>
-                                                            <div class="variant-chip <%= isActive ? 'active' : '' %>"
-                                                                data-value="<%= val %>"
-                                                                onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
-                                                                <%= val %>
-                                                            </div>
-                                                            <% }) %>
+
+                                            <% if (hasAttributes) { %>
+
+                                                <% variantAttributes.forEach(attr=> {
+                                                    const values = getUniqueAttributeValues(attr);
+                                                    if (values.length > 0) { %>
+
+                                                    <div class="mb-8 variant-group" data-attribute="<%= attr %>">
+                                                        <span class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                            Select <%= attr %>
+                                                        </span>
+
+                                                        <div class="flex flex-wrap gap-4">
+                                                            <% values.forEach(val=> {
+                                                                const isActive = getAttrValue(defaultVariant.attributes,
+                                                                attr) === val;
+                                                                %>
+
+                                                                <div class="variant-chip <%= isActive ? 'active' : '' %>"
+                                                                    data-attribute="<%= attr %>" data-value="<%= val %>"
+                                                                    onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
+
+                                                                    <%= val %>
+
+                                                                </div>
+
+                                                                <% }) %>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <% } }) %>
+
+                                                    <% } }) %>
+
+                                                        <% } else { %>
+
+                                                            <!-- PRICE-ONLY VARIANTS -->
+                                                            <div class="mb-8">
+                                                                <span
+                                                                    class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                                    Select Option
+                                                                </span>
+
+                                                                <div class="flex flex-wrap gap-4">
+
+                                                                    <% listedVariants.forEach((v, i)=> { %>
+
+                                                                        <div class="variant-chip <%= v._id.toString() === defaultVariant._id.toString() ? 'active' : '' %>"
+                                                                            data-variant-id="<%= v._id %>"
+                                                                            onclick="selectVariantDirect('<%= v._id %>', this)">
+
+                                                                            Option <%= i + 1 %>
+
+                                                                        </div>
+
+                                                                        <% }) %>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <% } %>
+
                                         </div>
 
                                         <div class="flex gap-6 h-[60px]">
@@ -549,7 +590,7 @@
                                                 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>><%=
                                                     defaultVariant.stock <=0 ? 'Out of Stock'
                                                     : 'Buy\n                                                Now' %>
-                                                    </button>
+                                            </button>
                                         </div>
 
                                         <!-- Quick Specs -->
@@ -704,7 +745,24 @@
                                             zoomFactor: 2.5
                                         });
                                     }
+                                    function selectVariantDirect(variantId, element) {
 
+                                        const variant = productVariants.find(v =>
+                                            v._id.toString() === variantId.toString()
+                                        );
+
+                                        if (!variant) return;
+
+                                        currentVariantId = variant._id.toString();
+
+                                        updateVariantUI(variant);
+
+                                        document.querySelectorAll('.variant-chip').forEach(chip => {
+                                            chip.classList.remove('active');
+                                        });
+
+                                        element.classList.add('active');
+                                    }
                                     // Toggle visibility of the zoom pane manually to lay smoothly over content
                                     mainImg.addEventListener('mouseenter', () => {
                                         if (window.innerWidth > 1024) pane.classList.remove('hidden');
@@ -772,8 +830,8 @@
                                     });
 
                                     // --- Dynamic Variant Selection Logic ---
-                                    const productVariants = <%- JSON.stringify(product.variants || []) %>;
-                                    let userWishlist = <%- JSON.stringify(wishlist || []) %>;
+                                    const productVariants = <%-JSON.stringify(product.variants || []) %>;
+                                    let userWishlist = <%-JSON.stringify(wishlist || []) %>;
                                     let currentVariantId = '<%= defaultVariant._id || "" %>';
                                     let selectedAttributes = {};
 

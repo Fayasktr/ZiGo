@@ -284,9 +284,9 @@ export const deleteCartItem =asynchandler(async(req,res)=>{
 
 export const changeCartQty=asynchandler(async(req,res)=>{
     try {
-        const {change,productId,variantId}=req.query;
+        const {change,productId,variantId,currentQty}=req.query;
         const userId=req.session?.user.id||req?.user.id;
-        const update=await addressService.changeCartQuantity(userId,change,productId,variantId);
+        const update=await addressService.changeCartQuantity(userId,change,productId,variantId,currentQty);
         res.status(200).json({success:true,message:"quantity changed",update:update});
     } catch (error) {
         console.log(error)

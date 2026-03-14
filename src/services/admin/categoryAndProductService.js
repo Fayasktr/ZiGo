@@ -15,7 +15,7 @@ export const categoryData = async (page, limit, search) => {
 export const addNewCategory = async (categoryData) => {
     const oldCategory = await categoryModel.find({ categoryName: categoryData.categoryName });
     if (oldCategory.length > 0) {
-        throw new Error("this category already added");
+        throw new Error("this named category already exist");
     }
     if (!categoryData.categoryName || !categoryData.iconClass) {
         throw new Error("Must need all elements");
@@ -45,6 +45,10 @@ export const editCategoryPage = async (categoryId) => {
 }
 
 export const updateCategory = async (categoryData) => {
+    const existCategory=await categoryModel.findOne({_id:categoryData._id});
+    if(existCategory){
+        throw new Error("this named category already exist");
+    }
     const category = await categoryModel.findOneAndUpdate(
         { _id: categoryData._id },
         {
