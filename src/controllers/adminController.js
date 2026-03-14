@@ -37,6 +37,10 @@ export const userManagementPage = asynchandler(async (req, res) => {
         const limit = 10;
         const { users, totalCountOfUsers } = await adminService.usersList(page, limit, search);
         const totalPages = Math.ceil(totalCountOfUsers / limit);
+        if(totalCountOfUsers==0){
+            console.log(`issue found ${totalCountOfUsers}`)
+            return res.render("admin/userManagement", {users,totalCount: totalCountOfUsers,currentPage: page,totalPages,limit, search});
+        }
 
         if (page > totalPages) {
             return res.redirect(`/admin/users?page=${totalPages}`);
@@ -46,7 +50,7 @@ export const userManagementPage = asynchandler(async (req, res) => {
             totalCount: totalCountOfUsers,
             currentPage: page,
             totalPages,
-            limit,
+            limit, 
             search
         });
     } catch (error) {
