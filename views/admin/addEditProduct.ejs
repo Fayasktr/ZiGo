@@ -313,14 +313,15 @@
                         <div class="space-y-6">
                             <div class="form-group">
                                 <label class="form-label">Product Name</label>
-                                <input type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
-                                    value="<%= locals.isEdit ? product.productName : '' %>" required>
+                                <input id="productName" type="text" name="name" class="form-input" placeholder="e.g. ZiGo Neo 2 Pro"
+                                    value="<%= locals.isEdit ? product.productName : '' %>" >
+                                <div id="error">0</div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
-                                    <label class="form-label">Category</label>
-                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto" required>
+                                    <label id="categorySelect" class="form-label">Category</label>
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto" >
                                         <option value="">Select Category</option>
                                         <% if (locals.category && category.length> 0) { %>
                                             <% category.forEach((cat, index)=> { %>
@@ -544,6 +545,7 @@
 
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
+
             if (categorySelect.value) {
                 updateTableHeader();
             }
@@ -575,6 +577,7 @@
         });
 
         function updateTableHeader() {
+            
             const category = getSelectedCategory();
             console.log("selected category", category);
             let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
@@ -807,6 +810,11 @@
         }
 
         function renderVariantsList() {
+            const productName=document.getElementById("productName");
+            const errorArea=document.getElementById("error");
+            if(productName==""){
+                errorArea.innerHTML="must need add product name"
+            }
             if (productVariants.length > 0) {
                 noVariantsPlaceholder.classList.add('hidden');
             } else {

@@ -519,7 +519,7 @@
                                                     </span>
                                                     <div class="flex flex-wrap gap-4">
                                                         <% values.forEach(val=> {
-                                                            const isActive = getAttrValue(defaultVariant.attributes,
+                                                            const isActive = getAttrValue(defaultVariant.price,
                                                             attr) === val;
                                                             %>
                                                             <div class="variant-chip <%= isActive ? 'active' : '' %>"
