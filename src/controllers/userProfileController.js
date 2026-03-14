@@ -1,5 +1,7 @@
 import asynchandler from "express-async-handler";
 import * as addressService from '../services/uAddressService.js';
+import { uploadToCloudinary } from '../config/cloudinary.js';
+
 
 export const showProfile = asynchandler(async (req, res) => {
 
@@ -23,8 +25,12 @@ export const updateProfile = asynchandler(async (req, res) => {
     try {
         const { userName, phoneNumber } = req.body;
         const userId = req.session?.user?.id || req.user?.id;
+        if(phoneNumber.length!=10){
+            throw new Error("phone number should be 10 digit");
+        }
         await addressService.updatedProfileBasic(userId, userName, phoneNumber);
-        req.session.user.userName = userName;
+        if (req.session?.user) req.session.user.userName = userName;
+        if (req.user) req.user.userName = userName;
         res.status(200).json({ success: true, message: "basic info updated" });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -33,7 +39,7 @@ export const updateProfile = asynchandler(async (req, res) => {
 export const editPassword = asynchandler(async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const userId = req.session.user.id || req.user.id;
+        const userId = req.session?.user?.id || req.user?.id;
         await addressService.updatePassword(userId, currentPassword, newPassword);
         return res.status(200).json({ success: true, message: "password updated successul" })
     } catch (error) {
@@ -44,7 +50,7 @@ export const editPassword = asynchandler(async (req, res) => {
 export const changeEmail = asynchandler(async (req, res) => {
     try {
         const { email } = req.body;
-        const userId = req.session.user.id || req.user.id;
+        const userId = req.session?.user?.id || req.user?.id;
 
         await addressService.otpSendForEmailChange(userId, email);
 
@@ -58,7 +64,7 @@ export const changeEmail = asynchandler(async (req, res) => {
 
 export const loadVerifyEmailOtp = asynchandler(async (req, res) => {
     const email = req.session.pendingEmail;
-    const userId = req.session.user.id || req.user.id;
+    const userId = req.session?.user?.id || req.user?.id;
     if (!email) {
         return res.redirect('/user/profile/edit');
     }
@@ -79,7 +85,8 @@ export const verifyEmail = asynchandler(async (req, res) => {
 
         await addressService.verifyAndChangeEmail(userId, otp, newEmail);
 
-        req.session.user.email = newEmail;
+        if (req.session?.user) req.session.user.email = newEmail;
+        if (req.user) req.user.email = newEmail;
         delete req.session.pendingEmail;
 
         req.flash("success", "Email updated successfully!");
@@ -93,7 +100,7 @@ export const verifyEmail = asynchandler(async (req, res) => {
 export const resendEmailOtp = asynchandler(async (req, res) => {
     try {
         const email = req.session.pendingEmail;
-        const userId = req.session.user.id || req.user.id;
+        const userId = req.session?.user?.id || req.user?.id;
 
         if (!email) throw new Error("Session expired. Please try again.");
 
@@ -108,14 +115,16 @@ export const resendEmailOtp = asynchandler(async (req, res) => {
 
 export const updateProfileImage = asynchandler(async (req, res) => {
     try {
+
         if (!req.file) {
             throw new Error("no files to upload");
         }
-        const userId = req.session.user.id || req.user.id;
-        const imageUrl = req.file.path;
+        const userId = req.session?.user?.id || req.user?.id;
+        const imageUrl = await uploadToCloudinary(req.file.buffer, 'your_product_folder');
 
         await addressService.updateProfileImage(userId, imageUrl);
-        req.session.user.profileImage = imageUrl;
+        if (req.session?.user) req.session.user.profileImage = imageUrl;
+        if (req.user) req.user.profileImage = imageUrl;
         return res.status(200).json({
             success: true,
             message: "profile Image Updated..",
@@ -170,8 +179,9 @@ export const EditAddress = asynchandler(async (req, res) => {
     try {
         const addressData = req.body;
         const addressId = req.params.id;
-        console.log("address data to edit: ", addressData);
-        await addressService.editAddress(addressId, addressData);
+        const user = req.session.user || req.user;
+        const userId = user.id || user._id;
+        await addressService.editAddress(userId, addressId, addressData);
         return res.status(200).json({ success: true, message: "Address updated successfully" });
     } catch (error) {
         return res.status(400).json({ success: false, message: error.message });
@@ -203,3 +213,83 @@ export const deleteAddress = asynchandler(async (req, res) => {
     }
 })
 
+
+export const wishlistPage=asynchandler(async(req,res)=>{
+    try {
+        const user = req.session?.user || req.user;
+        const userId = user?.id || user?._id;
+        console.log(userId)
+        const wishlist = await addressService.wishlistPage(userId);
+        console.log(wishlist)
+        res.render("user/userAfterLogin/wishlist", { wishlist, user: req.session.user || req.user });
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/addresses");
+    }
+})
+
+export const removeWishlist =asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session.user.id||req.user.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        let result =await addressService.deleteWishlistItem(userId,productId,variantId);
+        res.status(200).json({success:result,message:"item removed from wishlist"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message});
+    }
+})
+
+export const addToCart=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req.user?.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        let updateToCart=await addressService.addToCart(userId,productId,variantId);
+        res.status(200).json({success:true,message:"item added to cart"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message});
+    }
+})
+
+export const cartPage=asynchandler(async(req,res)=>{
+    try {
+        const user = req.session?.user || req.user;
+        const userId = user?.id || user?._id;
+        if (!userId) {
+            throw new Error("user not found")
+        }
+        const cart = await addressService.getCartPage(userId);
+        res.render("user/userAfterLogin/cart", {
+            cart,
+            user: req.session.user || req.user
+        });
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/profile");
+    }
+})
+
+export const deleteCartItem =asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session.user?.id||req.user?.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        const update=await addressService.deleteCart(userId,productId,variantId);
+        res.status(200).json({success:true,message:"item removed"});
+    } catch (error) {
+        res.status(400).json({success:false,message:"item not removed"});
+    }
+})
+
+export const changeCartQty=asynchandler(async(req,res)=>{
+    try {
+        const {change,productId,variantId,currentQty}=req.query;
+        const userId=req.session?.user.id||req?.user.id;
+        const update=await addressService.changeCartQuantity(userId,change,productId,variantId,currentQty);
+        res.status(200).json({success:true,message:"quantity changed",update:update});
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({success:false,message:error.message||"cannot change the quatity"});
+    }
+})

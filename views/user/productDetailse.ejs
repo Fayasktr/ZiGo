@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | <%= product.productName %>
+    </title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/drift-zoom/dist/drift-basic.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Header Fix --- */
+        #main-header {
+            background-color: rgba(15, 15, 15, 0.9) !important;
+            backdrop-filter: blur(8px);
+        }
+
+        /* --- Product Detail Section --- */
+        .productDetail-container {
+            padding: 160px 5% 80px;
+        }
+
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 5rem;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 1024px) {
+            .detail-layout {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
+        .main-image-wrapper {
+            background-color: #fcfcfc;
+            border-radius: 32px;
+            padding: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--gray-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-image-wrapper img {
+            max-width: 100%;
+            height: auto;
+            transition: var(--transition);
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            color: var(--dark-navy);
+            border: none;
+        }
+
+        .wishlist-btn.active {
+            color: #ff4757 !important;
+            background: white;
+        }
+
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .thumb-btn {
+            aspect-ratio: 1/1;
+            border-radius: 12px;
+            border: 2px solid var(--gray-light);
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .thumb-btn.active {
+            border-color: var(--primary-orange);
+        }
+
+        .thumb-btn img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .product-brand-tag {
+            color: var(--primary-orange);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+
+        .stock-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-left: 1rem;
+        }
+
+        .stock-status.in-stock {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ed573;
+        }
+
+        .stock-status.out-of-stock {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+        }
+
+        .product-name-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 1rem 0;
+            color: var(--dark-navy);
+        }
+
+        .stars-active {
+            color: #FFB300;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .current-price {
+            font-size: 3rem;
+            font-weight: 800;
+        }
+
+        .mrp-price {
+            font-size: 1.5rem;
+            text-decoration: line-through;
+            opacity: 0.3;
+        }
+
+        .discount-badge {
+            background: #ff4757;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 800;
+        }
+
+        .variant-chip {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid var(--deep-black);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 1;
+        }
+
+        .variant-chip.active {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .variant-chip.not-compatible {
+            border-color: var(--gray-light);
+            color: #ccc;
+            opacity: 0.6;
+        }
+
+        .variant-chip.disabled {
+            opacity: 0.1;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        .color-options {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #ddd;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .color-circle:hover {
+            transform: scale(1.1);
+        }
+
+        .color-circle.active::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1rem;
+        }
+
+        /* Quick Specs List */
+        .key-specs-list {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-light);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .spec-mini-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .spec-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 90, 31, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-orange);
+            font-size: 0.9rem;
+        }
+
+        .spec-text b {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--dark-navy);
+        }
+
+        .spec-text span {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .qty-selector {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            width: 50px;
+            height: 60px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .buy-now-btn-large {
+            background: var(--primary-orange);
+            color: white;
+            padding: 0 2rem;
+            border-radius: 14px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .add-to-cart-btn-large {
+            background: var(--dark-navy);
+            color: white;
+            padding: 0 2rem;
+            border-radius: 14px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        /* --- Scroll Navigation --- */
+        .tabs-nav {
+            display: flex;
+            gap: 4rem;
+            border-bottom: 2px solid var(--gray-light);
+            margin-bottom: 3rem;
+            background: var(--white);
+            padding-top: 1rem;
+        }
+
+        .tab-trigger {
+            padding: 1.5rem 0;
+            font-weight: 800;
+            opacity: 0.4;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .tab-trigger.active {
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+
+        .tab-trigger.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-orange);
+            transition: var(--transition);
+        }
+
+        .tab-panel {
+            display: block;
+            scroll-margin-top: 160px;
+            margin-bottom: 80px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <% if (typeof user !=='undefined' && user) { %>
+        <%- include('../partials/header') %>
+            <% } else { %>
+                <%- include('../partials/headerBeforeLogin') %>
+                    <% } %>
+
+                        <% const listedVariants=product.variants.filter(v=> v.isListed !== false);
+                            const defaultVariant = listedVariants.length > 0 ? listedVariants[0] : (product.variants[0]
+                            || {});
+                            const variantAttributes = (product.category && product.category.variantAttributes)
+                            ? product.category.variantAttributes
+                            : [];
+
+                            const hasAttributes = variantAttributes.length > 0;
+
+                            const getAttrValue = (attributes, attr) => {
+                            if (!attributes) return null;
+                            // Handle both Mongoose Map (.get()) and plain JS object ([])
+                            if (typeof attributes.get === 'function') return attributes.get(attr);
+                            return attributes[attr];
+                            };
+
+                            const getUniqueAttributeValues = (attr) => {
+                            if (!product.variants) return [];
+                            return [...new Set(listedVariants.map(v => getAttrValue(v.attributes,
+                            attr)))].filter(Boolean);
+                            };
+                            %>
+
+                            <main class="productDetail-container">
+                                <div class="detail-layout">
+                                    <!-- Gallery -->
+                                    <div class="reveal">
+                                        <div class="main-image-wrapper">
+                                            <% const isMainWishlisted=wishlist &&
+                                                wishlist.includes(defaultVariant._id.toString()); %>
+                                                <button class="wishlist-btn <%= isMainWishlisted ? 'active' : '' %>"
+                                                    onclick="toggleWishlist('<%= product._id %>', currentVariantId, this)">
+                                                    <i class="fas fa-heart text-2xl"></i>
+                                                </button>
+                                                <% const defaultImg=(defaultVariant.images && defaultVariant.images[0])
+                                                    ? defaultVariant.images[0] : '/public/landing/no-image.png' ; %>
+                                                    <img id="mainImage" src="<%= defaultImg %>"
+                                                        data-zoom="<%= defaultImg %>" alt="<%= product.productName %>">
+                                        </div>
+                                        <div class="thumbnail-grid">
+                                            <% if (defaultVariant.images) { %>
+                                                <% defaultVariant.images.forEach((img, idx)=> { %>
+                                                    <div class="thumb-btn <%= idx === 0 ? 'active' : '' %>"
+                                                        onclick="updateImg('<%= img %>', this)">
+                                                        <img src="<%= img %>" alt="">
+                                                    </div>
+                                                    <% }) %>
+                                                        <% } %>
+                                        </div>
+                                    </div>
+
+                                    <!-- Info -->
+                                    <div class="reveal relative" data-delay="300" id="infoColumn">
+                                        <!-- Drift Zoom Target Pane -->
+                                        <div id="zoomPane"
+                                            class="absolute inset-0 bg-white z-[99] hidden rounded-3xl overflow-hidden pointer-events-none shadow-2xl border border-gray-100">
+                                        </div>
+
+                                        <nav class="flex gap-2 text-sm opacity-50 mb-6">
+                                            <a href="/">Home</a> / <a href="/shop">Shop</a> / <span>
+                                                <%= product.productName %>
+                                            </span>
+                                        </nav>
+
+                                        <div class="flex items-center">
+                                            <span class="product-brand-tag">
+                                                <%= product.category ? product.category.categoryName : 'Tech' %> Series
+                                            </span>
+                                            <span
+                                                class="stock-status <%= defaultVariant.stock > 0 ? 'in-stock' : 'out-of-stock' %>">
+                                                <%= defaultVariant.stock> 0 ? 'In Stock' : 'Out of Stock' %>
+                                            </span>
+                                        </div>
+
+                                        <h1 class="product-name-title">
+                                            <%= product.productName %>
+                                        </h1>
+
+                                        <div class="flex items-center gap-4 mb-6">
+                                            <div class="stars-active">
+                                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                                    class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                                    class="fas fa-star-half-alt"></i>
+                                            </div>
+                                            <span class="opacity-50 text-sm">4.8 (128 Reviews)</span>
+                                        </div>
+
+                                        <div class="price-container">
+                                            <span class="current-price">₹<%= defaultVariant.price ?
+                                                    defaultVariant.price.toLocaleString() : '0' %></span>
+                                            <% if (defaultVariant.mrp && defaultVariant.mrp> defaultVariant.price) { %>
+                                                <span class="mrp-price">₹<%= defaultVariant.mrp.toLocaleString() %>
+                                                </span>
+                                                <% const discount=Math.round(((defaultVariant.mrp -
+                                                    defaultVariant.price) / defaultVariant.mrp) * 100); %>
+                                                    <span class="discount-badge">
+                                                        <%= discount %>% OFF
+                                                    </span>
+                                                    <% } %>
+                                        </div>
+
+                                        <div id="variant-selectors">
+
+                                            <% if (hasAttributes) { %>
+
+                                                <% variantAttributes.forEach(attr=> {
+                                                    const values = getUniqueAttributeValues(attr);
+                                                    if (values.length > 0) { %>
+
+                                                    <div class="mb-8 variant-group" data-attribute="<%= attr %>">
+                                                        <span class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                            Select <%= attr %>
+                                                        </span>
+
+                                                        <div class="flex flex-wrap gap-4">
+                                                            <% values.forEach(val=> {
+                                                                const isActive = getAttrValue(defaultVariant.attributes,
+                                                                attr) === val;
+                                                                %>
+
+                                                                <div class="variant-chip <%= isActive ? 'active' : '' %>"
+                                                                    data-attribute="<%= attr %>" data-value="<%= val %>"
+                                                                    onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
+
+                                                                    <%= val %>
+
+                                                                </div>
+
+                                                                <% }) %>
+                                                        </div>
+                                                    </div>
+
+                                                    <% } }) %>
+
+                                                        <% } else { %>
+
+                                                            <!-- PRICE-ONLY VARIANTS -->
+                                                            <div class="mb-8">
+                                                                <span
+                                                                    class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                                    Select Option
+                                                                </span>
+
+                                                                <div class="flex flex-wrap gap-4">
+
+                                                                    <% listedVariants.forEach((v, i)=> { %>
+
+                                                                        <div class="variant-chip <%= v._id.toString() === defaultVariant._id.toString() ? 'active' : '' %>"
+                                                                            data-variant-id="<%= v._id %>"
+                                                                            onclick="selectVariantDirect('<%= v._id %>', this)">
+
+                                                                            Option <%= i + 1 %>
+
+                                                                        </div>
+
+                                                                        <% }) %>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <% } %>
+
+                                        </div>
+
+                                        <div class="flex gap-6 h-[60px]">
+                                            <div class="qty-selector">
+                                                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                                                <input type="number" class="qty-input" value="1" id="qty" readonly>
+                                                <button class="qty-btn" onclick="changeQty(1)">+</button>
+                                            </div>
+                                            <button class="add-to-cart-btn-large flex-1"
+                                                onclick="addToCart('<%= product._id %>', currentVariantId)" <%-
+                                                defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>>Add to
+                                                Cart</button>
+                                            <button class="buy-now-btn-large flex-1"
+                                                onclick="buyNow('<%= product._id %>')" <%- defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>><%=
+                                                    defaultVariant.stock <=0 ? 'Out of Stock'
+                                                    : 'Buy\n                                                Now' %>
+                                            </button>
+                                        </div>
+
+                                        <!-- Quick Specs -->
+                                        <div class="key-specs-list">
+                                            <% if (product.specifications && product.specifications.length> 0) { %>
+                                                <% product.specifications.slice(0, 4).forEach(spec=> { %>
+                                                    <div class="spec-mini-item">
+                                                        <div class="spec-icon"><i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <div class="spec-text">
+                                                            <b>
+                                                                <%= spec.name %>
+                                                            </b>
+                                                            <span>
+                                                                <%= spec.value %>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                                        <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <section class="reveal">
+                                    <div class="tabs-nav">
+                                        <div class="tab-trigger active" data-target="desc-panel"
+                                            onclick="scrollToSection('desc-panel')">Description</div>
+                                        <div class="tab-trigger" data-target="specs-panel"
+                                            onclick="scrollToSection('specs-panel')">Specifications</div>
+                                        <div class="tab-trigger" data-target="reviews-panel"
+                                            onclick="scrollToSection('reviews-panel')">Reviews</div>
+                                    </div>
+
+                                    <div id="desc-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Description</h3>
+                                        <p class="text-lg opacity-70 leading-relaxed max-w-4xl">
+                                            <%= product.description %>
+                                        </p>
+                                    </div>
+
+                                    <div id="specs-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Specifications</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl">
+                                            <% if (product.specifications) { %>
+                                                <% product.specifications.forEach(spec=> { %>
+                                                    <div class="flex justify-between border-b py-2">
+                                                        <b>
+                                                            <%= spec.name %>
+                                                        </b>
+                                                        <span>
+                                                            <%= spec.value %>
+                                                        </span>
+                                                    </div>
+                                                    <% }) %>
+                                                        <% } %>
+                                        </div>
+                                    </div>
+
+                                    <div id="reviews-panel" class="tab-panel">
+                                        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
+                                        <div class="flex items-center gap-12 p-8 bg-gray-50 rounded-3xl mb-12">
+                                            <div class="text-center">
+                                                <h2 class="text-5xl font-extrabold mb-2">4.8</h2>
+                                                <div class="stars-active">★★★★★</div>
+                                            </div>
+                                            <p class="opacity-50">"Premium build quality and exceptional performance.
+                                                ZiGo never disappoints!" - <i>Verified User</i></p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <% if (relatedProducts && relatedProducts.length> 0) { %>
+                                    <section class="mt-20 reveal">
+                                        <div class="flex justify-between items-end mb-10">
+                                            <div>
+                                                <span
+                                                    class="text-orange-500 font-bold uppercase tracking-widest text-sm">Similar
+                                                    Tech</span>
+                                                <h2 class="text-4xl font-extrabold mt-2">Related Products</h2>
+                                            </div>
+                                            <a href="/shop"
+                                                class="text-sm font-bold border-b-2 border-orange-500 pb-1">View
+                                                Shop</a>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                            <% relatedProducts.forEach(rel=> { %>
+                                                <div class="group cursor-pointer"
+                                                    onclick="window.location.href='/productDetailse/<%= rel._id %>'">
+                                                    <div
+                                                        class="aspect-square bg-gray-50 rounded-3xl p-8 flex items-center justify-center border border-transparent group-hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+                                                        <% let relImgSrc='/public/landing/no-image.png' ; if
+                                                            (rel.variants && rel.variants.length> 0 &&
+                                                            rel.variants[0].images && rel.variants[0].images.length > 0)
+                                                            {
+                                                            let relUrl = rel.variants[0].images[0];
+                                                            if (relUrl.startsWith('http') || relUrl.startsWith('/')) {
+                                                            relImgSrc = relUrl;
+                                                            } else {
+                                                            relImgSrc = '/' + relUrl;
+                                                            }
+                                                            }
+                                                            %>
+                                                            <img src="<%= relImgSrc %>" alt="<%= rel.productName %>"
+                                                                class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
+                                                            <% if (rel.variants && rel.variants[0] &&
+                                                                rel.variants[0].mrp> rel.variants[0].price) { %>
+                                                                <span
+                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
+                                                                    <%= Math.round(((rel.variants[0].mrp -
+                                                                        rel.variants[0].price)/rel.variants[0].mrp)*100)
+                                                                        %>
+                                                                        %
+                                                                </span>
+                                                                <% } %>
+                                                    </div>
+                                                    <div class="mt-5">
+                                                        <h3
+                                                            class="font-bold text-lg group-hover:text-orange-500 transition-colors">
+                                                            <%= rel.productName %>
+                                                        </h3>
+                                                        <p class="text-xl font-extrabold mt-1">₹<%=
+                                                                rel.variants[0].price.toLocaleString() %>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <% }) %>
+                                        </div>
+                                    </section>
+                                    <% } %>
+                            </main>
+
+                            <%- include('../partials/footer') %>
+
+                                <script src="https://unpkg.com/drift-zoom/dist/Drift.min.js"></script>
+                                <script>
+                                    let driftInstance;
+                                    const mainImg = document.getElementById('mainImage');
+                                    const pane = document.getElementById('zoomPane');
+
+                                    function initDrift() {
+                                        if (driftInstance) {
+                                            driftInstance.destroy();
+                                        }
+                                        driftInstance = new Drift(mainImg, {
+                                            paneContainer: pane,
+                                            inlinePane: 1024,
+                                            inlineOffsetY: -85,
+                                            containInline: true,
+                                            hoverBoundingBox: true,
+                                            zoomFactor: 2.5
+                                        });
+                                    }
+                                    function selectVariantDirect(variantId, element) {
+
+                                        const variant = productVariants.find(v =>
+                                            v._id.toString() === variantId.toString()
+                                        );
+
+                                        if (!variant) return;
+
+                                        currentVariantId = variant._id.toString();
+
+                                        updateVariantUI(variant);
+
+                                        document.querySelectorAll('.variant-chip').forEach(chip => {
+                                            chip.classList.remove('active');
+                                        });
+
+                                        element.classList.add('active');
+                                    }
+                                    // Toggle visibility of the zoom pane manually to lay smoothly over content
+                                    mainImg.addEventListener('mouseenter', () => {
+                                        if (window.innerWidth > 1024) pane.classList.remove('hidden');
+                                    });
+
+                                    mainImg.addEventListener('mouseleave', () => {
+                                        pane.classList.add('hidden');
+                                    });
+
+                                    function updateImg(s, e) {
+                                        const imgUrl = s.startsWith('http') ? s : '/' + s;
+                                        mainImg.src = imgUrl;
+                                        mainImg.setAttribute('data-zoom', imgUrl);
+                                        document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
+                                        e.classList.add('active');
+                                        initDrift(); // Reinitialize drift with the new image
+                                    }
+
+                                    function changeQty(n) {
+                                        let i = document.getElementById('qty');
+                                        let v = parseInt(i.value) + n;
+                                        if (v > 0) i.value = v;
+                                        if (v == 10) return "limit reached"
+                                    }
+                                    function scrollToSection(id) {
+                                        const el = document.getElementById(id);
+                                        if (el) {
+                                            const y = el.getBoundingClientRect().top + window.scrollY - 160;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }
+                                    }
+
+                                    window.addEventListener('scroll', () => {
+                                        const panels = document.querySelectorAll('.tab-panel');
+                                        const triggers = document.querySelectorAll('.tab-trigger');
+
+                                        let currentPanel = '';
+                                        panels.forEach(panel => {
+                                            const panelTop = panel.getBoundingClientRect().top;
+                                            if (panelTop <= 150) {
+                                                currentPanel = panel.getAttribute('id');
+                                            }
+                                        });
+
+                                        if (currentPanel) {
+                                            triggers.forEach(trigger => {
+                                                trigger.classList.remove('active');
+                                                if (trigger.getAttribute('data-target') === currentPanel) {
+                                                    trigger.classList.add('active');
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    function switchTab(id, e) {
+                                        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                                        document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+                                        document.getElementById(id + '-panel').classList.add('active');
+                                        e.classList.add('active');
+                                    }
+
+                                    window.addEventListener('load', () => {
+                                        document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+                                        initDrift();
+                                    });
+
+                                    // --- Dynamic Variant Selection Logic ---
+                                    const productVariants = <%-JSON.stringify(product.variants || []) %>;
+                                    let userWishlist = <%-JSON.stringify(wishlist || []) %>;
+                                    let currentVariantId = '<%= defaultVariant._id || "" %>';
+                                    let selectedAttributes = {};
+
+                                    // Initialize selected attributes from default variant
+                                    <% if (defaultVariant.attributes) { %>
+                                        <% variantAttributes.forEach(attr => { %>
+                                        selectedAttributes['<%= attr %>'] = '<%= getAttrValue(defaultVariant.attributes, attr) %>';
+                                        <% }) %>
+                                    <% } %>
+
+                                        function selectVariantAttribute(attr, value) {
+                                            selectedAttributes[attr] = value;
+
+                                            // Find all variants that have this new attribute value
+                                            const candidates = productVariants.filter(v => v.attributes[attr] === value && v.isListed !== false);
+
+                                            if (candidates.length === 0) return; // Should not happen with availability check
+
+                                            // Score candidates based on how many other selected attributes they match
+                                            let bestVariant = candidates[0];
+                                            let maxScore = -1;
+
+                                            candidates.forEach(v => {
+                                                let score = 0;
+                                                Object.entries(selectedAttributes).forEach(([key, val]) => {
+                                                    if (key !== attr && v.attributes[key] === val) {
+                                                        score++;
+                                                    }
+                                                });
+                                                if (score > maxScore) {
+                                                    maxScore = score;
+                                                    bestVariant = v;
+                                                }
+                                            });
+
+                                            // Automatically update the selection "brain" to match this valid variant
+                                            selectedAttributes = { ...bestVariant.attributes };
+
+                                            updateVariantUI(bestVariant);
+                                            updateAvailability();
+                                        }
+
+                                    function updateAvailability() {
+                                        // Loop through all attribute groups
+                                        document.querySelectorAll('.variant-group').forEach(group => {
+                                            const attrName = group.getAttribute('data-attribute');
+
+                                            group.querySelectorAll('.variant-chip').forEach(chip => {
+                                                const chipValue = chip.getAttribute('data-value');
+
+                                                // 1. Is it the ACTIVE selection?
+                                                const isActive = selectedAttributes[attrName] === chipValue;
+
+                                                // 2. Is it AVAILABLE (Compatible with ALL OTHER current selections)?
+                                                const isAvailable = productVariants.some(v => {
+                                                    if (v.isListed === false) return false;
+                                                    // It matches this chip...
+                                                    if (v.attributes[attrName] !== chipValue) return false;
+                                                    // AND it matches EVERY OTHER currently selected attribute
+                                                    return Object.entries(selectedAttributes).every(([key, val]) => {
+                                                        if (key === attrName) return true;
+                                                        return v.attributes[key] === val;
+                                                    });
+                                                });
+
+                                                // 3. Does it exist at all (for pivoting)?
+                                                const existsAtAll = productVariants.some(v => v.attributes[attrName] === chipValue && v.isListed !== false);
+
+                                                // Reset classes
+                                                chip.classList.remove('active', 'not-compatible', 'disabled');
+
+                                                if (isActive) {
+                                                    chip.classList.add('active');
+                                                } else if (isAvailable) {
+                                                    // Standard state - normal border
+                                                } else if (existsAtAll) {
+                                                    chip.classList.add('not-compatible'); // Gray but clickable
+                                                } else {
+                                                    chip.classList.add('disabled'); // Not even clickable
+                                                }
+                                            });
+                                        });
+                                    }
+
+                                    // Initial check
+                                    window.addEventListener('load', () => {
+                                        updateAvailability();
+
+                                        // Update Wishlist Heart Color for specific variant
+                                        const heartBtn = document.querySelector('.wishlist-btn');
+                                        if (heartBtn) {
+                                            const isWishlisted = userWishlist.some(id => id.toString() === currentVariantId.toString());
+                                            if (isWishlisted) {
+                                                heartBtn.classList.add('active');
+                                            } else {
+                                                heartBtn.classList.remove('active');
+                                            }
+                                        }
+
+                                        // Handle wishlist clicks for related products
+                                        document.querySelectorAll('.wishlist-heart-btn').forEach(btn => {
+                                            btn.addEventListener('click', (e) => {
+                                                e.stopPropagation();
+                                                const productId = btn.dataset.id;
+                                                const variantId = btn.dataset.variantId;
+                                                toggleWishlist(productId, variantId, btn);
+                                            });
+                                        });
+                                    });
+
+                                    function updateVariantUI(variant) {
+                                        currentVariantId = variant._id.toString();
+
+                                        // Update Price
+                                        const priceEl = document.querySelector('.current-price');
+                                        if (priceEl) priceEl.innerText = '₹' + variant.price.toLocaleString();
+
+                                        // Update Stock Status and Buttons
+                                        const stockEl = document.querySelector('.stock-status');
+                                        const buyNowBtn = document.querySelector('.buy-now-btn-large');
+                                        const addToCartBtn = document.querySelector('.add-to-cart-btn-large');
+
+                                        if (stockEl) {
+                                            if (variant.stock > 0) {
+                                                stockEl.innerText = 'In Stock';
+                                                stockEl.className = 'stock-status in-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Buy\n                                                Now';
+                                                    buyNowBtn.disabled = false;
+                                                    buyNowBtn.style.opacity = '1';
+                                                    buyNowBtn.style.cursor = 'pointer';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = false;
+                                                    addToCartBtn.style.opacity = '1';
+                                                    addToCartBtn.style.cursor = 'pointer';
+                                                }
+                                            } else {
+                                                stockEl.innerText = 'Out of Stock';
+                                                stockEl.className = 'stock-status out-of-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Out of Stock';
+                                                    buyNowBtn.disabled = true;
+                                                    buyNowBtn.style.opacity = '0.7';
+                                                    buyNowBtn.style.cursor = 'not-allowed';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = true;
+                                                    addToCartBtn.style.opacity = '0.7';
+                                                    addToCartBtn.style.cursor = 'not-allowed';
+                                                }
+                                            }
+                                        }
+
+                                        // Update Images
+                                        if (variant.images && variant.images.length > 0) {
+                                            const mainImg = document.getElementById('mainImage');
+                                            const firstImg = variant.images[0].startsWith('http') ? variant.images[0] : '/' + variant.images[0];
+                                            mainImg.src = firstImg;
+                                            mainImg.setAttribute('data-zoom', firstImg);
+
+                                            if (window.driftInstance && window.driftInstance.setTarget) {
+                                                window.driftInstance.setTarget(mainImg);
+                                            }
+
+                                            const thumbGrid = document.querySelector('.thumbnail-grid');
+                                            if (thumbGrid) {
+                                                thumbGrid.innerHTML = variant.images.map((img, idx) => {
+                                                    const url = img.startsWith('http') ? img : '/' + img;
+                                                    return '<div class="thumb-btn ' + (idx === 0 ? 'active' : '') + '" onclick="updateImg(\'' + img + '\', this)"><img src="' + url + '" alt=""></div>';
+                                                }).join('');
+                                            }
+                                        }
+
+                                        // Update Wishlist Heart Color
+                                        const heartBtn = document.querySelector('.wishlist-btn');
+                                        if (heartBtn) {
+                                            const isWishlisted = userWishlist.some(id => id.toString() === variant._id.toString());
+                                            if (isWishlisted) {
+                                                heartBtn.classList.add('active');
+                                            } else {
+                                                heartBtn.classList.remove('active');
+                                            }
+                                        }
+                                    }
+
+                                    async function toggleWishlist(productId, variantId, btnElement) {
+                                        try {
+                                            const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
+                                                method: "PATCH",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (update.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Login Required',
+                                                    text: 'You need to be logged in to manage your wishlist.',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        window.location.href = '/login';
+                                                    }
+                                                });
+                                                return;
+                                            }
+
+                                            const result = await update.json();
+                                            if (update.ok && result.success) {
+                                                // Update local wishlist state
+                                                const vIdStr = variantId.toString();
+                                                if (result.action === 'added') {
+                                                    if (!userWishlist.includes(vIdStr)) {
+                                                        userWishlist.push(vIdStr);
+                                                    }
+                                                } else {
+                                                    userWishlist = userWishlist.filter(id => id.toString() !== vIdStr);
+                                                }
+
+                                                if (btnElement) {
+                                                    if (result.action === 'added') btnElement.classList.add('active');
+                                                    else btnElement.classList.remove('active');
+                                                }
+                                                Swal.fire({
+                                                    icon: "success",
+                                                    title: result.message,
+                                                    toast: true,
+                                                    position: "top",
+                                                    showConfirmButton: false,
+                                                    timer: 3000
+                                                })
+
+                                            } else {
+                                                throw new Error(result.message || "Wishlist update failed");
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message || "Could not change status",
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+
+                                        }
+
+                                    }
+
+                                    async function addToCart(productId, variantId) {
+                                        try {
+                                            const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
+                                            console.log(`Adding to cart: ${productId}, Variant: ${variantId}, Qty: ${quantity}`);
+
+                                            let response = await fetch(`/shop/cart/${productId}?variantId=${variantId}&quantity=${quantity}`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (response.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Login Required',
+                                                    text: 'Please login to add items to your cart.',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) window.location.href = '/login';
+                                                });
+                                                return;
+                                            }
+
+                                            let result = await response.json();
+                                            if (response.ok && result.success) {
+                                                Swal.fire({
+                                                    icon: "success",
+                                                    title: result.message,
+                                                    toast: true,
+                                                    position: "top",
+                                                    showConfirmButton: false,
+                                                    timer: 3000
+                                                });
+                                            } else {
+                                                throw new Error(result.message || "Could not add to cart");
+                                            }
+
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message || "Could not able to add to cart",
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+
+                                        }
+                                        console.log('Add to cart:', productId);
+                                    }
+
+                                    async function buyNow(productId) {
+                                        // Use the current exactly selected variant
+                                        const vId = currentVariantId;
+                                        try {
+                                            const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
+                                            let response = await fetch(`/shop/cart/${productId}?variantId=${currentVariantId}&quantity=${quantity}`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" }
+                                            });
+
+                                            if (response.status === 401) {
+                                                Swal.fire({
+                                                    icon: 'info',
+                                                    title: 'Login Required',
+                                                    text: 'Please login to proceed with "Buy Now".',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#FF5A1F',
+                                                    confirmButtonText: 'Login Now'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) window.location.href = '/login';
+                                                });
+                                                return;
+                                            }
+
+                                            let result = await response.json();
+                                            if (response.ok && result.success) {
+                                                // If added to cart successfully, redirect to checkout/cart
+                                                window.location.href = '/user/cart';
+                                            } else {
+                                                throw new Error(result.message || "Checkout failed");
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Action failed",
+                                                text: error.message,
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+                                        }
+                                    }
+                                </script>
+</body>
+
+</html>

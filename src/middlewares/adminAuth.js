@@ -1,6 +1,5 @@
 const redirectIfLoggedIn=(req,res,next)=>{
     if(req.session.admin){
-        console.log("admi und")
         return res.redirect("/admin/dashbord")
     }
     next()
@@ -18,4 +17,4 @@ const preventCache = (req, res, next) => {
     res.set('Expires', '0');
     next();
 };
-export default {redirectIfLoggedIn,protectAdmin,preventCache}
+export default { redirectIfLoggedIn, protectAdmin, preventCache }

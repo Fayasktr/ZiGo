@@ -40,7 +40,6 @@ export const userSignUp = async (userName, email, password) => {
   console.log(OTP);
 
   const hashedPassword = await hashPassword(password);
-  console.log("hashpass" + hashedPassword)
 
   let newUser = await User.create({
     userName: userName,
@@ -110,6 +109,5 @@ export const updatePassword = async (newPass, email) => {
   const hashedPassword = await hashPassword(newPass);
   const savePass = await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
-  console.log("password saved" + hashedPassword);
 
 }

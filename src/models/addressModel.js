@@ -1,9 +1,9 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const addressesSchema = mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: false
+        required: true
     },
     userName: {
         type: String,
@@ -32,7 +32,7 @@ const addressesSchema = mongoose.Schema({
         required: true,
     },
     phoneNumber: {
-        type: Number,
+        type: String,
         required: true,
         match: /^[0-9]{10}$/
     },

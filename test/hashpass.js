@@ -1,6 +1,11 @@
-let pass="hashpass$2b$10$FcVxX0Ha74WijMd.KXpreON3Os/Aj0RPS1SbFdEe7mjqpuMGyiPve";
-let count=0;
-for(let val of pass){
-    count++
+import bcrypt from "bcryptjs";
+
+const hashPassword=async(password)=>{
+
+    const hashedPassword= await bcrypt.hash(password,10);
+    console.log(hashedPassword)
+    return 0;
 }
-console.log(count)
+
+
+hashPassword("123456")

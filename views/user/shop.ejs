@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Tech | ZiGo Premium Electronics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Shop Section --- */
+        .shop-container {
+            padding: 160px 5% 80px;
+            min-height: 100vh;
+        }
+
+        .shop-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .shop-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Filters Sidebar */
+        .filters-sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: min-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .filter-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .filter-section h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .filter-list {
+            list-style: none;
+        }
+
+        .filter-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .filter-item label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-item label:hover {
+            color: var(--primary-orange);
+        }
+
+        .filter-item input[type="radio"] {
+            accent-color: var(--primary-orange);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .img-container {
+            aspect-ratio: 1/1;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: var(--transition);
+        }
+
+        .product-card:hover .img-container img {
+            transform: scale(1.1);
+        }
+
+        /* Wishlist/Love Button */
+        .wishlist-heart-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .wishlist-heart-btn:hover {
+            background: white;
+            color: #ff4757;
+            transform: scale(1.1);
+        }
+
+        .wishlist-heart-btn.active {
+            background: white;
+            color: #ff4757;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .p-cat {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary-orange);
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .p-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+            display: block;
+        }
+
+        .p-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .p-price {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .p-mrp {
+            font-size: 0.85rem;
+            text-decoration: line-through;
+            opacity: 0.4;
+            display: block;
+        }
+
+        .p-discount-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            background: #ff4757;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .add-cart-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-orange);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+        }
+
+        .add-cart-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-orange-hover);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            border-radius: 14px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-wrapper input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .search-wrapper input:focus~i {
+            color: var(--primary-orange);
+        }
+
+        .btn-search-action {
+            padding: 0.85rem 1.25rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-search-submit {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+        }
+
+        .btn-search-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-search-clear {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-search-clear:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <% if (user) { %>
+        <%- include('../partials/header') %>
+            <% } else { %>
+                <%- include('../partials/headerBeforeLogin') %>
+                    <% } %>
+
+                        <main class="shop-container">
+                            <div class="shop-layout">
+                                <!-- Sidebar -->
+                                <aside class="filters-sidebar hidden lg:block">
+                                    <form id="filterForm">
+                                        <!-- Maintain search during filter -->
+                                        <input type="hidden" name="search" value="<%= search %>">
+
+                                        <div class="filter-section">
+                                            <h4>Categories</h4>
+                                            <ul class="filter-list">
+                                                <% categories.forEach(cat=> {
+                                                    const isChecked = Array.isArray(selectedCategory)
+                                                    ? selectedCategory.includes(cat.categoryName)
+                                                    : selectedCategory === cat.categoryName;
+                                                    %>
+                                                    <li class="filter-item">
+                                                        <label>
+                                                            <input type="checkbox" name="category"
+                                                                value="<%= cat.categoryName %>" <%=isChecked ? 'checked'
+                                                                : '' %>
+                                                            onchange="submitFilters()">
+                                                            <%= cat.categoryName %>
+                                                        </label>
+                                                    </li>
+                                                    <% }) %>
+                                            </ul>
+                                        </div>
+
+                                        <div class="filter-section">
+                                            <h4>Price Range</h4>
+                                            <ul class="filter-list">
+                                                <li class="filter-item">
+                                                    <label><input type="radio" name="price" value="" <%=!selectedPrice
+                                                            ? 'checked' : '' %> onchange="submitFilters()"> Any
+                                                        Price</label>
+                                                </li>
+                                                <li class="filter-item">
+                                                    <label><input type="radio" name="price" value="0-10000"
+                                                            <%=selectedPrice==='0-10000' ? 'checked' : '' %>
+                                                        onchange="submitFilters()"> Under ₹10,000</label>
+                                                </li>
+                                                <li class="filter-item">
+                                                    <label><input type="radio" name="price" value="10000-50000"
+                                                            <%=selectedPrice==='10000-50000' ? 'checked' : '' %>
+                                                        onchange="submitFilters()"> ₹10,000 - ₹50,000</label>
+                                                </li>
+                                                <li class="filter-item">
+                                                    <label><input type="radio" name="price" value="50000-100000"
+                                                            <%=selectedPrice==='50000-100000' ? 'checked' : '' %>
+                                                        onchange="submitFilters()"> ₹50,000 - ₹1,00,000</label>
+                                                </li>
+                                                <li class="filter-item">
+                                                    <label><input type="radio" name="price" value="100000-plus"
+                                                            <%=selectedPrice==='100000-plus' ? 'checked' : '' %>
+                                                        onchange="submitFilters()"> Above ₹1,00,000</label>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </form>
+                                </aside>
+
+                                <!-- Main Content -->
+                                <div class="shop-content">
+                                    <div class="flex justify-between items-center mb-12 flex-wrap gap-6">
+                                        <div>
+                                            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">
+                                                Explore</p>
+                                            <h1 class="text-3xl font-extrabold">ZiGo <span
+                                                    class="text-orange-500">Premium Tech</span></h1>
+
+                                        </div>
+
+                                        <div class="search-container">
+                                            <div class="search-wrapper">
+                                                <input type="text" placeholder="Search..." id="shopSearchInput"
+                                                    value="<%= search %>">
+                                                <i class="fas fa-search"></i>
+                                            </div>
+                                            <button onclick="handleSearch()"
+                                                class="btn-search-action btn-search-submit">
+                                                Search
+                                            </button>
+                                            <button onclick="clearSearch()" class="btn-search-action btn-search-clear">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <% if (products && products.length> 0) { %>
+                                        <div class="product-grid">
+                                            <% products.forEach((product, index)=> { %>
+                                                    <div class="product-card reveal active" data-id="<%=product._id%>"
+                                                        data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
+                                                        <div class="img-container">
+                                                            <% const listedVariants=product.variants.filter(v=>
+                                                                v.isListed
+                                                                !== false);
+                                                                const displayVariant = listedVariants.length > 0 ?
+                                                                listedVariants[0] : (product.variants[0] || {});
+                                                                const firstVariantId = displayVariant._id ?
+                                                                displayVariant._id.toString() : "";
+                                                                const isWishlisted = userWishlist &&
+                                                                userWishlist.includes(firstVariantId);
+                                                                %>
+                                                                <button
+                                                                    class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
+                                                                    title="Add to Wishlist"
+                                                                    data-variant-id="<%= firstVariantId %>">
+                                                                    <i class="fas fa-heart"></i>
+                                                                </button>
+                                                                <% const prodImg=(displayVariant.images &&
+                                                                    displayVariant.images[0]) ? displayVariant.images[0]
+                                                                    : '/public/landing/no-image.png' ; %>
+                                                                    <img src="<%= prodImg %>"
+                                                                        alt="<%= product.productName %>">
+                                                        </div>
+                                                        <div class="product-info">
+                                                            <span class="p-cat">
+                                                                <%= product.category ? product.category.categoryName
+                                                                    : 'Electronics' %>
+                                                            </span>
+                                                            <a href="/productDetailse/<%= product._id %>"
+                                                                class="p-title">
+                                                                <%= product.productName %>
+                                                            </a>
+                                                            <div class="p-bottom">
+                                                                <div>
+                                                                    <div class="flex flex-col">
+                                                                        <div class="flex items-center">
+                                                                            <p class="p-price">₹<%= (product.variants &&
+                                                                                    product.variants[0]) ?
+                                                                                    product.variants[0].price.toLocaleString()
+                                                                                    : '0' %>
+                                                                            </p>
+                                                                        </div>
+                                                                        <% if (displayVariant.stock <=0) { %>
+                                                                            <span
+                                                                                class="text-red-500 font-bold text-xs mt-1">Out
+                                                                                of Stock</span>
+                                                                            <% } %>
+                                                                    </div>
+                                                                </div>
+                                                                <button class="add-cart-btn"
+                                                                    data-variant-id="<%= firstVariantId %>" <%-
+                                                                    displayVariant.stock <=0
+                                                                    ? 'disabled style="opacity:0.5; cursor:not-allowed;"'
+                                                                    : '' %>>
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24"
+                                                                        fill="none" stroke="currentColor"
+                                                                        stroke-width="2">
+                                                                        <path d="M12 5v14M5 12h14"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                        </div>
+
+                                        <div class="mt-12">
+                                            <%- include('../partials/admin/pagination') %>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="flex flex-col items-center justify-center py-20 opacity-40">
+                                                <i class="fas fa-search fa-3x mb-4"></i>
+                                                <p class="text-xl font-bold">No products found matching your criteria.
+                                                </p>
+                                                <button onclick="clearSearch()"
+                                                    class="text-orange-500 font-bold mt-4 hover:underline">Clear all
+                                                    filters</button>
+                                            </div>
+                                            <% } %>
+                                </div>
+                            </div>
+                        </main>
+
+                        <%- include('../partials/footer') %>
+
+                            <script>
+                                let productGrid = document.querySelector(".product-grid")
+                                function submitFilters() {
+                                    const form = document.getElementById('filterForm');
+                                    const formData = new FormData(form);
+                                    const params = new URLSearchParams(window.location.search);
+
+                                    // Remove existing array-like params to prevent duplication
+                                    params.delete('category');
+                                    params.delete('price');
+
+                                    // Update params from form
+                                    for (const [key, value] of formData.entries()) {
+                                        if (value) {
+                                            params.append(key, value);
+                                        }
+                                    }
+
+                                    params.set('page', '1'); // Reset to page 1 on filter
+                                    window.location.href = `/shop?${params.toString()}`;
+                                }
+
+                                function handleSearch() {
+                                    const query = document.getElementById('shopSearchInput').value.trim();
+                                    const params = new URLSearchParams(window.location.search);
+                                    if (query) params.set('search', query);
+                                    else params.delete('search');
+
+                                    params.set('page', '1');
+                                    window.location.href = `/shop?${params.toString()}`;
+                                }
+
+                                function clearSearch() {
+                                    window.location.href = '/shop';
+                                }
+
+                                document.getElementById('shopSearchInput').addEventListener('keypress', (e) => {
+                                    if (e.key === 'Enter') handleSearch();
+                                });
+
+                                //select product
+                                if (productGrid) {
+                                    productGrid.addEventListener("click", (event) => {
+                                        const card = event.target.closest(".product-card");
+                                        if (!card) return;
+                                        const productId = card.dataset.id;
+                                        const variantId = card.dataset.variantId;
+
+                                        // Check IF they clicked the Wishlist Button
+                                        const wishlistBtn = event.target.closest('.wishlist-heart-btn');
+                                        if (wishlistBtn) {
+                                            event.stopPropagation();
+                                            const variantId = wishlistBtn.dataset.variantId;
+                                            toggleWishlist(productId, variantId, wishlistBtn);
+                                            return;
+                                        }
+
+                                        // Check IF they clicked the Cart Button
+                                        const cartBtn = event.target.closest('.add-cart-btn');
+                                        if (cartBtn) {
+                                            event.stopPropagation();
+                                            if (!cartBtn.hasAttribute('disabled')) {
+                                                const variantId = cartBtn.dataset.variantId;
+                                                addToCart(productId, variantId);
+                                            }
+                                            return;
+                                        }
+
+                                        // Otherwise redirect to product details
+                                        window.location.href = `/productDetailse/${productId}`;
+                                    });
+                                }
+
+                                async function toggleWishlist(productId, variantId, btnElement) {
+                                    try {
+                                        const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
+                                            method: "PATCH",
+                                            headers: { "Content-Type": "application/json" }
+                                        });
+
+                                        if (update.status === 401) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Login Required',
+                                                text: 'You need to be logged in to manage your wishlist.',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#FF5A1F',
+                                                confirmButtonText: 'Login Now'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = '/login';
+                                                }
+                                            });
+                                            return;
+                                        }
+
+                                        const result = await update.json();
+                                        if (update.ok && result.success) {
+                                            if (btnElement) {
+                                                btnElement.classList.toggle('active');
+                                            }
+                                            Swal.fire({
+                                                icon: "success",
+                                                title: result.message,
+                                                toast: true,
+                                                position: "top",
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            })
+
+                                        } else {
+                                            throw new Error(result.message || "Wishlist update failed");
+                                        }
+                                    } catch (error) {
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Action failed",
+                                            text: error.message || "Could not change status",
+                                            toast: true,
+                                            position: 'top',
+                                            showConfirmButton: false,
+                                            timer: 3000
+                                        });
+
+                                    }
+
+                                }
+
+                                async function addToCart(productId, variantId) {
+                                    try {
+                                        console.log(productId)
+                                        let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" }
+                                        });
+
+                                        if (update.status === 401) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Login Required',
+                                                text: 'You need to be logged in to manage your cart.',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#FF5A1F',
+                                                confirmButtonText: 'Login Now'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = '/login';
+                                                }
+                                            });
+                                            return;
+                                        }
+
+                                        let result = await update.json();
+                                        console.log("result", result);
+                                        if (update.ok && result.success) {
+                                            Swal.fire({
+                                                icon: "success",
+                                                title: result.message,
+                                                toast: true,
+                                                position: "top",
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            })
+                                        } else {
+                                            throw new Error(result.message || "Could not add to cart");
+                                        }
+                                    } catch (error) {
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Action failed",
+                                            text: error.message || "Could not add to cart",
+                                            toast: true,
+                                            position: 'top',
+                                            showConfirmButton: false,
+                                            timer: 3000
+                                        });
+                                    }
+                                }
+
+                                // Handle scroll reveal
+                                window.addEventListener('scroll', () => {
+                                    document.querySelectorAll('.reveal').forEach(el => {
+                                        if (el.getBoundingClientRect().top < window.innerHeight - 50) el.classList.add('active');
+                                    });
+                                });
+                            </script>
+</body>
+
+</html>

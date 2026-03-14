@@ -1,11 +1,14 @@
-import passport from "passport";
 import addressModel from "../models/addressModel.js";
+import mongoose from "mongoose";
 import User from '../models/userModel.js';
 import checkPass from "../utils/checkPassword.js"
 import { hashPassword } from "../utils/hashPassword.js";
 import { GenerateOTP } from "../utils/otp.js"
 import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
+import wishlistModel from "../models/wishlistModel.js";
+import cartModel from "../models/cartModel.js";
+import productModal from "../models/productModel.js"
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -82,10 +85,10 @@ export const addAddress = async (userEmail, addressData) => {
         throw new Error("there is now user found ");
     }
     const defaultAddres = await addressModel.findOne({ userId: user._id, isDefault: true });
-    
+
     let shouldBeDefault = addressData.isDefault || !defaultAddres;
-    if(shouldBeDefault && defaultAddres){
-        await addressModel.updateMany({userId:user._id},{$set:{isDefault:false}});
+    if (shouldBeDefault && defaultAddres) {
+        await addressModel.updateMany({ userId: user._id }, { $set: { isDefault: false } });
     }
 
 
@@ -106,7 +109,14 @@ export const addAddress = async (userEmail, addressData) => {
 export const editAddressPage = async (addressId) => await addressModel.findOne({ _id: addressId });
 
 
-export const editAddress = async (addressId, addressData) => {
+export const editAddress = async (userId, addressId, addressData) => {
+    if (addressData.isDefault) {
+        await addressModel.updateMany(
+            { userId: userId },
+            { $set: { isDefault: false } }
+        );
+    }
+
     return await addressModel.findByIdAndUpdate(
         { _id: addressId },
         {
@@ -118,6 +128,7 @@ export const editAddress = async (addressId, addressData) => {
                 city: addressData.city,
                 pincode: addressData.pincode,
                 phoneNumber: addressData.phoneNumber,
+                isDefault: addressData.isDefault === true || addressData.isDefault === 'on'
             }
         },
         { new: true }
@@ -148,4 +159,147 @@ export const deleteAddress = async (userId, addressId) => {
         throw new Error("address already deleted..");
     }
     return 0;
+}
+
+export const wishlistPage = async (userId) => {
+    if (!userId) return [];
+    const wishlist = await wishlistModel.aggregate([
+    { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+
+    { $lookup: {
+        from: "productmodels",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product"
+    }},
+
+    { $unwind: "$product" },
+
+    { $lookup: {
+        from: "categories",
+        localField: "product.category",
+        foreignField: "_id",
+        as: "category"
+    }},
+
+    { $unwind: "$category" },
+    { $unwind: "$product.variants" },
+
+    { $match: {
+        $expr: { $eq: ["$product.variants._id", "$variantId"] },
+        "product.isListed": true,
+        "category.isListed": true,
+        "product.variants.isListed": true
+    }}
+
+  ]).sort({ createdAt: -1 });
+
+  return wishlist;
+};
+
+
+export const deleteWishlistItem = async (userId, productId, variantId) => {
+    const item = await wishlistModel.findOneAndDelete({ userId, productId, variantId });
+    return true;
+}
+
+export const addToCart = async (userId, productId, variantId) => {
+    const existCart = await cartModel.findOne({ userId, productId, variantId });
+
+    if (existCart) {
+        if (existCart.quantity < 10) {
+            await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } })
+        } else {
+            throw new Error("Maximum cart limit reached (10 per item)");
+        }
+    } else {
+        await cartModel.create({
+            userId: userId,
+            productId: productId,
+            variantId: variantId,
+            quantity: 1
+        })
+    }
+    const deleteItem = await wishlistModel.findOneAndDelete({ userId, productId, variantId });
+    return true;
+}
+
+export const getCartPage = async (userId) => {
+    userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+    const cartItems = await cartModel.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        {
+            $lookup: {
+                from: "productmodels",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product"
+            }
+        },
+        { $unwind: "$product" },
+        {
+            $lookup: {
+                from: "categories",
+                localField: "product.category",
+                foreignField: "_id",
+                as: "category"
+            }
+        },
+        { $unwind: "$category" },
+        { $unwind: "$product.variants" },
+        {
+            $match: {
+                $expr: {
+                    $eq: [{ $toString: "$product.variants._id" }, { $toString: "$variantId" }]
+                }
+            }
+        },
+        {
+            $match: {
+                "product.isListed": true,
+                "category.isListed": true,
+                "product.variants.isListed": true
+            }
+        }
+    ]).sort({createdAt:-1});
+
+    const totalPrice = cartItems.reduce((acc, item) => {
+        const price = item.product.variants.price || 0;
+        return acc + (price * item.quantity);
+    }, 0);
+
+    return { items: cartItems, totalPrice };
+}
+
+export const deleteCart = async (userId, productId, variantId) => {
+    return cartModel.findOneAndDelete({ userId, productId, variantId });
+}
+
+export const changeCartQuantity = async (userId, change, productId, variantId,currentQty) => {
+    const product = await productModal.findById(productId);
+    const variant = product.variants.find(v => v._id.toString() === variantId)
+    console.log(variant)
+    if(!variant){
+        throw new Error("this variant not found")
+    }
+    if (variant.stock <= 0) {
+        throw new Error("item Stock out");
+    }
+    const existCart = await cartModel.findOne({ userId, productId, variantId });
+    if (change == 1) {
+        if(variant.stock<=currentQty){
+            throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
+        }
+        if (existCart && existCart.quantity >= 10) {
+            throw new Error("cart maximum limit reached");
+        } else {
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } }, { new: true });
+        }
+    } else {
+        if (existCart && existCart.quantity <= 1) {
+            throw new Error("minimum cart Qautity is 1");
+        } else {
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: -1 } }, { new: true });
+        }
+    }
 }

@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Form Styling --- */
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        select.form-input option {
+            background: #f3f4f6;
+            /* Light gray background */
+            color: #000000;
+            /* Black text */
+            font-weight: 500;
+        }
+
+        .image-upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .image-upload-box:hover {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.02);
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.2rem 3rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .variant-box {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .variant-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .variant-table th {
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            padding: 0 1.5rem;
+        }
+
+        .variant-row {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            transition: var(--transition);
+        }
+
+        .variant-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .variant-row td {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .variant-row td:first-child {
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+        }
+
+        .variant-row td:last-child {
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+
+        .image-chip {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item active">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/products"
+                class="text-xs font-bold opacity-40 uppercase tracking-widest hover:text-orange-500 transition mb-4 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Catalog
+            </a>
+            <h1 class="text-4xl font-black">
+                <%= locals.isEdit ? 'Update' : 'Add New' %> <span class="text-orange-500">Product</span>
+            </h1>
+        </header>
+
+        <form class="form-card" action="<%= locals.isEdit ? '/admin/products/update' : '/admin/addProducts/add' %>"
+            method="POST" enctype="multipart/form-data">
+            <% if (locals.isEdit) { %>
+                <input type="hidden" name="id" value="<%= product._id %>">
+                <% } %>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column: Basic Info -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Product Name</label>
+                                <input id="productName" type="text" name="name" class="form-input"
+                                    placeholder="e.g. ZiGo Neo 2 Pro"
+                                    value="<%= locals.isEdit ? product.productName : '' %>">
+                                <p id="productNameError"
+                                    class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label id="categorySelect" class="form-label">Category</label>
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
+                                        <option value="">Select Category</option>
+                                        <% if (locals.category && category.length> 0) { %>
+                                            <% category.forEach((cat, index)=> { %>
+                                                <option value="<%= cat._id %>" <%=(locals.isEdit &&
+                                                    product.category.toString()===cat._id.toString()) ? 'selected' : ''
+                                                    %>>
+                                                    <%= cat.categoryName %>
+                                                </option>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <option value="" disabled>No Category Available
+                                                        </option>
+                                                        <% } %>
+                                    </select>
+                                    <p id="categoryError"
+                                        class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Please select a category.
+                                    </p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Brand</label>
+                                    <input id="brand" type="text" name="brand" class="form-input"
+                                        value="<%= locals.isEdit ? product.brand : '' %>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Description -->
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="form-label">Full Description</label>
+                                <textarea id="description" name="description" class="form-input h-[200px]"
+                                    style="resize: none;"
+                                    placeholder="Enter product details..."><%= locals.isEdit ? product.description : '' %></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Availability & Listing</label>
+                        <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-[85px]">
+                            <label class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? ''
+                                    : 'checked' %> class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                                </div>
+                            </label>
+                            <div>
+                                <p class="font-bold text-sm" id="statusLabel">
+                                    <%= (locals.isEdit && !product.isListed) ? 'Save as Draft'
+                                        : 'List Product Immediately' %>
+                                </p>
+                                <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest"
+                                    id="visibilityLabel">
+                                    Visibility: <%= (locals.isEdit && !product.isListed) ? 'Private' : 'Public' %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Width Variants Section -->
+                    <div class="mt-8">
+                        <div class="variant-box">
+                            <div class="flex justify-between items-center mb-8">
+                                <div>
+                                    <h2 class="text-xl font-bold">Product <span class="text-orange-500">Variants</span>
+                                    </h2>
+                                    <p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-1">Manage sizes,
+                                        colors,
+                                        images and stock</p>
+                                    <p class="text-xs font-semibold uppercase tracking-widest mt-1 
+                                    text-red-700 bg-red-50 border border-red-300 
+                                    px-2 py-1 rounded inline-block">
+                                        ⚠ Always add base model first
+                                    </p>
+                                </div>
+                                <button type="button" onclick="openAddVariantModal()"
+                                    class="bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> Add Variant
+                                </button>
+                            </div>
+
+                            <div id="variantsDisplayContainer" class="overflow-x-auto">
+                                <table class="variant-table">
+                                    <thead>
+                                        <tr id="variantTableHeader">
+                                            <!-- Dynamic Headers will be injected here -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="variantsTableBody">
+                                        <!-- Variants will be rendered here -->
+                                    </tbody>
+                                </table>
+
+                                <div id="noVariantsPlaceholder" class="py-12 text-center opacity-30">
+                                    <i class="fas fa-layer-group text-4xl mb-4"></i>
+                                    <p class="font-bold">No variants added to this product yet.</p>
+                                </div>
+                                <p id="variantsError"
+                                    class="text-red-500 text-[11px] font-bold mt-2 hidden text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Please add at least one variant.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="mt-8 flex justify-start gap-4">
+                        <button type="submit" class="btn-submit !w-auto !px-[60px]">
+                            <%= locals.isEdit ? 'Update Product' : 'Publish Product' %>
+                        </button>
+                        <button type="button" onclick="window.history.back()"
+                            class="bg-white/5 text-white font-bold px-10 py-4 rounded-32 hover:bg-white/10 transition">Cancel</button>
+                    </div>
+
+                    <!-- Hidden input for JSON data -->
+                    <input type="hidden" name="variantsData" id="variantsDataInput">
+                    <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
+        </form>
+    </main>
+    <!-- Custom Cropper Overlay (Placed outside SweetAlert logic) -->
+    <div id="customCropperOverlay"
+        class="fixed inset-0 bg-black/95 z-[1000000] hidden flex-col items-center justify-center p-4">
+        <h2 id="cropperTitle" class="text-2xl font-bold mb-6 text-white tracking-wide">Crop Image</h2>
+        <div
+            class="w-full max-w-4xl max-h-[60vh] bg-black border border-white/10 rounded-xl overflow-hidden flex justify-center items-center shadow-2xl">
+            <img id="cropperImageRaw" src="" style="max-width: 100%; max-height: 100%;">
+        </div>
+        <div class="flex gap-4 mt-8">
+            <button id="skipCropBtn" type="button"
+                class="bg-white/5 text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition">Skip</button>
+            <button id="confirmCropBtn" type="button"
+                class="bg-orange-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-orange-500/20">Crop
+                & Next</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script>
+        const categories = <%-JSON.stringify(locals.category || []) %>;
+        let productVariants = <%- locals.isEdit ? JSON.stringify(locals.product.variants || []) : '[]' %>;
+        console.log("ZiGo Add/Edit Product Script Loaded.");
+
+        const categorySelect = document.querySelector('select[name="category"]');
+        const variantsDataInput = document.getElementById('variantsDataInput');
+        const variantsTableBody = document.getElementById('variantsTableBody');
+        const variantTableHeader = document.getElementById('variantTableHeader');
+        const noVariantsPlaceholder = document.getElementById('noVariantsPlaceholder');
+
+        // --- Cropper.js Queue Logic ---
+        async function processCropQueue(files) {
+            const croppedFiles = [];
+            const overlay = document.getElementById('customCropperOverlay');
+            const img = document.getElementById('cropperImageRaw');
+            const title = document.getElementById('cropperTitle');
+            const confirmBtn = document.getElementById('confirmCropBtn');
+            const skipBtn = document.getElementById('skipCropBtn');
+
+            // Stop key and mouse presses from bubbling down to SweetAlert
+            overlay.onkeydown = (e) => e.stopPropagation();
+            overlay.onmousedown = (e) => e.stopPropagation();
+            overlay.onclick = (e) => e.stopPropagation();
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const dataUrl = await new Promise(res => {
+                    const reader = new FileReader();
+                    reader.onload = e => res(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+
+                title.innerText = `Crop Image ${i + 1} of ${files.length}`;
+                img.src = dataUrl;
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+
+                await new Promise(resolve => {
+                    // Destroy old instance if exists
+                    if (window.currentCropper) window.currentCropper.destroy();
+
+                    window.currentCropper = new Cropper(img, {
+                        aspectRatio: NaN,
+                        viewMode: 2,
+                        background: false,
+                    });
+
+                    confirmBtn.onclick = () => {
+                        window.currentCropper.getCroppedCanvas({
+                            width: 1000,
+                            height: 1000,
+                            fillColor: '#fff',
+                            imageSmoothingEnabled: true,
+                            imageSmoothingQuality: 'high',
+                        }).toBlob((blob) => {
+                            const newFile = new File([blob], file.name, { type: file.type || 'image/jpeg' });
+                            croppedFiles.push(newFile);
+                            window.currentCropper.destroy();
+                            window.currentCropper = null;
+                            resolve();
+                        }, file.type || 'image/jpeg', 0.9);
+                    };
+
+                    skipBtn.onclick = () => {
+                        window.currentCropper.destroy();
+                        window.currentCropper = null;
+                        resolve();
+                    };
+                });
+            }
+
+            // Hide overlay when finished
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            return croppedFiles;
+        }
+
+        // Helper function for category selection
+        function getSelectedCategory() {
+            const selectedCatId = categorySelect.value;
+            if (!selectedCatId || !categories.length) return null;
+            // Use String() for safer comparison as suggested
+            return categories.find(c => c._id && String(c._id) === String(selectedCatId));
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+
+            if (categorySelect.value) {
+                updateTableHeader();
+            }
+            renderVariantsList();
+        });
+
+        categorySelect.addEventListener('change', () => {
+            // When category changes, we should warn if variants exist
+            if (productVariants.length > 0) {
+                Swal.fire({
+                    title: 'Category Changed',
+                    text: 'Changing category might make existing variant attributes inconsistent. Do you want to keep them?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Clear Variants',
+                    cancelButtonText: 'Keep Existing'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        productVariants = [];
+                        updateTableHeader();
+                        renderVariantsList();
+                    } else {
+                        updateTableHeader();
+                    }
+                });
+            } else {
+                updateTableHeader();
+            }
+        });
+
+        function updateTableHeader() {
+
+            const category = getSelectedCategory();
+            console.log("selected category", category);
+            let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
+            if (category?.variantAttributes?.length) {
+                category.variantAttributes.forEach(attr => {
+                    html += `<th>${attr}</th>`;
+                });
+            }
+            html += `<th class="w-24">Status</th>`;
+            html += `<th class="text-right">Actions</th>`;
+            variantTableHeader.innerHTML = html;
+        }
+
+        async function openAddVariantModal(editIndex = null) {
+            console.log("Opening Add Variant Modal. editIndex:", editIndex);
+            const category = getSelectedCategory();
+            console.log("Selected category for modal:", category);
+            const variantData = editIndex !== null ? productVariants[editIndex] : null;
+
+
+            if (!category) {
+                console.warn("Modal blocked: No category detected.");
+                Swal.fire('Error', 'Please select a category first', 'error');
+                return;
+            }
+
+            // Build dynamic input fields
+            let dynamicFieldsHtml = `
+                <div class="text-left space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Price (₹)</label>
+                            <input id="swal-price" type="number" value="${variantData ? variantData.price : ''}" class="w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Stock</label>
+                            <input id="swal-stock" type="number" value="${variantData ? variantData.stock : ''}" class="w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Listing Status</label>
+                            <div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="swal-isListed" type="checkbox" ${variantData ? (variantData.isListed ? 'checked' : '') : 'checked'} class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                                </label>
+                                <span id="swal-status-label" class="text-xs font-bold">${variantData ? (variantData.isListed ? 'Listed' : 'Unlisted') : 'Listed'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4">
+            `;
+
+            if (category?.variantAttributes?.length) {
+                category.variantAttributes.forEach(attr => {
+                    dynamicFieldsHtml += `
+                        <div>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">${attr}</label>
+                            <input id="swal-attr-${attr.replace(/\s+/g, '_')}" value="${variantData ? (variantData.attributes[attr] || '') : ''}" type="text" class="swal-dynamic-attr w-full bg-[#1A1A1A] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-orange-500" placeholder="Enter ${attr}" data-attr="${attr}">
+                        </div>
+                    `;
+                });
+            }
+
+            dynamicFieldsHtml += `
+                        <div class="mt-4">
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Images (Min 3, Max 20)</label>
+                            <input id="swal-variant-images" type="file" multiple accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition">
+                            <div id="swal-image-preview-container" class="flex gap-2 mt-3 overflow-x-auto pb-2">
+                                <!-- Previews injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            let currentVariantFiles = variantData && variantData.imageFiles ? [...variantData.imageFiles] : [];
+            let existingImages = variantData && variantData.images ? [...variantData.images] : [];
+
+            const { value: formValues } = await Swal.fire({
+                title: variantData ? 'Edit Variant' : 'Create New Variant',
+                html: dynamicFieldsHtml,
+                focusConfirm: false,
+                allowEnterKey: false,
+                background: '#121212',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonText: variantData ? 'Update' : 'Add to List',
+                confirmButtonColor: '#FF5A1F',
+                didOpen: () => {
+                    // Fix Tailwind CSS bleeding into SweetAlert
+                    document.querySelectorAll('.swal2-popup input, .swal2-popup select').forEach(el => {
+                        if (el.type !== 'checkbox') {
+                            el.style.color = 'white';
+                            el.style.backgroundColor = '#1A1A1A';
+                        }
+                    });
+
+                    const isListedToggle = document.getElementById('swal-isListed');
+                    const statusLabel = document.getElementById('swal-status-label');
+                    isListedToggle.addEventListener('change', (e) => {
+                        statusLabel.innerText = e.target.checked ? 'Listed' : 'Unlisted';
+                    });
+
+                    const imgInput = document.getElementById('swal-variant-images');
+                    const previewBox = document.getElementById('swal-image-preview-container');
+
+                    const renderVariantPreview = () => {
+                        previewBox.innerHTML = '';
+                        // 1. Show existing images (URLs from DB)
+                        existingImages.forEach((imgUrl, idx) => {
+                            const container = document.createElement('div');
+                            container.className = 'relative group shrink-0';
+                            container.innerHTML = `
+                                <img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                                <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                                    <i class="fas fa-times text-[8px]"></i>
+                                </button>
+                            `;
+                            container.querySelector('button').addEventListener('click', () => {
+                                existingImages.splice(idx, 1);
+                                renderVariantPreview();
+                            });
+                            previewBox.appendChild(container);
+                        });
+
+
+                        currentVariantFiles.forEach((file, idx) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const container = document.createElement('div');
+                                container.className = 'relative group shrink-0';
+                                container.innerHTML = `
+                                    <img src="${e.target.result}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                                    <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                                        <i class="fas fa-times text-[8px]"></i>
+                                    </button>
+                                `;
+                                container.querySelector('button').addEventListener('click', () => {
+                                    currentVariantFiles.splice(idx, 1);
+                                    renderVariantPreview();
+                                });
+                                previewBox.appendChild(container);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    };
+
+                    renderVariantPreview();
+
+                    imgInput.addEventListener('change', async (e) => {
+                        const files = Array.from(e.target.files);
+
+                        const currentTotal = existingImages.length + currentVariantFiles.length;
+                        if (currentTotal + files.length > 20) {
+                            Swal.showValidationMessage(`limit is 20`);
+                            imgInput.value = '';
+                            return;
+                        }
+
+                        if (files.length > 0) {
+                            const croppedFiles = await processCropQueue(files);
+                            currentVariantFiles = [...currentVariantFiles, ...croppedFiles];
+                            renderVariantPreview();
+                        }
+                        // Reset input so re-selecting the same file works
+                        imgInput.value = '';
+                    });
+                },
+                preConfirm: async () => {
+                    const price = document.getElementById('swal-price').value;
+                    const stock = document.getElementById('swal-stock').value;
+
+                    if (!price || !stock) {
+                        Swal.showValidationMessage('Price and Stock are required');
+                        return false;
+                    }
+
+                    const attributes = {};
+                    category.variantAttributes.forEach(attr => {
+                        attributes[attr] = document.getElementById(`swal-attr-${attr.replace(/\s+/g, '_')}`).value || 'N/A';
+                    });
+
+                    // --- Variant Image Validation ---
+                    const totalExisting = existingImages.length;
+                    const totalImages = totalExisting + currentVariantFiles.length;
+
+                    if (totalImages < 3) {
+                        Swal.showValidationMessage('minimum 3 images needed');
+                        return false;
+                    }
+                    if (totalImages > 20) {
+                        Swal.showValidationMessage('limit is 20');
+                        return false;
+                    }
+
+                    // Capture images as base64 for the variant table preview
+                    const tempImages = [...existingImages];
+
+                    for (const file of currentVariantFiles) {
+                        const b64 = await new Promise((resolve) => {
+                            const r = new FileReader();
+                            r.onload = (e) => resolve(e.target.result);
+                            r.readAsDataURL(file);
+                        });
+                        tempImages.push(b64);
+                    }
+
+                    const isListed = document.getElementById('swal-isListed').checked;
+
+                    return {
+                        price,
+                        stock,
+                        attributes,
+                        imageFiles: currentVariantFiles,
+                        tempImages,
+                        images: existingImages,
+                        isListed
+                    };
+                }
+            });
+
+            if (formValues) {
+                if (editIndex !== null) {
+                    productVariants[editIndex] = formValues;
+                } else {
+                    productVariants.push(formValues);
+                }
+                renderVariantsList();
+            }
+        }
+
+        function renderVariantsList() {
+
+            if (productVariants.length > 0) {
+                noVariantsPlaceholder.classList.add('hidden');
+            } else {
+                noVariantsPlaceholder.classList.remove('hidden');
+            }
+
+            const category = getSelectedCategory();
+
+            let html = '';
+            productVariants.forEach((v, index) => {
+                // If the product is being loaded from the database, it has .images but not .tempImages
+                const activeImages = (v.tempImages && v.tempImages.length > 0) ? v.tempImages : (v.images || []);
+                const imgCount = activeImages.length;
+                const firstImg = imgCount > 0 ? activeImages[0] : null;
+
+                html += `
+                    <tr class="variant-row">
+                        <td>
+                            <div class="flex items-center gap-2">
+                                ${firstImg ? `<img src="${firstImg}" class="image-chip">` : `<div class="image-chip bg-white/5 flex items-center justify-center text-[10px] text-white/20">NO IMG</div>`}
+                                ${imgCount > 1 ? `<span class="text-[10px] font-bold opacity-40">+${imgCount - 1}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="font-bold">₹${v.price}</td>
+                        <td class="font-bold text-orange-500">${v.stock}</td>
+                `;
+
+                if (category?.variantAttributes?.length) {
+                    category.variantAttributes.forEach(attr => {
+                        const attrVal = (v.attributes && v.attributes[attr]) ? v.attributes[attr] : 'N/A';
+                        html += `<td><span class="bg-white/5 px-3 py-1.5 rounded-lg text-xs font-bold text-white/70">${attrVal}</span></td>`;
+                    });
+                }
+
+                html += `
+                        <td>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${v.isListed ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
+                                ${v.isListed ? 'Listed' : 'Unlisted'}
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-2">
+                                <button type="button" onclick="openAddVariantModal(${index})" class="text-orange-500/60 hover:text-orange-500 transition-all p-2">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" onclick="removeVariant(${index})" class="text-red-500/40 hover:text-red-500 transition-all p-2">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            variantsTableBody.innerHTML = html;
+            // Ensure the hidden input always reflects the latest variants string
+            const cleanVariants = productVariants.map(v => {
+                const { imageFiles, tempImages, ...rest } = v;
+                return rest;
+            });
+            variantsDataInput.value = JSON.stringify(cleanVariants);
+        }
+
+        function removeVariant(index) {
+            Swal.fire({
+                title: 'Remove Variant?',
+                text: 'This will delete this variant combination.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete',
+                background: '#121212',
+                color: '#fff',
+                confirmButtonColor: '#ef4444'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    productVariants.splice(index, 1);
+                    renderVariantsList();
+                }
+            });
+        }
+
+
+
+
+
+        // --- Standard Form Submission Interception ---
+        const mainForm = document.querySelector('form.form-card');
+        mainForm.addEventListener('submit', async function (e) {
+            e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
+
+            // --- Reset Messages ---
+            const errorIds = ['productNameError', 'categoryError', 'variantsError'];
+            errorIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
+
+            // --- Frontend Validation ---
+            let hasError = false;
+
+            const name = document.getElementById('productName').value.trim();
+            const category = categorySelect.value;
+
+            if (name.length < 3) {
+                document.getElementById('productNameError').innerText = 'Product name must be at least 3 characters.';
+                document.getElementById('productNameError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (!category) {
+                document.getElementById('categoryError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            // 2. Check for at least 1 variant
+            if (productVariants.length === 0) {
+                document.getElementById('variantsError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (hasError) {
+                // Scroll to the first error
+                const firstError = document.querySelector('.text-red-500:not(.hidden)');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // Prepare strictly JSON data without File objects
+            const cleanVariants = productVariants.map(v => {
+                const { imageFiles, tempImages, ...rest } = v;
+                return rest;
+            });
+            variantsDataInput.value = JSON.stringify(cleanVariants);
+
+            // Construct form data to natively pick up regular text fields
+            const formData = new FormData(mainForm);
+
+
+            // Append variant images as their own index files in FormData array
+            productVariants.forEach((variant, vIndex) => {
+                if (variant.imageFiles && variant.imageFiles.length > 0) {
+                    variant.imageFiles.forEach(file => {
+                        formData.append(`variant_${vIndex}_images`, file);
+                    });
+                }
+            });
+
+            try {
+                // Show SweetAlert loading overlay
+                Swal.fire({
+                    title: 'Saving Product...',
+                    text: 'Please wait while your product and images upload.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const isEditMode = "<%= locals.isEdit ? 'true' : 'false' %>" === "true";
+                const res = await fetch(mainForm.action || window.location.href, {
+                    method: isEditMode ? 'PUT' : 'POST',
+                    body: formData
+                });
+
+                const contentType = res.headers.get("content-type");
+                let responseData;
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    responseData = await res.json();
+                }
+
+                if (res.ok) {
+                    if (responseData && responseData.success === false) {
+                        Swal.fire('Error', responseData.message || 'Failed to save product.', 'error');
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: responseData?.message || 'Product saved successfully.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/admin/products';
+                        });
+                    }
+                } else {
+                    Swal.fire('Error', responseData?.message || 'Failed to save product.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'A network error occurred while uploading. Check your console.', 'error');
+            }
+        });
+
+        const listToggle = document.querySelector('input[name="isListed"]');
+        listToggle.addEventListener('change', (e) => {
+            document.getElementById('statusLabel').innerText = e.target.checked ? 'List Product Immediately' : 'Save as Draft';
+            document.getElementById('visibilityLabel').innerText = e.target.checked ? 'Visibility: Public' : 'Visibility: Private';
+        });
+    </script>
+</body>
+
+</html>

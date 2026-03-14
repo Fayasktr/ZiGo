@@ -22,12 +22,11 @@ export const accessToAdmin = async (adminMail, password) => {
 
 export const usersList = async (page, limit, search) => {
     const skip = (page - 1) * limit;
-    const users = await userModel.find({ email: { $nin: "admin@gmail.com" }, $or: [{ userName: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] })
+    const users = await userModel.find({ role: { $ne: "admin" }, $or: [{ userName: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
-    console.log("hello")
-    const totalCountOfUsers = await userModel.countDocuments({ email: { $nin: "admin@gmail.com" } });
+    const totalCountOfUsers = await userModel.countDocuments({ role: { $ne: "admin" }, $or: [{ userName: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] });
     return { users, totalCountOfUsers };
 }
 

@@ -2,7 +2,9 @@ import "dotenv/config";
 import express from "express";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
-import adminRoute from "./routes/adminRoute.js";
+import adminRoute from "./routes/admin/adminRoute.js";
+import categoryAndProductRoute from "./routes/admin/productAndCatogoryRoute.js";
+import shopRoute from "./routes/shopRoute.js";
 import path from 'path';
 import { fileURLToPath } from "url";
 import sessionMiddleware from "../src/config/session.js";
@@ -19,7 +21,6 @@ app.set("views", path.join(__dirname, "../views"))
 
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json())
 app.use("/public", express.static(path.join(__dirname, "../public")));
 app.use(express.json());
 
@@ -34,9 +35,11 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(shopRoute)
 app.use(adminRoute);
 app.use(authRoute);
 app.use(userRoute);
+app.use(categoryAndProductRoute);
 app.use((req, res) => {
   res.status(404).render("user/404");
 });

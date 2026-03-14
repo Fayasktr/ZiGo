@@ -58,11 +58,9 @@ export const otpSendToMail = async (OTP, userEmail, subjectForMail) => {
 
 
     const returInfo = await transporter.sendMail(mailOptions);
-    console.log(returInfo.response);
 
     return true;
   } catch (error) {
-    console.log(error.message);
     throw new Error(error.message);
   }
 };

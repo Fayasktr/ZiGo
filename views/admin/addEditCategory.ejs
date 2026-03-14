@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Category</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Form Styling --- */
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.2rem 3rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .icon-preview {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item active">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/category" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Categories</a>
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Taxonomy</p>
+            <h1 class="text-3xl font-extrabold">
+                <%= locals.isEdit ? 'Update' : 'Add New' %> <span class="text-orange-500">Category</span>
+            </h1>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="mb-8 max-w-[800px] mx-auto">
+            <% if (error && error.length> 0) { %>
+                <div
+                    class="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p class="font-bold text-sm">
+                        <%= error %>
+                    </p>
+                </div>
+                <% } %>
+
+                    <% if (success && success.length> 0) { %>
+                        <div
+                            class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <i class="fas fa-check-circle"></i>
+                            <p class="font-bold text-sm">
+                                <%= success %>
+                            </p>
+                        </div>
+                        <% } %>
+        </div>
+
+        <form class="form-card" id="categoryForm"
+            action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
+            method="POST">
+            <div class="form-group">
+                <input type="text" name="categoryName" id="categoryName" class="form-input"
+                    placeholder="e.g. Smart Watches" value="<%= locals.isEdit ? category.categoryName : '' %>">
+                <div id="categoryNameError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="form-group">
+                    <label class="form-label">FontAwesome Icon Class</label>
+                    <div class="flex gap-4">
+                        <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock"
+                            id="iconInput" value="<%= locals.isEdit ? category.iconClass : '' %>">
+                        <div class="icon-preview" id="iconPreview">
+                            <i class="<%= locals.isEdit ? category.iconClass : 'fas fa-tag' %>"></i>
+                        </div>
+                    </div>
+                    <div id="iconClassError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Visibility Status</label>
+                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 h-[62px]">
+                        <label class="relative inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isListed) ? ''
+                                : 'checked' %> class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                            </div>
+                        </label>
+                        <div>
+                            <p class="font-bold text-xs" id="statusText">
+                                <%= (locals.isEdit && !category.isListed) ? 'Blocked' : 'Active & Listed' %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group relative">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="form-label !mb-0">Variant Attributes</label>
+                    <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd
+                            class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
+                </div>
+
+                <!-- Input area -->
+                <div class="relative flex items-center mb-5">
+                    <div class="absolute left-5 text-white/40"><i class="fas fa-magic"></i></div>
+                    <input type="text" id="newAttributeInput"
+                        class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50"
+                        placeholder="Type attribute (e.g., RAM, Color) and press Enter..."
+                        onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
+                    <button type="button" onclick="addVariantAttributeInline()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+
+                <!-- Tags container -->
+                <div id="variantAttributesContainer"
+                    class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
+                    <!-- Glassmorphic glow effect -->
+                    <div
+                        class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none">
+                    </div>
+
+                    <% let attributesToDisplay=[]; if (locals.isEdit) { attributesToDisplay=category.variantAttributes
+                        || []; } else { attributesToDisplay=[]; } %>
+
+                        <% if (attributesToDisplay.length> 0) { %>
+                            <% attributesToDisplay.forEach((attr, index)=> { %>
+                                <div
+                                    class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
+                                    <span class="font-bold text-sm tracking-wide">
+                                        <%= attr %>
+                                    </span>
+                                    <button type="button" onclick="removeVariantAttribute(this)"
+                                        class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                                        <i class="fas fa-times text-[10px]"></i>
+                                    </button>
+                                    <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <div id="noAttributesText"
+                                            class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes
+                                                defined yet</p>
+                                        </div>
+                                        <% } %>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <textarea name="description" id="categoryDescription" class="form-input h-32" style="resize: none;"
+                    placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
+                <div id="categoryDescriptionError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+            </div>
+
+            <button type="button" onclick="handleCategorySubmit('<%= locals.isEdit ? category._id : '' %>')"
+                class="btn-submit">
+                <%= locals.isEdit ? 'Update Category' : 'Create Category' %>
+            </button>
+        </form>
+    </main>
+
+    <script>
+        const iconInput = document.getElementById('iconInput');
+        const iconPreview = document.getElementById('iconPreview');
+        const statusCheckbox = document.querySelector('input[name="isListed"]');
+        const statusText = document.getElementById('statusText');
+
+        iconInput.addEventListener('input', (e) => {
+            const val = e.target.value || 'fas fa-tag';
+            iconPreview.innerHTML = `<i class="${val}"></i>`;
+        });
+
+        statusCheckbox.addEventListener('change', (e) => {
+            statusText.innerText = e.target.checked ? 'Active & Listed' : 'Blocked';
+        });
+
+        function addVariantAttributeInline() {
+            const input = document.getElementById('newAttributeInput');
+            const attributeName = input.value.trim();
+
+            if (!attributeName) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'warning',
+                    title: 'Please type an attribute first!',
+                    showConfirmButton: false, timer: 2000,
+                    background: '#1A1A1A', color: '#fff'
+                });
+                return;
+            }
+
+            const noText = document.getElementById('noAttributesText');
+            if (noText) noText.remove();
+
+            const container = document.getElementById('variantAttributesContainer');
+
+            // Check for duplicates
+            const existingInputs = container.querySelectorAll('input[name="variantAttributes[]"]');
+            let isDuplicate = false;
+            existingInputs.forEach(existingInput => {
+                if (existingInput.value.toLowerCase() === attributeName.toLowerCase()) {
+                    isDuplicate = true;
+                }
+            });
+
+            if (isDuplicate) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'error',
+                    title: 'Attribute already exists!',
+                    showConfirmButton: false, timer: 2000,
+                    background: '#1A1A1A', color: '#fff'
+                });
+                input.style.border = '1px solid red';
+                setTimeout(() => input.style.border = '', 500);
+                return;
+            }
+
+            // Create new tag element
+            const tagDiv = document.createElement('div');
+            // Adding a snappy scale-in transition
+            tagDiv.className = 'variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group scale-95 opacity-0';
+            tagDiv.innerHTML = `
+                <span class="font-bold text-sm tracking-wide">${escapeHtml(attributeName)}</span>
+                <button type="button" onclick="removeVariantAttribute(this)" class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+                <input type="hidden" name="variantAttributes[]" value="${escapeHtml(attributeName)}">
+            `;
+
+            container.appendChild(tagDiv);
+
+            // Trigger animation after append
+            requestAnimationFrame(() => {
+                tagDiv.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                tagDiv.classList.remove('scale-95', 'opacity-0');
+            });
+
+            input.value = ''; // Clear input
+            input.focus();
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function removeVariantAttribute(button) {
+            const tag = button.closest('.variant-tag');
+
+            // Animate scale out before removing
+            tag.style.transform = 'scale(0.9)';
+            tag.style.opacity = '0';
+
+            setTimeout(() => {
+                tag.remove();
+                const container = document.getElementById('variantAttributesContainer');
+                if (container.querySelectorAll('.variant-tag').length === 0) {
+                    container.innerHTML = `
+                        <div id="noAttributesText" class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes defined yet</p>
+                        </div>
+                    `;
+                }
+            }, 300); // Wait for transition completion
+        }
+
+        async function handleCategorySubmit(categoryId) {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data._id = categoryId; // Pass _id for the controller log
+            data.isListed = form.isListed.checked ? "on" : "off"; // Match service logic
+            data.variantAttributes = formData.getAll('variantAttributes[]');
+            delete data['variantAttributes[]']; // Clean up to avoid confusion
+
+            // --- Frontend Validation ---
+            let isValid = true;
+            document.querySelectorAll('[id$="Error"]').forEach(el => el.innerText = '');
+
+            if (data.categoryName.trim() === "") {
+                document.getElementById('categoryNameError').innerText = "Category name is required";
+                isValid = false;
+            } else if (data.categoryName.trim().length < 3) {
+                document.getElementById('categoryNameError').innerText = "Category name must be at least 3 characters";
+                isValid = false;
+            }
+
+            if (data.iconClass.trim() === "") {
+                document.getElementById('iconClassError').innerText = "Icon class is required";
+                isValid = false;
+            }
+
+            if (data.description.trim() !== "" && data.description.trim().length < 10) {
+                document.getElementById('categoryDescriptionError').innerText = "Description must be at least 10 characters if provided";
+                isValid = false;
+            }
+
+            if (!isValid) {
+                const firstError = document.querySelector('.text-red-500:not(:empty)');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            if (categoryId) {
+                try {
+                    const response = await fetch(`/admin/category/edit/${categoryId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.message || "Update failed");
+                    }
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Update Category",
+                        text: result.message || "Category updated successfully",
+                        timer: 1500
+                    });
+                    window.location.href = "/admin/category";
+                } catch (error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: error.message
+                    });
+                }
+            } else {
+                try {
+                    const response = await fetch("/admin/category/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || "Server error");
+                    }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Category added"
+                    });
+
+                } catch (error) {
+
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: error.message
+                    });
+
+                }
+                console.log('Adding new category:', data);
+            }
+        }
+
+        // Auto-hide alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.bg-red-500\\/10, .bg-emerald-500\\/10');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 1000);
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Category Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        .btn-add {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-add:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+        }
+
+        /* --- Category Grid --- */
+        .category-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 28px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .category-card:hover {
+            border-color: rgba(255, 90, 31, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .cat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 90, 31, 0.1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-orange);
+            margin-bottom: 1.5rem;
+        }
+
+        .cat-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .cat-count {
+            font-size: 0.8rem;
+            font-weight: 700;
+            opacity: 0.4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-active {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ED573;
+        }
+
+        .status-blocked {
+            background: rgba(255, 71, 87, 0.1);
+            color: #FF4757;
+        }
+
+        /* --- Attribute Tags --- */
+        .attribute-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .attr-tag {
+            background: rgba(255, 90, 31, 0.08);
+            color: var(--primary-orange);
+            border: 1px solid rgba(255, 90, 31, 0.15);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .attr-tag:hover {
+            background: var(--primary-orange);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2);
+        }
+
+        .no-attr {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+        }
+
+        /* Modal Simulation */
+        .modal-btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .btn-block {
+            background: rgba(255, 71, 87, 0.1);
+            color: #FF4757;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-block:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        /* --- Search Styles --- */
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .search-icon {
+            left: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            border-radius: 14px;
+            color: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-input:focus~.search-icon {
+            color: var(--primary-orange);
+        }
+
+        .btn-search-panel {
+            padding: 0.85rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search-submit {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-search-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-search-clear {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .btn-search-clear:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item active">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="page-header">
+            <div>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Taxonomy</p>
+                <h1 class="text-3xl font-extrabold">Category <span class="text-orange-500">Management</span></h1>
+            </div>
+            <a href="/admin/category/add" class="btn-add">
+                <i class="fas fa-plus"></i> Add New Category
+            </a>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="mb-8">
+            <% if (error && error.length> 0) { %>
+                <div
+                    class="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p class="font-bold text-sm">
+                        <%= error %>
+                    </p>
+                </div>
+                <% } %>
+
+                    <% if (success && success.length> 0) { %>
+                        <div
+                            class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <i class="fas fa-check-circle"></i>
+                            <p class="font-bold text-sm">
+                                <%= success %>
+                            </p>
+                        </div>
+                        <% } %>
+        </div>
+
+        <!-- Search Row -->
+        <div class="search-row">
+            <div class="search-wrapper">
+                <input type="text" id="categorySearch" value="<%= search %>" placeholder="Search categories..."
+                    class="search-input">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+
+            <button id="searchBtn" class="btn-search-panel btn-search-submit">
+                <i class="fas fa-search"></i> SEARCH
+            </button>
+
+            <button id="clearSearch" class="btn-search-panel btn-search-clear">
+                <i class="fas fa-redo"></i> CLEAR
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% if (category && category.length> 0) { %>
+                <% category.forEach(cat=> { %>
+                    <div class="category-card">
+                        <div class="flex justify-between items-start">
+                            <div class="cat-icon"><i class="<%= cat.iconClass %>"></i></div>
+                            <span class="status-badge <%= cat.isListed ? 'status-active' : 'status-blocked' %>">
+                                <%= cat.isListed ? 'ACTIVE' : 'BLOCKED' %>
+                            </span>
+                        </div>
+                        <h3 class="cat-title">
+                            <%= cat.categoryName %>
+                        </h3>
+                        <p class="cat-count">0 Products Listed</p>
+                        
+                        <!-- Variant Attributes Section -->
+                        <div class="attribute-container">
+                            <% if (cat.variantAttributes && cat.variantAttributes.length > 0) { %>
+                                <% cat.variantAttributes.forEach(attr => { %>
+                                    <span class="attr-tag"><%= attr %></span>
+                                <% }) %>
+                            <% } else { %>
+                                <span class="no-attr">No variants defined</span>
+                            <% } %>
+                        </div>
+                        <div class="flex gap-2 mt-8">
+                            <a href="/admin/category/edit/<%= cat._id %>"
+                                class="modal-btn bg-white/5 text-center flex-1 hover:bg-white/10">Edit</a>
+                            <% if (cat.isListed) { %>
+                                <button onclick="toggleCategoryStatus('<%= cat._id %>', true)"
+                                    class="modal-btn btn-block">Block</button>
+                                <% } else { %>
+                                    <button onclick="toggleCategoryStatus('<%= cat._id %>', false)"
+                                        class="modal-btn bg-white/10 text-white flex-1 hover:bg-white/20 transition-all">Unblock</button>
+                                    <% } %>
+                        </div>
+                    </div>
+                    <% }) %>
+                        <% } else { %>
+                            <div class="col-span-full py-20 text-center opacity-40">
+                                <i class="fas fa-folder-open text-4xl mb-4"></i>
+                                <p class="font-bold">No categories found in the database.</p>
+                            </div>
+                            <% } %>
+        </div>
+
+        <%- include("../partials/admin/pagination.ejs") %>
+
+    </main>
+
+    <script>
+        const categorySearch = document.getElementById('categorySearch');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearBtn = document.getElementById('clearSearch');
+
+        function triggerSearch() {
+            const query = categorySearch.value.trim();
+            window.location.href = `/admin/category?page=1&search=${query}`;
+        }
+
+        searchBtn.addEventListener('click', triggerSearch);
+
+        clearBtn.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("search");
+            url.searchParams.set("page", "1");
+            window.location.href = url.toString();
+        });
+
+        categorySearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') triggerSearch();
+        });
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 1000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        async function toggleCategoryStatus(catId, block) {
+            const action = block ? "Block" : 'Unblock';
+            try {
+                const response = await fetch(`/admin/category/${catId}/${action}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: `Category ${block ? 'blocked' : 'unblocked'} successfully`
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Toast.fire({
+                        icon: "error",
+                        title: "Action failed",
+                        text: result.message || "Could not update category status"
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.fire({
+                    icon: "error",
+                    title: 'An error occurred',
+                    text: 'Please try again later'
+                });
+            }
+        }
+
+        // Auto-hide alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.bg-red-500\\/10, .bg-emerald-500\\/10');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>

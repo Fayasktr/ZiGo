@@ -20,7 +20,7 @@ router.post("/user/profile/emailRequest", userProfile.changeEmail);
 router.get("/user/profile/verifyEmail", userProfile.loadVerifyEmailOtp);
 router.post("/user/profile/verifyEmail", userProfile.verifyEmail);
 router.get("/user/profile/resendEmailOtp", userProfile.resendEmailOtp);
-router.patch("/user/profile/image", upload.single('profileImage'), userProfile.updateProfileImage);
+router.patch("/user/profile/image", upload.single('profileImage'),userProfile.updateProfileImage);
 
 
 router.get("/user/addresses", userProfile.loadAddressPage)
@@ -33,5 +33,14 @@ router.put("/user/addresses/:id/edit", userProfile.EditAddress);
 router.get("/user/addresses/:id/setDefault", userProfile.setDefault);
 router.post("/user/addresses/:id/delete", userProfile.deleteAddress);
 
+router.get("/user/wishlist",userProfile.wishlistPage);
+
+router.get("/user/wishlist", userProfile.wishlistPage);
+router.patch("/user/wishlist/:id", userProfile.removeWishlist);
+
+router.patch("/user/wishlist/cart/:id",userProfile.addToCart);
+router.get("/user/cart", userProfile.cartPage);
+router.patch("/user/cart/delete/:id",userProfile.deleteCartItem)
+router.patch("/user/cart/changeQty",userProfile.changeCartQty);
 
 export default router;
