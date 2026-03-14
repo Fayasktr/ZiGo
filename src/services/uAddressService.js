@@ -198,8 +198,66 @@ export const addToCart = async (userId, productId, variantId) => {
 }
 
 export const getCartPage = async (userId) => {
-    const cartItems = await cartModel.
-    console.log()
+    userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+    console.log(typeof userId)
+    const cartItems = await cartModel.aggregate([
+
+        { $match: { userId } },
+
+        {
+            $lookup: {
+                from: "products",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product"
+            }
+        },
+
+        { $unwind: "$product" },
+
+        {
+            $lookup: {
+                from: "categories",
+                localField: "product.category",
+                foreignField: "_id",
+                as: "category"
+            }
+        },
+
+        { $unwind: "$category" },
+
+        {
+            $addFields: {
+                variant: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: "$product.variants",
+                                as: "v",
+                                cond: {
+                                    $eq: [
+                                        { $toString: "$$v._id" },
+                                        { $toString: "$variantId" }
+                                    ]
+                                }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        },
+
+        {
+            $match: {
+                "product.isListed": true,
+                "category.isListed": true,
+                "variant.isListed": true
+            }
+        }
+
+    ]);
+    console.log(cartItems)
     const totalPrice = cartItems.reduce((acc, item) => {
         if (!item.productId || !item.productId.variants) return acc;
         let cPrice = 0;
@@ -235,7 +293,7 @@ export const changeCartQuantity = async (userId, change, productId, variantId) =
         if (existCart && existCart.quantity <= 1) {
             throw new Error("minimum cart Qautity is 1");
         } else {
-            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: -1 } },{new:true});
+            return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: -1 } }, { new: true });
         }
     }
 }

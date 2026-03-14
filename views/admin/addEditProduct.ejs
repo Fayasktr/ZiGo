@@ -245,7 +245,7 @@
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            object-cover: cover;
+            object-fit: cover;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
@@ -320,17 +320,18 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Category</label>
-                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto">
+                                    <select name="category" class="form-input !py-[0.85rem] text-sm h-auto" required>
+                                        <option value="">Select Category</option>
                                         <% if (locals.category && category.length> 0) { %>
                                             <% category.forEach((cat, index)=> { %>
                                                 <option value="<%= cat._id %>" <%=(locals.isEdit &&
-                                                    product.category.toString()===cat._id.toString()) ? 'selected' :
-                                                    (index===0 ? 'selected' : '' ) %>>
+                                                    product.category.toString()===cat._id.toString()) ? 'selected' : ''
+                                                    %>>
                                                     <%= cat.categoryName %>
                                                 </option>
                                                 <% }) %>
                                                     <% } else { %>
-                                                        <option value="" disabled selected>No Category Available
+                                                        <option value="" disabled>No Category Available
                                                         </option>
                                                         <% } %>
                                     </select>
@@ -374,7 +375,6 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
                     </div>
 
                     <!-- Full Width Variants Section -->
@@ -457,8 +457,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
-        const categories = <% - JSON.stringify(locals.category || []) %>;
-        let productVariants = <% - locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
+        const categories = <%- JSON.stringify(locals.category || []) %>;
+        let productVariants = <%- locals.isEdit ? JSON.stringify(product.variants || []) : '[]' %>;
         console.log("ZiGo Add/Edit Product Script Loaded.");
 
         const categorySelect = document.querySelector('select[name="category"]');
@@ -534,9 +534,19 @@
             return croppedFiles;
         }
 
+        // Helper function for category selection
+        function getSelectedCategory() {
+            const selectedCatId = categorySelect.value;
+            if (!selectedCatId || !categories.length) return null;
+            // Use String() for safer comparison as suggested
+            return categories.find(c => c._id && String(c._id) === String(selectedCatId));
+        }
+
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
-            updateTableHeader();
+            if (categorySelect.value) {
+                updateTableHeader();
+            }
             renderVariantsList();
         });
 
@@ -565,11 +575,10 @@
         });
 
         function updateTableHeader() {
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
-            console.log(`selected catid ${selectedCatId} and category ${category}`)
+            const category = getSelectedCategory();
+            console.log("selected category", category);
             let html = `<th class="w-20">Images</th><th>Price (₹)</th><th>Stock</th>`;
-            if (category && category.variantAttributes) {
+            if (category?.variantAttributes?.length) {
                 category.variantAttributes.forEach(attr => {
                     html += `<th>${attr}</th>`;
                 });
@@ -580,11 +589,13 @@
         }
 
         async function openAddVariantModal(editIndex = null) {
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
+            console.log("Opening Add Variant Modal. editIndex:", editIndex);
+            const category = getSelectedCategory();
+            console.log("Selected category for modal:", category);
             const variantData = editIndex !== null ? productVariants[editIndex] : null;
 
             if (!category) {
+                console.warn("Modal blocked: No category detected.");
                 Swal.fire('Error', 'Please select a category first', 'error');
                 return;
             }
@@ -617,7 +628,7 @@
                     <div class="grid grid-cols-1 gap-4">
             `;
 
-            if (category.variantAttributes) {
+            if (category?.variantAttributes?.length) {
                 category.variantAttributes.forEach(attr => {
                     dynamicFieldsHtml += `
                         <div>
@@ -630,7 +641,7 @@
 
             dynamicFieldsHtml += `
                         <div class="mt-4">
-                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Images (Optional)</label>
+                            <label class="text-[10px] font-bold uppercase opacity-50 block mb-1">Variant Images (Min 3, Max 20)</label>
                             <input id="swal-variant-images" type="file" multiple accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition">
                             <div id="swal-image-preview-container" class="flex gap-2 mt-3 overflow-x-auto pb-2">
                                 <!-- Previews injected via JS -->
@@ -689,27 +700,7 @@
                             previewBox.appendChild(container);
                         });
 
-                        // 2. Show newly selected files
 
-                        // Show existing images (URLs from server)
-                        const existingImages = variantData ? (variantData.images || []) : [];
-                        existingImages.forEach((imgUrl, idx) => {
-                            const container = document.createElement('div');
-                            container.className = 'relative group shrink-0';
-                            container.innerHTML = `
-                                <img src="${imgUrl}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
-                                <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
-                                    <i class="fas fa-times text-[8px]"></i>
-                                </button>
-                            `;
-                            container.querySelector('button').addEventListener('click', () => {
-                                variantData.images.splice(idx, 1);
-                                renderVariantPreview();
-                            });
-                            previewBox.appendChild(container);
-                        });
-
-                        // Show newly selected files (as previews)
                         currentVariantFiles.forEach((file, idx) => {
                             const reader = new FileReader();
                             reader.onload = (e) => {
@@ -737,8 +728,8 @@
                         const files = Array.from(e.target.files);
 
                         const currentTotal = existingImages.length + currentVariantFiles.length;
-                        if (currentTotal + files.length > 3) {
-                            Swal.showValidationMessage(`You can only have up to 3 images per variant. Please select ${Math.max(0, 3 - currentTotal)} or fewer images.`);
+                        if (currentTotal + files.length > 20) {
+                            Swal.showValidationMessage(`limit is 20`);
                             imgInput.value = '';
                             return;
                         }
@@ -770,20 +761,17 @@
                     const totalExisting = existingImages.length;
                     const totalImages = totalExisting + currentVariantFiles.length;
 
-                    if (totalImages === 0) {
-                        Swal.showValidationMessage('Each variant must have at least 1 image');
+                    if (totalImages < 3) {
+                        Swal.showValidationMessage('minimum 3 images needed');
                         return false;
                     }
-                    if (totalImages > 3) {
-                        Swal.showValidationMessage('Each variant can have a maximum of 3 images');
+                    if (totalImages > 20) {
+                        Swal.showValidationMessage('limit is 20');
                         return false;
                     }
 
                     // Capture images as base64 for the variant table preview
-                    const tempImages = [];
-                    // Keep the remaining existing URLs
-                    const keptImages = variantData ? (variantData.images || []) : [];
-                    tempImages.push(...keptImages);
+                    const tempImages = [...existingImages];
 
                     for (const file of currentVariantFiles) {
                         const b64 = await new Promise((resolve) => {
@@ -794,9 +782,6 @@
                         tempImages.push(b64);
                     }
 
-                    // Merge existing images with newly generated base64 strings for the table preview
-                    const allTempImages = [...existingImages, ...tempImages];
-
                     const isListed = document.getElementById('swal-isListed').checked;
 
                     return {
@@ -804,7 +789,7 @@
                         stock,
                         attributes,
                         imageFiles: currentVariantFiles,
-                        tempImages: allTempImages,
+                        tempImages,
                         images: existingImages,
                         isListed
                     };
@@ -828,8 +813,7 @@
                 noVariantsPlaceholder.classList.remove('hidden');
             }
 
-            const selectedCatId = categorySelect.value;
-            const category = categories.find(c => c._id === selectedCatId);
+            const category = getSelectedCategory();
 
             let html = '';
             productVariants.forEach((v, index) => {
@@ -850,7 +834,7 @@
                         <td class="font-bold text-orange-500">${v.stock}</td>
                 `;
 
-                if (category && category.variantAttributes) {
+                if (category?.variantAttributes?.length) {
                     category.variantAttributes.forEach(attr => {
                         const attrVal = (v.attributes && v.attributes[attr]) ? v.attributes[attr] : 'N/A';
                         html += `<td><span class="bg-white/5 px-3 py-1.5 rounded-lg text-xs font-bold text-white/70">${attrVal}</span></td>`;

@@ -191,7 +191,51 @@ export const editProductPage = asynchandler(async (req, res) => {
 
 export const updateProduct = asynchandler(async (req, res) => {
     try {
-        const update = await serviceOfProductAndCategory.updateProduct(req.body);
+        const variantsImageUrls = {}
+        if (req.files && req.files.length > 0) {
+            for (let file of req.files) {
+                const webpBuffer = await sharp(file.buffer).webp().toBuffer();
+                const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
+
+                if (file.fieldname.startsWith("variant_")) {
+                    if (!variantsImageUrls[file.fieldname]) {
+                        variantsImageUrls[file.fieldname] = [];
+                    }
+                    variantsImageUrls[file.fieldname].push(url);
+                }
+            }
+        }
+
+        let variantsArray = [];
+        if (req.body.variantsData && req.body.variantsData != "[]") {
+            variantsArray = JSON.parse(req.body.variantsData);
+        }
+
+        let formatedVariants = variantsArray.map((variant, index) => {
+            let newlyUploadedImages = variantsImageUrls[`variant_${index}_images`] || [];
+            let currentImages = Array.isArray(variant.images) ? variant.images : [];
+            return {
+                _id: variant._id, 
+                price: Number(variant.price),
+                stock: Number(variant.stock),
+                attributes: variant.attributes || {},
+                images: [...currentImages, ...newlyUploadedImages],
+                isListed: variant.isListed === true || variant.isListed === 'true' 
+            }
+        });
+
+        const finalProductData = {
+            id: req.body.id,
+            productName: req.body.name,
+            description: req.body.description,
+            brand: req.body.brand,
+            category: req.body.category,
+            basePrice: formatedVariants.length > 0 ? formatedVariants[0].price : 0,
+            isListed: req.body.isListed === "on", 
+            variants: formatedVariants
+        }
+
+        const update = await serviceOfProductAndCategory.updateProduct(finalProductData);
         res.status(200).json({ success: true, message: "product update success.." })
     } catch (error) {
         console.error("Update Product Error:", error);
