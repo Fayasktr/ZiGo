@@ -1,8 +1,9 @@
 import express from "express";
 import * as shopCntrl from "../controllers/shopController.js"
 import wishlistAndCart from "../middlewares/wishlistAndCartMiddlware.js";
-
+import userAuth from "../middlewares/userAuthMiddlware.js"
 const router = express.Router();
+router.use(userAuth.preventCache,userAuth.checkBlocked);
 
 router.get("/shop", shopCntrl.loadShop);
 

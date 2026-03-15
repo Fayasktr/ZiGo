@@ -198,7 +198,7 @@ export const updateProduct = asynchandler(async (req, res) => {
     try {
         let productName=req.body.name;
         const existProduct = await productModel.find({ productName:productName });
-        if (existProduct.length > 0) {
+        if (existProduct.length > 0 && existProduct[0].productName!=productName) {
             throw new Error("this product name alread exist");
         }
         const variantsImageUrls = {}

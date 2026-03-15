@@ -34,10 +34,11 @@ app.use((req, res, next) => {
 })
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.use(shopRoute)
+console.log(`before all middleware?`)
 app.use(adminRoute);
+app.use(shopRoute)
 app.use(authRoute);
+console.log(`before user rout`)
 app.use(userRoute);
 app.use(categoryAndProductRoute);
 app.use((req, res) => {
