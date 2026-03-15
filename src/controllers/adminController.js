@@ -37,6 +37,9 @@ export const userManagementPage = asynchandler(async (req, res) => {
         const limit = 10;
         const { users, totalCountOfUsers } = await adminService.usersList(page, limit, search);
         const totalPages = Math.ceil(totalCountOfUsers / limit);
+        if(totalCountOfUsers==0){
+            return res.render("admin/userManagement", {users,totalCount: totalCountOfUsers,currentPage: page,totalPages,limit, search});
+        }
 
         if (page > totalPages) {
             return res.redirect(`/admin/users?page=${totalPages}`);
@@ -59,10 +62,11 @@ export const blockAndUnblock = asynchandler(async (req, res) => {
     try {
         const action = req.params.action;
         const userId = req.params.id;
-        await adminService.blockOrUnblock(userId, action);
-        if (action === "block") {
-            delete req.session.user || req.user;
+        if (action !== "block" && action !== "unblock") {
+            return res.status(400).json({ success: false, message: "Invalid action. Must be 'block' or 'unblock'." });
         }
+        await adminService.blockOrUnblock(userId, action);
+        
         return res.status(200).json({ success: true, message: "update Successfully" });
     } catch (error) {
         return res.status(400).json({ success: false, message: error.message })

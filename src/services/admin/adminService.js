@@ -31,6 +31,6 @@ export const usersList = async (page, limit, search) => {
 }
 
 export const blockOrUnblock = async (userId, action) => {
-    const isBlocked = action === "block"
+    const isBlocked = action === "block";
     const update = await userModel.findOneAndUpdate({ _id: userId }, { $set: { isBlocked } });
 }

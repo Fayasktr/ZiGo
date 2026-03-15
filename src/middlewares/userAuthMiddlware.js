@@ -1,34 +1,35 @@
 import User from "../models/userModel.js"
 const isLogin = (req, res, next) => {
-    if (req.session.user || req.isAuthenticated() ) {
+    if (req.session.user || req.isAuthenticated()) {
         return res.redirect("/ZiGo.com");
     }
     next()
 }
 
- const isLogout = (req,res,next) => {
-    if(!req.session.user && !req.isAuthenticated() ){
+const isLogout = (req, res, next) => {
+    if (!req.session.user && !req.isAuthenticated()) {
         return res.redirect("/");
     }
     next()
 }
 
-const isOtpPending = (req,res,next)=>{
+const isOtpPending = (req, res, next) => {
 
-    if(req.session.otpUserId){
+    if (req.session.otpUserId) {
         return next();
     }
     res.redirect("signUp");
 }
 const checkBlocked = async (req, res, next) => {
     try {
+        if (req.session.admin) return next();
         const userId = req.session?.user?.id || req.user?._id;
-
         if (!userId) return next();
 
         const checkUser = await User.findById(userId);
 
-        if (!checkUser || checkUser.isBlocked) {
+        if (checkUser.isBlocked) {
+            console.log(`user blocked ${checkUser}`)
             req.session.user = null;
 
             if (req.logout) {

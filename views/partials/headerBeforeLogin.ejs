@@ -86,33 +86,6 @@
         gap: 1.5rem;
     }
 
-    .cart-btn {
-        position: relative;
-        background: none;
-        border: none;
-        color: var(--white);
-        cursor: pointer;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background-color: var(--primary-orange);
-        color: white;
-        font-size: 0.7rem;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: 700;
-    }
-
     .profile-link {
         background-color: var(--primary-orange);
         color: white;
@@ -158,15 +131,7 @@
         <li><a href="/contact">Contact</a></li>
     </ul>
     <div class="header-actions flex items-center gap-4">
-        <button class="cart-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            <span class="cart-count">0</span>
-        </button>
+
         <div class="hidden sm:flex items-center gap-3">
             <a href="/login" class="profile-link">Login</a>
             <a href="/signUp" class="signup-link">Sign Up</a>
@@ -179,14 +144,44 @@
     </div>
 </header>
 
-<script>
-    // Header Scroll Effect
-    window.addEventListener('scroll', () => {
-        const header = document.getElementById('main-header');
-        if (window.scrollY > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<% if (locals.error && error.length> 0) { %>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Action Denied',
+                text: '<%= error %>',
+                confirmButtonColor: '#FF5A1F',
+                confirmButtonText: 'OK'
+            });
+        });
+    </script>
+    <% } %>
+
+        <% if (locals.success && success.length> 0) { %>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: '<%= success %>',
+                        confirmButtonColor: '#FF5A1F',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>
+            <% } %>
+
+                <script>
+                    // Header Scroll Effect
+                    window.addEventListener('scroll', () => {
+                        const header = document.getElementById('main-header');
+                        if (window.scrollY > 50) {
+                            header.classList.add('scrolled');
+                        } else {
+                            header.classList.remove('scrolled');
+                        }
+                    });
+                </script>

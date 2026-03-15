@@ -494,95 +494,125 @@
         </div>
     </div>
 
-    <script>
-        function togglePasswordVisibility(inputId, btn) {
-            const passwordInput = document.getElementById(inputId);
-            const eyeOpen = btn.querySelector(".eye-open");
-            const eyeClosed = btn.querySelector(".eye-closed");
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                eyeOpen.style.display = "none";
-                eyeClosed.style.display = "block";
-            } else {
-                passwordInput.type = "password";
-                eyeOpen.style.display = "block";
-                eyeClosed.style.display = "none";
-            }
-        }
-
-        window.onload = () => {
-            document.getElementById('signupCard').classList.add('active');
-
-            const signupForm = document.querySelector('form');
-            const signupBtn = document.getElementById('signupSubmit');
-            const termsBox = document.getElementById('terms');
-
-            // Inputs
-            const nameInput = document.getElementById('userName');
-            const emailInput = document.getElementById('email');
-            const passInput = document.getElementById('password');
-            const confirmInput = document.getElementById('confirmPassword');
-
-            // Error Elements
-            const nameError = document.getElementById('UserNameError');
-            const emailError = document.getElementById('EmailError');
-            const passError = document.getElementById('PasswordError');
-            const confirmError = document.getElementById('ConfirmPasswordError');
-
-            const validateField = (input, errorEl, message, validator) => {
-                const isValid = validator(input.value.trim());
-                if (!isValid) {
-                    errorEl.textContent = message;
-                    errorEl.style.display = 'block';
-                    input.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                    return false;
-                } else {
-                    errorEl.style.display = 'none';
-                    input.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    return true;
-                }
-            };
-
-            const validators = {
-                name: (val) => val.length >= 3,
-                nameCheckNumber: (val) => !/\d/.test(val),
-                email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-                pass: (val) => val.length >= 6
-            };
-
-            termsBox.addEventListener('change', () => {
-                signupBtn.disabled = !termsBox.checked;
-                signupBtn.style.opacity = termsBox.checked ? '1' : '0.5';
+    <% if (locals.error && error.length> 0) { %>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Action Denied',
+                    text: '<%= error %>',
+                    confirmButtonColor: '#FF5A1F',
+                    confirmButtonText: 'OK'
+                });
             });
+        </script>
+        <% } %>
 
-            signupForm.addEventListener('submit', (e) => {
-                let isFormValid = true;
+            <% if (locals.success && success.length> 0) { %>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: '<%= success %>',
+                            confirmButtonColor: '#FF5A1F',
+                            confirmButtonText: 'OK'
+                        });
+                    });
+                </script>
+                <% } %>
 
-                if (!validateField(nameInput, nameError, "Name must be at least 3 characters", validators.name)) isFormValid = false;
-                if (!validateField(nameInput, nameError, "Name can't contain numbers", validators.nameCheckNumber)) isFormValid = false;
-                if (!validateField(emailInput, emailError, "Please enter a valid email address", validators.email)) isFormValid = false;
-                if (!validateField(passInput, passError, "Password must be at least 6 characters", validators.pass)) isFormValid = false;
+                    <script>
+                        function togglePasswordVisibility(inputId, btn) {
+                            const passwordInput = document.getElementById(inputId);
+                            const eyeOpen = btn.querySelector(".eye-open");
+                            const eyeClosed = btn.querySelector(".eye-closed");
 
-                if (passInput.value !== confirmInput.value) {
-                    confirmError.textContent = "Passwords do not match";
-                    confirmError.style.display = 'block';
-                    confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                    isFormValid = false;
-                } else {
-                    confirmError.style.display = 'none';
-                    confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                }
+                            if (passwordInput.type === "password") {
+                                passwordInput.type = "text";
+                                eyeOpen.style.display = "none";
+                                eyeClosed.style.display = "block";
+                            } else {
+                                passwordInput.type = "password";
+                                eyeOpen.style.display = "block";
+                                eyeClosed.style.display = "none";
+                            }
+                        }
 
-                if (!isFormValid) {
-                    e.preventDefault();
-                    // Scroll to first error
-                    const firstError = document.querySelector('[id$="Error"][style*="block"]');
-                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            });
-        }
-    </script>
+                        window.onload = () => {
+                            document.getElementById('signupCard').classList.add('active');
+
+                            const signupForm = document.querySelector('form');
+                            const signupBtn = document.getElementById('signupSubmit');
+                            const termsBox = document.getElementById('terms');
+
+                            // Inputs
+                            const nameInput = document.getElementById('userName');
+                            const emailInput = document.getElementById('email');
+                            const passInput = document.getElementById('password');
+                            const confirmInput = document.getElementById('confirmPassword');
+
+                            // Error Elements
+                            const nameError = document.getElementById('UserNameError');
+                            const emailError = document.getElementById('EmailError');
+                            const passError = document.getElementById('PasswordError');
+                            const confirmError = document.getElementById('ConfirmPasswordError');
+
+                            const validateField = (input, errorEl, message, validator) => {
+                                const isValid = validator(input.value.trim());
+                                if (!isValid) {
+                                    errorEl.textContent = message;
+                                    errorEl.style.display = 'block';
+                                    input.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                                    return false;
+                                } else {
+                                    errorEl.style.display = 'none';
+                                    input.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    return true;
+                                }
+                            };
+
+                            const validators = {
+                                name: (val) => val.length >= 3,
+                                nameCheckNumber: (val) => !/\d/.test(val),
+                                email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+                                pass: (val) => val.length >= 6
+                            };
+
+                            termsBox.addEventListener('change', () => {
+                                signupBtn.disabled = !termsBox.checked;
+                                signupBtn.style.opacity = termsBox.checked ? '1' : '0.5';
+                            });
+
+                            signupForm.addEventListener('submit', (e) => {
+                                let isFormValid = true;
+
+                                if (!validateField(nameInput, nameError, "Name must be at least 3 characters", validators.name)) isFormValid = false;
+                                if (!validateField(nameInput, nameError, "Name can't contain numbers", validators.nameCheckNumber)) isFormValid = false;
+                                if (!validateField(emailInput, emailError, "Please enter a valid email address", validators.email)) isFormValid = false;
+                                if (!validateField(passInput, passError, "Password must be at least 6 characters", validators.pass)) isFormValid = false;
+
+                                if (passInput.value !== confirmInput.value) {
+                                    confirmError.textContent = "Passwords do not match";
+                                    confirmError.style.display = 'block';
+                                    confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                                    isFormValid = false;
+                                } else {
+                                    confirmError.style.display = 'none';
+                                    confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                }
+
+                                if (!isFormValid) {
+                                    e.preventDefault();
+                                    // Scroll to first error
+                                    const firstError = document.querySelector('[id$="Error"][style*="block"]');
+                                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            });
+                        }
+                    </script>
 </body>
 
 </html>
