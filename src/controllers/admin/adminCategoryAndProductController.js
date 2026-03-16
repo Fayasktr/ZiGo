@@ -2,6 +2,8 @@ import asynchandler from 'express-async-handler';
 import * as serviceOfProductAndCategory from '../../services/admin/categoryAndProductService.js';
 import { uploadToCloudinary } from '../../config/cloudinary.js';
 import productModel from '../../models/productModel.js';
+import mongoose from "mongoose";
+
 import sharp from "sharp";
 
 export const getCategory = asynchandler(async (req, res) => {
@@ -183,9 +185,7 @@ export const addProduct = asynchandler(async (req, res) => {
 export const editProductPage = asynchandler(async (req, res) => {
     try {
         const productId = req.params.id;
-        console.log("product Id: ", productId);
         const { productForEdit, category } = await serviceOfProductAndCategory.editProductPage(productId);
-        console.log(productForEdit)
         res.render("admin/addEditProduct", { product: productForEdit, isEdit: true, category });
     } catch (error) {
         req.flash("error", error.message);
@@ -196,10 +196,12 @@ export const editProductPage = asynchandler(async (req, res) => {
 
 export const updateProduct = asynchandler(async (req, res) => {
     try {
-        let productName=req.body.name;
-        const existProduct = await productModel.find({ productName:productName });
-        if (existProduct.length > 0 && existProduct[0].productName!=productName) {
-            throw new Error("this product name alread exist");
+        const productId = req.body.id
+        const productName = req.body.name.trim();
+        const existProduct = await productModel.findOne({productName: { $regex: `^${productName}$`, $options: "i" },_id: { $ne: productId }});
+        console.log(`productId: ${productId}, existProduct: ${existProduct}, product name:${productName}`)
+        if (existProduct) {
+            throw new Error("This product name already exists");
         }
         const variantsImageUrls = {}
         if (req.files && req.files.length > 0) {

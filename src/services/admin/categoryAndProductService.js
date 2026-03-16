@@ -45,7 +45,8 @@ export const editCategoryPage = async (categoryId) => {
 }
 
 export const updateCategory = async (categoryData) => {
-    const existCategory=await categoryModel.findOne({_id:categoryData._id});
+    const existCategory=await categoryModel.findOne({categoryName:categoryData.categoryName});
+    console.log(`exist category :${existCategory}`)
     if(existCategory && existCategory._id!=categoryData._id){
         throw new Error("this named category already exist");
     }
