@@ -5,9 +5,8 @@ import userAuth from '../middlewares/userAuthMiddlware.js';
 import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router()
-router.use(userAuth.preventCache);
+router.use(userAuth.preventCache,userAuth.checkBlocked);
 router.use("/user", userAuth.isLogout)
-
 router.get("/ZiGo.com", userAuth.isLogout, userAuth.checkBlocked, userCntrl.LoadHomePage);
 
 

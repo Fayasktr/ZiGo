@@ -31,6 +31,10 @@ export const usersList = async (page, limit, search) => {
 }
 
 export const blockOrUnblock = async (userId, action) => {
-    const isBlocked = action === "block"
-    const update = await userModel.findOneAndUpdate({ _id: userId }, { $set: { isBlocked } });
+    const isBlocked = action === "block";
+    const user = await userModel.findOne({ _id: userId });
+    if(user.role=="admin"){
+        throw new Error("you are try to block admin");
+    }
+    await userModel.updateOne({_id:userId},{$set:{isBlocked:isBlocked}});
 }

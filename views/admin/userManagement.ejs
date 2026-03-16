@@ -462,14 +462,15 @@
                     window.location.reload();
                 } else {
                     const result = await response.json();
-                    alert(result.message || `Failed to ${action} user`);
+                    Swal.fire('Error', result.message || `Failed to ${action} user`, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred');
+                Swal.fire('Error', 'An internal error occurred. Check browser console.', 'error');
             }
         }
     </script>
+    <%- include('../partials/flashAlert') %>
 </body>
 
 </html>

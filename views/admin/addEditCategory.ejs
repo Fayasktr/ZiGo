@@ -7,7 +7,6 @@
     <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Category</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -241,137 +240,116 @@
             </h1>
         </header>
 
-        <!-- Flash Messages -->
-        <div class="mb-8 max-w-[800px] mx-auto">
-            <% if (error && error.length> 0) { %>
-                <div
-                    class="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p class="font-bold text-sm">
-                        <%= error %>
-                    </p>
-                </div>
-                <% } %>
+        <%- include('../partials/flashAlert') %>
 
-                    <% if (success && success.length> 0) { %>
-                        <div
-                            class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-6 py-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <i class="fas fa-check-circle"></i>
-                            <p class="font-bold text-sm">
-                                <%= success %>
-                            </p>
-                        </div>
-                        <% } %>
-        </div>
-
-        <form class="form-card" id="categoryForm"
-            action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
-            method="POST">
-            <div class="form-group">
-                <input type="text" name="categoryName" id="categoryName" class="form-input"
-                    placeholder="e.g. Smart Watches" value="<%= locals.isEdit ? category.categoryName : '' %>">
-                <div id="categoryNameError" class="text-red-500 text-[11px] font-bold mt-1"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form class="form-card" id="categoryForm"
+                action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
+                method="POST">
                 <div class="form-group">
-                    <label class="form-label">FontAwesome Icon Class</label>
-                    <div class="flex gap-4">
-                        <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock"
-                            id="iconInput" value="<%= locals.isEdit ? category.iconClass : '' %>">
-                        <div class="icon-preview" id="iconPreview">
-                            <i class="<%= locals.isEdit ? category.iconClass : 'fas fa-tag' %>"></i>
-                        </div>
-                    </div>
-                    <div id="iconClassError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+                    <input type="text" name="categoryName" id="categoryName" class="form-input"
+                        placeholder="e.g. Smart Watches" value="<%= locals.isEdit ? category.categoryName : '' %>">
+                    <div id="categoryNameError" class="text-red-500 text-[11px] font-bold mt-1"></div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Visibility Status</label>
-                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 h-[62px]">
-                        <label class="relative inline-flex items-center cursor-pointer group">
-                            <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isListed) ? ''
-                                : 'checked' %> class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="form-group">
+                        <label class="form-label">FontAwesome Icon Class</label>
+                        <div class="flex gap-4">
+                            <input type="text" name="iconClass" class="form-input" placeholder="e.g. fas fa-clock"
+                                id="iconInput" value="<%= locals.isEdit ? category.iconClass : '' %>">
+                            <div class="icon-preview" id="iconPreview">
+                                <i class="<%= locals.isEdit ? category.iconClass : 'fas fa-tag' %>"></i>
                             </div>
-                        </label>
-                        <div>
-                            <p class="font-bold text-xs" id="statusText">
-                                <%= (locals.isEdit && !category.isListed) ? 'Blocked' : 'Active & Listed' %>
-                            </p>
+                        </div>
+                        <div id="iconClassError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visibility Status</label>
+                        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 h-[62px]">
+                            <label class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox" name="isListed" <%=(locals.isEdit && !category.isListed) ? ''
+                                    : 'checked' %> class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                                </div>
+                            </label>
+                            <div>
+                                <p class="font-bold text-xs" id="statusText">
+                                    <%= (locals.isEdit && !category.isListed) ? 'Blocked' : 'Active & Listed' %>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group relative">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="form-label !mb-0">Variant Attributes</label>
-                    <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd
-                            class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
-                </div>
-
-                <!-- Input area -->
-                <div class="relative flex items-center mb-5">
-                    <div class="absolute left-5 text-white/40"><i class="fas fa-magic"></i></div>
-                    <input type="text" id="newAttributeInput"
-                        class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50"
-                        placeholder="Type attribute (e.g., RAM, Color) and press Enter..."
-                        onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
-                    <button type="button" onclick="addVariantAttributeInline()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
-                </div>
-
-                <!-- Tags container -->
-                <div id="variantAttributesContainer"
-                    class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
-                    <!-- Glassmorphic glow effect -->
-                    <div
-                        class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none">
+                <div class="form-group relative">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="form-label !mb-0">Variant Attributes</label>
+                        <p class="text-[0.7rem] text-white/50 font-medium uppercase tracking-wider ml-auto"><kbd
+                                class="px-1.5 py-0.5 rounded bg-white/10 text-white/70">Enter</kbd> to add</p>
                     </div>
 
-                    <% let attributesToDisplay=[]; if (locals.isEdit) { attributesToDisplay=category.variantAttributes
-                        || []; } else { attributesToDisplay=[]; } %>
+                    <!-- Input area -->
+                    <div class="relative flex items-center mb-5">
+                        <div class="absolute left-5 text-white/40"><i class="fas fa-magic"></i></div>
+                        <input type="text" id="newAttributeInput"
+                            class="form-input !pl-14 !pr-[120px] !py-[1.1rem] !bg-white/[0.03] border-white/10 shadow-inner focus:!border-orange-500/50"
+                            placeholder="Type attribute (e.g., RAM, Color) and press Enter..."
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addVariantAttributeInline(); }">
+                        <button type="button" onclick="addVariantAttributeInline()"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-[#E44D18] hover:shadow-[0_0_15px_rgba(255,90,31,0.4)] text-white transition-all duration-300 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
 
-                        <% if (attributesToDisplay.length> 0) { %>
-                            <% attributesToDisplay.forEach((attr, index)=> { %>
-                                <div
-                                    class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
-                                    <span class="font-bold text-sm tracking-wide">
-                                        <%= attr %>
-                                    </span>
-                                    <button type="button" onclick="removeVariantAttribute(this)"
-                                        class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
-                                        <i class="fas fa-times text-[10px]"></i>
-                                    </button>
-                                    <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
-                                </div>
-                                <% }) %>
-                                    <% } else { %>
-                                        <div id="noAttributesText"
-                                            class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
-                                            <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
-                                            <p class="text-xs font-semibold uppercase tracking-widest">No attributes
-                                                defined yet</p>
-                                        </div>
-                                        <% } %>
+                    <!-- Tags container -->
+                    <div id="variantAttributesContainer"
+                        class="flex flex-wrap gap-2.5 min-h-[85px] p-5 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 rounded-2xl shadow-inner relative overflow-hidden ring-1 ring-white/5">
+                        <!-- Glassmorphic glow effect -->
+                        <div
+                            class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[40px] pointer-events-none">
+                        </div>
+
+                        <% let attributesToDisplay=[]; if (locals.isEdit) {
+                            attributesToDisplay=category.variantAttributes || []; } else { attributesToDisplay=[]; } %>
+
+                            <% if (attributesToDisplay.length> 0) { %>
+                                <% attributesToDisplay.forEach((attr, index)=> { %>
+                                    <div
+                                        class="variant-tag inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 text-orange-400 px-4 py-2 rounded-xl border border-orange-500/20 shadow-sm backdrop-blur-md transition-all hover:border-orange-500/40 hover:-translate-y-0.5 group">
+                                        <span class="font-bold text-sm tracking-wide">
+                                            <%= attr %>
+                                        </span>
+                                        <button type="button" onclick="removeVariantAttribute(this)"
+                                            class="w-6 h-6 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all group-hover:bg-white/10">
+                                            <i class="fas fa-times text-[10px]"></i>
+                                        </button>
+                                        <input type="hidden" name="variantAttributes[]" value="<%= attr %>">
+                                    </div>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <div id="noAttributesText"
+                                                class="w-full flex flex-col items-center justify-center py-2 text-white/30 animate-pulse">
+                                                <i class="fas fa-box-open text-2xl mb-2 opacity-40"></i>
+                                                <p class="text-xs font-semibold uppercase tracking-widest">No attributes
+                                                    defined yet</p>
+                                            </div>
+                                            <% } %>
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <textarea name="description" id="categoryDescription" class="form-input h-32" style="resize: none;"
-                    placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
-                <div id="categoryDescriptionError" class="text-red-500 text-[11px] font-bold mt-1"></div>
-            </div>
+                <div class="form-group">
+                    <textarea name="description" id="categoryDescription" class="form-input h-32" style="resize: none;"
+                        placeholder="Brief overview of this category..."><%= locals.isEdit ? category.description : '' %></textarea>
+                    <div id="categoryDescriptionError" class="text-red-500 text-[11px] font-bold mt-1"></div>
+                </div>
 
-            <button type="button" onclick="handleCategorySubmit('<%= locals.isEdit ? category._id : '' %>')"
-                class="btn-submit">
-                <%= locals.isEdit ? 'Update Category' : 'Create Category' %>
-            </button>
-        </form>
+                <button type="button" onclick="handleCategorySubmit('<%= locals.isEdit ? category._id : '' %>')"
+                    class="btn-submit">
+                    <%= locals.isEdit ? 'Update Category' : 'Create Category' %>
+                </button>
+            </form>
     </main>
 
     <script>

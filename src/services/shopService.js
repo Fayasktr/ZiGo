@@ -123,7 +123,7 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     const product = await productModel.findById(productId);
     const variant = product.variants.find(v => v._id.toString() === variantId)
-    if(existCart.quantity<=variant.stock){
+    if(existCart&&existCart.quantity>=variant.stock){
         throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
     }
     

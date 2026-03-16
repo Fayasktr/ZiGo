@@ -439,16 +439,18 @@
                             <%= cat.categoryName %>
                         </h3>
                         <p class="cat-count">0 Products Listed</p>
-                        
+
                         <!-- Variant Attributes Section -->
                         <div class="attribute-container">
-                            <% if (cat.variantAttributes && cat.variantAttributes.length > 0) { %>
-                                <% cat.variantAttributes.forEach(attr => { %>
-                                    <span class="attr-tag"><%= attr %></span>
-                                <% }) %>
-                            <% } else { %>
-                                <span class="no-attr">No variants defined</span>
-                            <% } %>
+                            <% if (cat.variantAttributes && cat.variantAttributes.length> 0) { %>
+                                <% cat.variantAttributes.forEach(attr=> { %>
+                                    <span class="attr-tag">
+                                        <%= attr %>
+                                    </span>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <span class="no-attr">No variants defined</span>
+                                            <% } %>
                         </div>
                         <div class="flex gap-2 mt-8">
                             <a href="/admin/category/edit/<%= cat._id %>"
@@ -555,6 +557,7 @@
             });
         }, 5000);
     </script>
+    <%- include('../partials/flashAlert') %>
 </body>
 
 </html>
