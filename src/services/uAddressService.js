@@ -231,8 +231,9 @@ export const addToCart = async (userId, productId, variantId) => {
 
 export const getCartPage = async (userId) => {
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+
     const cartItems = await cartModel.aggregate([
-        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $match: { userId: userId } },
         {
             $lookup: {
                 from: "productmodels",
@@ -241,7 +242,7 @@ export const getCartPage = async (userId) => {
                 as: "product"
             }
         },
-        { $unwind: "$product" },
+        { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
         {
             $lookup: {
                 from: "categories",
@@ -250,31 +251,48 @@ export const getCartPage = async (userId) => {
                 as: "category"
             }
         },
-        { $unwind: "$category" },
-        { $unwind: "$product.variants" },
+        { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
         {
-            $match: {
-                $expr: {
-                    $eq: [{ $toString: "$product.variants._id" }, { $toString: "$variantId" }]
+            // DON'T unwind variants here - use $filter instead
+            // This way the document stays intact even if no variant matches
+            $addFields: {
+                matchedVariant: {
+                    $first: {
+                        $filter: {
+                            input: { $ifNull: ["$product.variants", []] },
+                            as: "v",
+                            cond: {
+                                $eq: [{ $toString: "$$v._id" }, { $toString: "$variantId" }]
+                            }
+                        }
+                    }
                 }
             }
         },
-        {
-            $match: {
-                "product.isListed": true,
-                "category.isListed": true,
-                "product.variants.isListed": true
-            }
-        }
-    ]).sort({createdAt:-1});
+        { $sort: { createdAt: -1 } }
+    ]);
 
-    const totalPrice = cartItems.reduce((acc, item) => {
-        const price = item.product.variants.price || 0;
-        return acc + (price * item.quantity);
+    const itemsWithStatus = cartItems.map(item => {
+        const v = item.matchedVariant;
+        const isAvailable = !!(
+            item.product &&
+            item.product.isListed &&
+            item.category &&
+            item.category.isListed &&
+            v &&
+            v.isListed &&
+            v.stock > 0
+        );
+        return { ...item, isAvailable };
+    });
+
+    const totalPrice = itemsWithStatus.reduce((acc, item) => {
+        if (!item.isAvailable) return acc;
+        return acc + ((item.matchedVariant?.price || 0) * item.quantity);
     }, 0);
 
-    return { items: cartItems, totalPrice };
-}
+    return { items: itemsWithStatus, totalPrice };
+};
 
 export const deleteCart = async (userId, productId, variantId) => {
     return cartModel.findOneAndDelete({ userId, productId, variantId });
@@ -287,11 +305,11 @@ export const changeCartQuantity = async (userId, change, productId, variantId,cu
     if(!variant){
         throw new Error("this variant not found")
     }
-    if (variant.stock <= 0) {
-        throw new Error("item Stock out");
-    }
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     if (change == 1) {
+        if (variant.stock <= 0) {
+            throw new Error("item Stock out");
+        }
         if(variant.stock<=currentQty){
             throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
         }
