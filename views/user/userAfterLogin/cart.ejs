@@ -287,13 +287,15 @@
                     <% if (typeof cart !=='undefined' && cart && cart.items && cart.items.length> 0) { %>
                         <% cart.items.forEach(item=> { %>
                             <% if (item.product) { %>
-                                <div class="cart-item" data-item-id="<%= item._id %>">
+                                <% 
+                                    const cartVariant = item.product.variants; 
+                                    const cartImg = (cartVariant && cartVariant.images && cartVariant.images[0]) ? cartVariant.images[0] : '/public/landing/no-image.png'; 
+                                    const currentPrice = cartVariant ? cartVariant.price : 0; 
+                                    const itemTotal = currentPrice * item.quantity; 
+                                %>
+                                <div class="cart-item" data-item-id="<%= item._id %>" data-price="<%= currentPrice %>">
                                     <div class="item-img"
                                         onclick="window.location.href='/productDetailse/<%= item.product._id %>'">
-                                        <% const cartVariant=item.product.variants; const cartImg=(cartVariant &&
-                                            cartVariant.images && cartVariant.images[0]) ? cartVariant.images[0]
-                                            : '/public/landing/no-image.png' ; const currentPrice=cartVariant ?
-                                            cartVariant.price : 0; const itemTotal=currentPrice * item.quantity; %>
                                             <img src="<%= cartImg %>" alt="<%= item.product.productName %>">
                                     </div>
                                     <div class="item-details">
@@ -330,7 +332,7 @@
                                                 onclick="updateQuantity('<%= item.product._id %>', 1, '<%= item.quantity %>', '<%= item.variantId %>')">+</button>
                                         </div>
                                         <div class="item-price-block">
-                                            <p class="item-price">₹<%= itemTotal.toLocaleString() %>
+                                            <p class="item-price" id="itemTotal-<%= item.variantId %>">₹<%= itemTotal.toLocaleString() %>
                                             </p>
                                             <button class="remove-btn mt-4 ml-auto"
                                                 onclick="removeFromCart('<%= item.product._id %>', '<%= item.variantId %>')">
@@ -368,7 +370,7 @@
                 <div class="space-y-4">
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <span class="font-bold">₹<%= (typeof cart !=='undefined' && cart) ?
+                        <span class="font-bold" id="cartSubtotal">₹<%= (typeof cart !=='undefined' && cart) ?
                                 cart.totalPrice.toLocaleString() : '0.00' %></span>
                     </div>
                     <div class="summary-row">
@@ -379,13 +381,13 @@
                         <% let tax=subtotal * 0.18; %>
                             <div class="summary-row">
                                 <span>Tax (GST 18%)</span>
-                                <span class="font-bold">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2,
+                                <span class="font-bold" id="cartTax">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2,
                                         maximumFractionDigits: 2}) %></span>
                             </div>
 
                             <div class="summary-total">
                                 <span>Total</span>
-                                <span>₹<%= (subtotal + tax).toLocaleString(undefined, {minimumFractionDigits: 2,
+                                <span id="cartTotal">₹<%= (subtotal + tax).toLocaleString(undefined, {minimumFractionDigits: 2,
                                         maximumFractionDigits: 2}) %></span>
                             </div>
                 </div>
@@ -446,6 +448,8 @@
                         if (response.ok && result.success) {
                             quantitySpan.innerText = result.update.quantity;
                             
+                            // Re-calculate calculations on frontend
+                            updateFrontendTotals();
                         } else {
                             throw new Error(result.message || "Failed to update quantity");
                         }
@@ -455,11 +459,43 @@
                             title: "Update Failed",
                             text: error.message,
                             timer: 2500,
-                            position: "top",
-                            toast: true,
-                            showConfirmButton: false
                         });
                     }
+                }
+
+                function updateFrontendTotals() {
+                    let subtotal = 0;
+                    let totalItemsCount = 0;
+                    const items = document.querySelectorAll('.cart-item');
+                    
+                    items.forEach(item => {
+                        const variantId = item.querySelector('[id^="qtyValue-"]').id.split('-')[1];
+                        const price = parseFloat(item.getAttribute('data-price'));
+                        const quantity = parseInt(document.getElementById(`qtyValue-${variantId}`).innerText);
+                        const itemTotal = price * quantity;
+                        
+                        // Update item total display
+                        const itemTotalElement = document.getElementById(`itemTotal-${variantId}`);
+                        if (itemTotalElement) {
+                            itemTotalElement.innerText = `₹${itemTotal.toLocaleString()}`;
+                        }
+                        
+                        subtotal += itemTotal;
+                        totalItemsCount += quantity;
+                    });
+
+                    // Update header cart badge
+                    if (window.updateCartCount) {
+                        window.updateCartCount(totalItemsCount);
+                    }
+
+                    const tax = subtotal * 0.18;
+                    const total = subtotal + tax;
+
+                    // Update summary display
+                    document.getElementById('cartSubtotal').innerText = `₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('cartTax').innerText = `₹${tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('cartTotal').innerText = `₹${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }
 
                 async function removeFromCart(productId, variantId) {

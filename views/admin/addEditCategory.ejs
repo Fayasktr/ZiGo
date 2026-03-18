@@ -458,6 +458,14 @@
             }, 300); // Wait for transition completion
         }
 
+        const initialData = <%- locals.isEdit ? JSON.stringify({
+            categoryName: category.categoryName,
+            iconClass: category.iconClass,
+            isListed: category.isListed,
+            variantAttributes: category.variantAttributes || [],
+            description: category.description
+        }) : 'null' %>;
+
         async function handleCategorySubmit(categoryId) {
             const form = document.getElementById('categoryForm');
             const formData = new FormData(form);
@@ -466,6 +474,33 @@
             data.isListed = form.isListed.checked ? "on" : "off"; // Match service logic
             data.variantAttributes = formData.getAll('variantAttributes[]');
             delete data['variantAttributes[]']; // Clean up to avoid confusion
+
+            // --- Change Detection ---
+            if (categoryId && initialData) {
+                const hasChanged = 
+                    data.categoryName.trim() !== initialData.categoryName ||
+                    data.iconClass.trim() !== initialData.iconClass ||
+                    (data.isListed === "on" ? true : false) !== initialData.isListed ||
+                    data.description.trim() !== initialData.description ||
+                    JSON.stringify(data.variantAttributes) !== JSON.stringify(initialData.variantAttributes);
+
+                if (!hasChanged) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top',
+                        icon: "info",
+                        title: "No changes made",
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: '#1A1A1A',
+                        color: '#fff'
+                    }).then(() => {
+                        window.location.href = "/admin/category";
+                    });
+                    return;
+                }
+            }
 
             // --- Frontend Validation ---
             let isValid = true;
@@ -507,10 +542,15 @@
                         throw new Error(result.message || "Update failed");
                     }
                     await Swal.fire({
+                        toast: true,
+                        position: 'top',
                         icon: "success",
-                        title: "Update Category",
-                        text: result.message || "Category updated successfully",
-                        timer: 1500
+                        title: "Category Updated",
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true,
+                        background: '#1A1A1A',
+                        color: '#fff'
                     });
                     window.location.href = "/admin/category";
                 } catch (error) {
@@ -534,10 +574,18 @@
                         throw new Error(result.message || "Server error");
                     }
 
-                    Swal.fire({
+                    await Swal.fire({
+                        toast: true,
+                        position: 'top',
                         icon: "success",
-                        title: "Category added"
+                        title: "Category Added",
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true,
+                        background: '#1A1A1A',
+                        color: '#fff'
                     });
+                    window.location.href = "/admin/category";
 
                 } catch (error) {
 

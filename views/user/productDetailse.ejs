@@ -1120,6 +1120,9 @@
                                                     showConfirmButton: false,
                                                     timer: 3000
                                                 });
+                                                if (result.cartCount !== undefined) {
+                                                    window.updateCartCount(result.cartCount);
+                                                }
                                             } else {
                                                 throw new Error(result.message || "Could not add to cart");
                                             }

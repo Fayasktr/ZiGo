@@ -60,16 +60,24 @@
     }
 </style>
 
-<% // Use the full names you prefer const currentPage=locals.currentPage || 1; const limit=locals.limit || 10; const
-    search=locals.search || "" ; // Handle different count variables from different pages const
-    totalItems=locals.totalCount || 0; const totalPages=locals.totalPages ||
-    Math.ceil(totalItems / limit) || 1; %>
+<% 
+    const currentPage = locals.currentPage || 1; 
+    const limit = locals.limit || 10; 
+    const search = locals.search || ""; 
+    const status = locals.status || ""; 
+    const totalItems = locals.totalCount || 0; 
+    const totalPages = locals.totalPages || Math.ceil(totalItems / limit) || 1; 
+    
+    // Build query portion
+    let queryStr = "";
+    if (search) queryStr += `&search=${search}`;
+    if (status && status !== 'All') queryStr += `&status=${status}`;
+%>
 
     <div class="pagination-bar">
         <div class="pagination-info">
             SHOWING <span>
-                <%= totalItems> 0 ? (currentPage - 1) * limit + 1 : 0 %>-<%= Math.min(currentPage * limit, totalItems)
-                        %>
+                <%= totalItems > 0 ? (currentPage - 1) * limit + 1 : 0 %>-<%= Math.min(currentPage * limit, totalItems) %>
             </span> OF <span>
                 <%= totalItems %>
             </span> RESULTS
@@ -85,27 +93,34 @@
             </div>
 
             <!-- Previous Page -->
-            <% if (currentPage> 1) { %>
-                <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-btn">
+            <% if (currentPage > 1) { %>
+                <a href="?page=<%= currentPage - 1 %><%= queryStr %>" class="page-btn">
                     <i class="fas fa-chevron-left"></i>
                 </a>
-                <% } else { %>
-                    <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
-                    <% } %>
+            <% } else { %>
+                <div class="page-btn disabled"><i class="fas fa-chevron-left"></i></div>
+            <% } %>
 
-                        <!-- Current Page Number -->
-                        <a href="#" class="page-btn active">
-                            <%= currentPage %>
-                        </a>
+            <!-- Page Numbers -->
+            <% 
+               let startPage = Math.max(1, currentPage - 2);
+               let endPage = Math.min(totalPages, startPage + 4);
+               if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+            %>
 
-                        <!-- Next Page -->
-                        <% if (currentPage < totalPages) { %>
-                            <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>"
-                                class="page-btn">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                            <% } else { %>
-                                <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
-                                <% } %>
+            <% for(let i = startPage; i <= endPage; i++) { %>
+                <a href="?page=<%= i %><%= queryStr %>" class="page-btn <%= currentPage === i ? 'active' : '' %>">
+                    <%= i %>
+                </a>
+            <% } %>
+
+            <!-- Next Page -->
+            <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %><%= queryStr %>" class="page-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            <% } else { %>
+                <div class="page-btn disabled"><i class="fas fa-chevron-right"></i></div>
+            <% } %>
         </div>
-    </div>
+    </div>

@@ -477,6 +477,22 @@
             const variantTableHeader = document.getElementById('variantTableHeader');
             const noVariantsPlaceholder = document.getElementById('noVariantsPlaceholder');
 
+            // --- Initial Data for Change Detection ---
+            const initialProductData = <%- locals.isEdit ? JSON.stringify({
+                name: product.productName,
+                category: product.category.toString(),
+                brand: product.brand || '',
+                description: product.description || '',
+                isListed: product.isListed,
+                variants: product.variants.map(v => ({
+                    price: v.price.toString(),
+                    stock: v.stock.toString(),
+                    isListed: v.isListed,
+                    attributes: v.attributes,
+                    images: v.images
+                }))
+            }) : 'null' %>;
+
             // --- Cropper.js Queue Logic ---
             async function processCropQueue(files) {
                 const croppedFiles = [];
@@ -911,18 +927,56 @@
             mainForm.addEventListener('submit', async function (e) {
                 e.preventDefault(); // Stop standard HTML submit because DataTransfer is flaky in some browsers
 
-                // --- Reset Messages ---
-                const errorIds = ['productNameError', 'categoryError', 'variantsError'];
-                errorIds.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) element.classList.add('hidden');
-                });
-
                 // --- Frontend Validation ---
                 let hasError = false;
 
                 const name = document.getElementById('productName').value.trim();
                 const category = categorySelect.value;
+                const brand = document.getElementById('brand').value.trim();
+                const description = document.getElementById('description').value.trim();
+
+                // --- Change Detection ---
+                const isEditMode = "<%= locals.isEdit ? 'true' : 'false' %>" === "true";
+                if (isEditMode && initialProductData) {
+                    const currentVariants = productVariants.map(v => ({
+                        price: v.price.toString(),
+                        stock: v.stock.toString(),
+                        isListed: v.isListed,
+                        attributes: v.attributes,
+                        images: v.images
+                    }));
+
+                    const hasBasicInfoChanged = 
+                        name !== initialProductData.name ||
+                        category !== initialProductData.category ||
+                        brand !== initialProductData.brand ||
+                        description !== initialProductData.description ||
+                        mainForm.isListed.checked !== initialProductData.isListed;
+
+                    const hasNewImagesOrRemovals = productVariants.some(v => (v.imageFiles && v.imageFiles.length > 0));
+                    
+                    const variantsJSON = JSON.stringify(currentVariants);
+                    const initialVariantsJSON = JSON.stringify(initialProductData.variants);
+                    
+                    const hasVariantsChanged = variantsJSON !== initialVariantsJSON || hasNewImagesOrRemovals;
+
+                    if (!hasBasicInfoChanged && !hasVariantsChanged) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top',
+                            icon: "info",
+                            title: "No changes made",
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            background: '#121212',
+                            color: '#fff'
+                        }).then(() => {
+                            window.location.href = '/admin/products';
+                        });
+                        return;
+                    }
+                }
 
                 if (name.length < 3) {
                     document.getElementById('productNameError').innerText = 'Product name must be at least 3 characters.';
@@ -995,15 +1049,19 @@
                         if (responseData && responseData.success === false) {
                             Swal.fire('Error', responseData.message || 'Failed to save product.', 'error');
                         } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: responseData?.message || 'Product saved successfully.',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = '/admin/products';
-                            });
+                        await Swal.fire({
+                            toast: true,
+                            position: 'top',
+                            icon: 'success',
+                            title: 'Success!',
+                            text: responseData?.message || 'Product saved successfully.',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            background: '#121212',
+                            color: '#fff'
+                        });
+                        window.location.href = '/admin/products';
                         }
                     } else {
                         Swal.fire('Error', responseData?.message || 'Failed to save product.', 'error');

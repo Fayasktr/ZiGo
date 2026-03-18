@@ -47,10 +47,22 @@ export const addToCart = asyncHandler(async (req, res) => {
         let variantId = req.query.variantId;
         let quantity = req.query.quantity || 1;
         console.log(`add to cart =product id:${productId}, and variant id:${variantId}, userId:${userId}, quantity:${quantity}`)
-        const updateCart = await shopService.addToCart(productId, userId, variantId, quantity);
-        res.status(200).json({ success: true, message: "Added to cart successfully" });
+        const cartCount = await shopService.addToCart(productId, userId, variantId, quantity);
+        
+        res.status(200).json({ success: true, message: "Added to cart successfully", cartCount:cartCount });
     } catch (error) {
         console.log(error)
         res.status(400).json({ success: false, message: error.message });
+    }
+})
+
+export const proceedToCheckout=asyncHandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req.user?.id;
+        const checkoutData=await shopService.checkoutPage(userId);
+        res.render("user/userAfterLogin/checkout",checkoutData);
+    } catch (error) {
+        req.flash("error",error.message)
+        res.redirect("/user/cart");
     }
 })

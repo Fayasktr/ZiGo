@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Order Fulfillment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        /* --- Orders Styling --- */
+        .orders-container {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2.5rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .tab-item {
+            padding: 1rem 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .tab-item:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .tab-item.active {
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        .order-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .order-table th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.4;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .order-table td {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            padding: 5px 14px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .st-processing { background: rgba(255, 159, 67, 0.1); color: #FF9F43; }
+        .st-shipped { background: rgba(51, 149, 255, 0.1); color: #3395FF; }
+        .st-delivered { background: rgba(46, 213, 115, 0.1); color: #2ED573; }
+        .st-cancelled { background: rgba(255, 71, 87, 0.1); color: #FF4757; }
+        .st-returned { background: rgba(168, 85, 247, 0.1); color: #A855F7; }
+        .st-pending { background: rgba(255, 255, 255, 0.05); color: #FFFFFF; opacity: 0.5; }
+
+        .action-link {
+            font-weight: 800;
+            color: var(--primary-orange);
+            font-size: 0.8rem;
+            border-bottom: 1px solid transparent;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .action-link:hover {
+            border-color: var(--primary-orange);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .pagination-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .pagination-btn:hover {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+            border-color: rgba(255, 90, 31, 0.2);
+        }
+
+        .pagination-btn.active {
+            background: var(--primary-orange);
+            color: white;
+            border-color: var(--primary-orange);
+            box-shadow: 0 8px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        select {
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        select option {
+            background: #FFFFFF;
+            color: #000000;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item active">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="page-header">
+            <div>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Logistics</p>
+                <h1 class="text-3xl font-extrabold">Order <span class="text-orange-500">Fulfillment</span></h1>
+            </div>
+            <form action="/admin/orders" method="GET" class="flex items-center gap-4">
+                <input type="text" name="search" placeholder="Search Order ID..." value="<%= typeof search !== 'undefined' ? search : '' %>"
+                    class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl outline-none text-sm w-64 focus:border-orange-500 transition-colors">
+                <% if (typeof status !== 'undefined') { %>
+                    <input type="hidden" name="status" value="<%= status %>">
+                <% } %>
+                <button type="submit" class="bg-white/5 p-3 rounded-xl hover:bg-white/10 transition"><i class="fas fa-search text-orange-500"></i></button>
+            </form>
+        </header>
+
+        <div class="orders-container">
+            <% 
+               const statuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+               const currentStatus = typeof status !== 'undefined' ? status : 'All';
+            %>
+            <div class="filter-tabs">
+                <% statuses.forEach(s => { %>
+                    <a href="/admin/orders?status=<%= s %>" class="tab-item <%= currentStatus === s ? 'active' : '' %>"><%= s %> Orders</a>
+                <% }) %>
+            </div>
+
+            <div class="order-table-wrapper">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Total Amount</th>
+                            <th>Placed On</th>
+                            <th>Status</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (typeof orders !== 'undefined' && orders && orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td class="font-bold">#<%= order.orderId %></td>
+                                    <td>
+                                        <p class="font-bold"><%= order.userId ? order.userId.userName : 'Unknown User' %></p>
+                                        <p class="text-[10px] opacity-40"><%= order.userId ? order.userId.email : 'N/A' %></p>
+                                    </td>
+                                    <td><span class="font-black">₹<%= order.totalPrice.toLocaleString() %></span></td>
+                                    <td><span class="text-sm opacity-60"><%= new Date(order.createdAt).toLocaleDateString() %></span></td>
+                                    <td>
+                                        <span class="status-badge st-<%= order.status.toLowerCase() %>">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <a href="/admin/order-details/<%= order._id %>" class="action-link">Edit Order</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="text-center py-12 opacity-40">No orders found for the selected filter.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <%- include('../partials/admin/pagination.ejs') %>
+        </div>
+    </main>
+</body>
+
+</html>

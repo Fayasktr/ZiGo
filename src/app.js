@@ -4,6 +4,7 @@ import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
 import adminRoute from "./routes/admin/adminRoute.js";
 import categoryAndProductRoute from "./routes/admin/productAndCatogoryRoute.js";
+import { cartCount } from "./middlewares/categoryAndProductMiddlware.js";
 import shopRoute from "./routes/shopRoute.js";
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -25,6 +26,7 @@ app.use("/public", express.static(path.join(__dirname, "../public")));
 app.use(express.json());
 
 app.use(sessionMiddleware);
+app.use(cartCount);
 app.use(flash());
 app.use((req, res, next) => {
   res.locals.user = req.session.user || req.user;
@@ -34,15 +36,17 @@ app.use((req, res, next) => {
 })
 app.use(passport.initialize());
 app.use(passport.session());
-console.log(`before all middleware?`)
 app.use(adminRoute);
 app.use(shopRoute)
 app.use(authRoute);
-console.log(`before user rout`)
 app.use(userRoute);
 app.use(categoryAndProductRoute);
 app.use((req, res) => {
-  res.status(404).render("user/404");
+  let homeUrl=""
+  if(req.path.startsWith("/admin")){
+    homeUrl="/admin"
+  }
+  res.status(404).render("user/404",{homeUrl});
 });
 
 app.use((err, req, res, next) => {
@@ -50,10 +54,15 @@ app.use((err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
+  let homeUrl=""
+  if(req.path.startsWith("/admin")){
+    homeUrl="/admin"
+  }
   res.status(err.status || 500);
   res.render("user/404", {
     message: "Something went wrong! Please try again later.",
-    error: process.env.NODE_ENV === "development" ? err : {}
+    error: process.env.NODE_ENV === "development" ? err : {},
+    homeUrl
   });
 })
 

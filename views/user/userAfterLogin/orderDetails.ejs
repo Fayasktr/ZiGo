@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | Order Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--off-white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Details Container --- */
+        .details-container {
+            padding: 140px 5% 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .details-card {
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            border: 1px solid var(--gray-light);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
+        }
+
+        .details-header {
+            background: var(--off-white);
+            padding: 2.5rem;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-status-badge {
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .status-delivered { background: #E7F9F0; color: #2ED573; }
+        .status-processing { background: #FFF4E5; color: #FF9F43; }
+        .status-shipped { background: #E0F2FE; color: #0EA5E9; }
+        .status-cancelled { background: #FFEEEE; color: #FF4757; }
+        .status-returned { background: #F3E8FF; color: #A855F7; }
+
+        .details-body {
+            padding: 2.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-box h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        /* --- Item Row --- */
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .order-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .item-thumb {
+            width: 100px;
+            height: 100px;
+            background: var(--off-white);
+            border-radius: 20px;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .item-thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* --- Tracking Timeline --- */
+        .timeline {
+            margin-top: 3rem;
+            padding-top: 3rem;
+            border-top: 2px dashed var(--gray-light);
+        }
+
+        .timeline-step {
+            display: flex;
+            gap: 2rem;
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 30px;
+            width: 2px;
+            height: calc(100% - 30px);
+            background: var(--gray-light);
+        }
+
+        .timeline-step.completed::before {
+            background: var(--primary-orange);
+        }
+
+        .timeline-step:last-child::before {
+            display: none;
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            z-index: 1;
+            transition: var(--transition);
+        }
+
+        .step-icon.completed {
+            background: var(--primary-orange);
+            color: white;
+        }
+
+        /* --- Action Buttons --- */
+        .action-btn {
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 700;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #FFF0F0;
+            color: #FF4757;
+            border: 1px solid #FFE0E0;
+        }
+
+        .btn-cancel:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        .btn-return {
+            background: #F0F4FF;
+            color: #3395FF;
+            border: 1px solid #E0E8FF;
+        }
+
+        .btn-return:hover {
+            background: #3395FF;
+            color: white;
+        }
+
+        /* --- Rating System --- */
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            font-size: 2rem;
+            color: var(--gray-light);
+            cursor: pointer;
+        }
+
+        .rating-stars .fa-star.active {
+            color: #FFD700;
+        }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-body {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 32px;
+            padding: 3rem;
+            position: relative;
+            animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--gray-light);
+            background: var(--off-white);
+            outline: none;
+            resize: none;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/header') %>
+
+    <main class="details-container">
+        <div class="details-card">
+            <div class="details-header">
+                <div>
+                    <h1 class="text-3xl font-extrabold mb-1">Order #<%= order.orderId %></h1>
+                    <p class="opacity-50">Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="order-status-badge status-<%= order.status.toLowerCase() %>"><%= order.status.toUpperCase() %></span>
+                </div>
+            </div>
+
+            <div class="details-body">
+                <div class="info-grid text-sm">
+                    <div class="info-box">
+                        <h4>Shipping Address</h4>
+                        <% if (typeof address !== 'undefined' && address) { %>
+                            <p class="font-bold"><%= address.username || user.userName %></p>
+                            <p class="opacity-60"><%= address.detailedAddress %></p>
+                            <p class="opacity-60"><%= address.city %>, <%= address.state %> <%= address.pincode %></p>
+                            <p class="opacity-60">+91 <%= address.mobileNumber %></p>
+                        <% } else { %>
+                            <p class="opacity-60">Address details unavailable.</p>
+                        <% } %>
+                    </div>
+                    <div class="info-box">
+                        <h4>Payment Method</h4>
+                        <p class="font-bold"><i class="fas fa-credit-card mr-2"></i> <%= order.paymentMethod %></p>
+                        <p class="text-green-600 font-bold mt-2">Paid Full Amount</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>Order Summary</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="opacity-60">Subtotal</span>
+                                <span class="font-bold">₹<%= (order.totalPrice + (order.discount || 0)).toLocaleString() %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-60">Shipping</span>
+                                <span class="text-green-500 font-bold">FREE</span>
+                            </div>
+                            <% if (order.discount && order.discount > 0) { %>
+                                <div class="flex justify-between text-red-500">
+                                    <span class="opacity-60">Discount</span>
+                                    <span class="font-bold">- ₹<%= order.discount.toLocaleString() %></span>
+                                </div>
+                            <% } %>
+                            <div class="flex justify-between text-lg text-orange-500 font-black mt-2 pt-2 border-t">
+                                <span>Grand Total</span>
+                                <span>₹<%= order.totalPrice.toLocaleString() %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-extrabold mb-6">Items in this Order</h3>
+                <% order.items.forEach(item => { %>
+                    <div class="order-item">
+                        <div class="item-thumb">
+                            <% if (item.variant && item.variant.images && item.variant.images.length > 0) { %>
+                                <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>">
+                            <% } else { %>
+                                <img src="/public/landing/no-image.png" alt="No image">
+                            <% } %>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold"><%= item.product.productName %></h4>
+                            <% if (item.variant) { %>
+                                <p class="opacity-50 text-sm">
+                                    <% // Display variant attributes if they exist %>
+                                    <% if (item.variant.variantsAttribute && item.variant.variantsAttribute.length > 0) { %>
+                                        <%= item.variant.variantsAttribute.map(attr => attr.value).join(' | ') %>
+                                    <% } %>
+                                </p>
+                            <% } %>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black">₹<%= item.price.toLocaleString() %></p>
+                            <p class="text-sm opacity-50">Qty: <%= item.quantity %></p>
+                        </div>
+                    </div>
+                <% }) %>
+
+                <% 
+                   // Tracking progress logic
+                   let currentLevel = 0;
+                   if (order.status === 'Processing' || order.status === 'Pending') currentLevel = 1;
+                   else if (order.status === 'Shipped') currentLevel = 3;
+                   else if (order.status === 'Delivered') currentLevel = 4;
+                   else if (order.status === 'Cancelled' || order.status === 'Returned') currentLevel = 0;
+                %>
+
+                <% if (order.status !== 'Cancelled' && order.status !== 'Returned') { %>
+                <div class="timeline">
+                    <h3 class="text-xl font-extrabold mb-8 text-center text-orange-500">Tracking Progress</h3>
+                    <div class="max-w-md mx-auto">
+                        <!-- Step 1: Placed -->
+                        <div class="timeline-step <%= currentLevel >= 1 ? 'completed' : '' %>">
+                            <div class="step-icon <%= currentLevel >= 1 ? 'completed' : '' %>">
+                                <% if (currentLevel >= 1) { %><i class="fas fa-check"></i><% } else { %>1<% } %>
+                            </div>
+                            <div>
+                                <h4 class="font-bold <%= currentLevel < 1 ? 'opacity-40' : '' %>">Order Placed</h4>
+                                <p class="text-xs <%= currentLevel < 1 ? 'opacity-30' : 'opacity-50' %>">
+                                    <%= new Date(order.createdAt).toLocaleDateString() %>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Step 2: Packed -->
+                        <div class="timeline-step <%= currentLevel >= 2 ? 'completed' : '' %>">
+                            <div class="step-icon <%= currentLevel >= 2 ? 'completed' : '' %>">
+                                <% if (currentLevel >= 2) { %><i class="fas fa-check"></i><% } else { %>2<% } %>
+                            </div>
+                            <div>
+                                <h4 class="font-bold <%= currentLevel < 2 ? 'opacity-40' : '' %>">Packed & Ready</h4>
+                                <p class="text-xs <%= currentLevel < 2 ? 'opacity-30' : 'opacity-50' %>">
+                                    <%= currentLevel >= 2 ? 'Completed' : 'Waiting...' %>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Step 3: Transit -->
+                        <div class="timeline-step <%= currentLevel >= 3 ? 'completed' : '' %>">
+                            <div class="step-icon <%= currentLevel >= 3 ? 'completed' : '' %>">
+                                <% if (currentLevel >= 3) { %><i class="fas fa-check"></i><% } else { %>3<% } %>
+                            </div>
+                            <div>
+                                <h4 class="font-bold <%= currentLevel < 3 ? 'opacity-40' : '' %>">In Transit</h4>
+                                <p class="text-xs <%= currentLevel < 3 ? 'opacity-30' : 'opacity-50' %>">
+                                    <%= currentLevel >= 3 ? 'On the way' : 'Waiting...' %>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Step 4: Delivered -->
+                        <div class="timeline-step <%= currentLevel >= 4 ? 'completed' : '' %>">
+                            <div class="step-icon <%= currentLevel >= 4 ? 'completed' : '' %>">
+                                <% if (currentLevel >= 4) { %><i class="fas fa-check"></i><% } else { %>4<% } %>
+                            </div>
+                            <div>
+                                <h4 class="font-bold <%= currentLevel < 4 ? 'opacity-40' : '' %>">Delivered</h4>
+                                <p class="text-xs <%= currentLevel < 4 ? 'opacity-30' : 'opacity-50' %>">
+                                    <% if (currentLevel >= 4) { %>
+                                        Arrived at destination
+                                    <% } else { %>
+                                        Waiting for arrival...
+                                    <% } %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Interactive Actions -->
+                <div class="mt-12 pt-12 border-t flex flex-wrap gap-4 justify-center">
+                    
+                    <% if (order.status === 'Delivered') { %>
+                        <!-- Visible for 'Delivered' orders -->
+                        <button class="action-btn btn-return" onclick="openModal('returnModal')">
+                            <i class="fas fa-undo"></i> Return / Resend
+                        </button>
+
+                        <button class="action-btn bg-black text-white hover:bg-zinc-800" onclick="openModal('ratingModal')">
+                            <i class="fas fa-star text-yellow-500"></i> Rate & Review
+                        </button>
+                    <% } else if (order.status === 'Processing' || order.status === 'Shipped' || order.status === 'Pending') { %>
+                        <!-- Hidden for 'Delivered' orders -->
+                        <button class="action-btn btn-cancel" onclick="openModal('cancelModal')">
+                            <i class="fas fa-times-circle"></i> Cancel Order
+                        </button>
+                    <% } %>
+
+                    <button class="action-btn bg-black text-white hover:bg-zinc-800">
+                        <i class="fas fa-info-circle"></i> Support Chat
+                    </button>
+
+                    <button class="action-btn bg-zinc-100 hover:bg-zinc-200">
+                        <i class="fas fa-download"></i> Download Invoice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal-overlay">
+        <div class="modal-body">
+            <h2 class="text-2xl font-black mb-2">Cancel Order</h2>
+            <p class="opacity-50 text-sm mb-6">Please tell us why you want to cancel your order. This action cannot be undone.</p>
+            <label class="text-xs font-bold opacity-40 uppercase tracking-widest">Reason for Cancellation</label>
+            <select id="cancelReason" class="w-full p-4 mt-2 rounded-xl bg-gray-50 border outline-none">
+                <option>Changed my mind</option>
+                <option>Found better price elsewhere</option>
+                <option>Order taking too long</option>
+                <option>Incorrect item/details</option>
+                <option>Added wrong items to cart</option>
+                <option>Other</option>
+            </select>
+            <textarea id="cancelComments" placeholder="Additional comments (Optional)" rows="4"></textarea>
+            <div class="flex gap-4 mt-8">
+                <button class="flex-1 py-4 font-bold opacity-40" onclick="closeModal('cancelModal')">Go Back</button>
+                <button class="flex-1 py-4 bg-red-500 text-white rounded-xl font-bold shadow-lg shadow-red-500/20" onclick="confirmCancellation()">Confirm Cancellation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div id="returnModal" class="modal-overlay">
+        <div class="modal-body">
+            <h2 class="text-2xl font-black mb-2">Return / Resend</h2>
+            <p class="opacity-50 text-sm mb-6">We're sorry you had an issue. Let's fix it.</p>
+            <label class="text-xs font-bold opacity-40 uppercase tracking-widest">Reason for Return</label>
+            <select id="returnReason" class="w-full p-4 mt-2 rounded-xl bg-gray-50 border outline-none">
+                <option>Item is damaged/broken</option>
+                <option>Received wrong item</option>
+                <option>Quality not as expected</option>
+                <option>Missing accessories</option>
+                <option>Performance issues</option>
+            </select>
+            <textarea id="returnDescription" placeholder="Describe the issue in detail" rows="4"></textarea>
+            <div class="flex gap-4 mt-8">
+                <button class="flex-1 py-4 font-bold opacity-40" onclick="closeModal('returnModal')">Go Back</button>
+                <button class="flex-1 py-4 bg-blue-500 text-white rounded-xl font-bold" onclick="confirmReturn()">Request Return</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div id="ratingModal" class="modal-overlay">
+        <div class="modal-body text-center">
+            <h2 class="text-2xl font-black mb-2">Rate your Order</h2>
+            <p class="opacity-50 text-sm mb-8">How was your experience with ZiGo?</p>
+
+            <div class="rating-stars justify-center mb-8" id="starContainer">
+                <i class="fas fa-star" onclick="setRating(1)"></i>
+                <i class="fas fa-star" onclick="setRating(2)"></i>
+                <i class="fas fa-star" onclick="setRating(3)"></i>
+                <i class="fas fa-star" onclick="setRating(4)"></i>
+                <i class="fas fa-star" onclick="setRating(5)"></i>
+            </div>
+
+            <textarea id="ratingFeedback" placeholder="What did you like or dislike?" rows="4" class="text-left"></textarea>
+
+            <div class="flex gap-4 mt-8">
+                <button class="flex-1 py-4 font-bold opacity-40" onclick="closeModal('ratingModal')">Skip</button>
+                <button class="flex-1 py-4 bg-orange-500 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20" onclick="submitRating()">Submit Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        let selectedRating = 0;
+        function setRating(n) {
+            selectedRating = n;
+            const stars = document.querySelectorAll('#starContainer i');
+            stars.forEach((star, index) => {
+                if (index < n) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+        }
+
+        function confirmCancellation() {
+            const reason = document.getElementById('cancelReason').value;
+            const comments = document.getElementById('cancelComments').value;
+            // Logic to send cancellation request to backend
+            console.log('Cancelling order:', '<%= order._id %>', reason, comments);
+            closeModal('cancelModal');
+            Swal.fire('Success', 'Your cancellation request has been submitted.', 'success');
+        }
+
+        function confirmReturn() {
+            const reason = document.getElementById('returnReason').value;
+            const description = document.getElementById('returnDescription').value;
+            // Logic to send return request to backend
+            console.log('Returning order:', '<%= order._id %>', reason, description);
+            closeModal('returnModal');
+            Swal.fire('Success', 'Your return request has been submitted.', 'success');
+        }
+
+        function submitRating() {
+            const feedback = document.getElementById('ratingFeedback').value;
+            // Logic to send rating to backend
+            console.log('Rating order:', '<%= order._id %>', selectedRating, feedback);
+            closeModal('ratingModal');
+            Swal.fire('Thank You', 'Your feedback has been received.', 'success');
+        }
+    </script>
+
+    <%- include('../../partials/footer') %>
+</body>
+
+</html>

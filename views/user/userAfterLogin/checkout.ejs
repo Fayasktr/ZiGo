@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | Secure Checkout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --off-white: #F9F9F9;
+            --dark-navy: #1E293B;
+            --gray-light: #E2E8F0;
+            --white: #FFFFFF;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--off-white);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Checkout Container --- */
+        .checkout-container {
+            padding: 140px 5% 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 4rem;
+        }
+
+        @media (max-width: 1024px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkout-section {
+            background: white;
+            border-radius: 32px;
+            padding: 2.5rem;
+            border: 1px solid var(--gray-light);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title i {
+            color: var(--primary-orange);
+        }
+
+        /* --- Forms --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--gray-light);
+            outline: none;
+            transition: var(--transition);
+            background: var(--off-white);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-orange);
+            background: white;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* --- Saved Address --- */
+        .saved-address-card {
+            border: 2px solid var(--gray-light);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .saved-address-card.selected {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.03);
+        }
+
+        .address-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            background: var(--primary-orange);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 700;
+        }
+
+        /* --- Payment Methods --- */
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border: 2px solid var(--gray-light);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .payment-method:hover {
+            border-color: var(--gray-light);
+            background: var(--off-white);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.03);
+        }
+
+        .method-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--dark-navy);
+            border: 1px solid var(--gray-light);
+        }
+
+        /* --- Modal Popups --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-card {
+            background: white;
+            max-width: 500px;
+            width: 100%;
+            border-radius: 32px;
+            padding: 3.5rem 3rem;
+            text-align: center;
+            position: relative;
+            animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            margin: 0 auto 2rem;
+        }
+
+        .success .modal-icon-circle {
+            background: #E7F9F0;
+            color: #2ED573;
+        }
+
+        .error .modal-icon-circle {
+            background: #FFEEEE;
+            color: #FF4757;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-top: 2rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .success .modal-btn {
+            background: #2ED573;
+            color: white;
+        }
+
+        .error .modal-btn {
+            background: #FF4757;
+            color: white;
+        }
+
+        .summary-mini {
+            position: sticky;
+            top: 120px;
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--gray-light);
+        }
+
+        .coupon-section {
+            border: 1px dashed var(--gray-light);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            background: var(--off-white);
+        }
+
+        .coupon-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--primary-orange);
+        }
+
+        .coupon-input-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .coupon-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--gray-light);
+            font-size: 0.85rem;
+            outline: none;
+            background: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .apply-coupon-btn {
+            background: var(--dark-navy);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .apply-coupon-btn:hover {
+            background: var(--primary-orange);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/headerMinimal') %>
+
+    <main class="checkout-container">
+        <h1 class="text-4xl font-extrabold mb-10">Checkout</h1>
+
+        <div class="checkout-grid">
+            <div class="checkout-main">
+                <!-- Address Section -->
+                <div class="checkout-section">
+                    <h2 class="section-title"><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="saved-address-card selected">
+                            <span class="address-badge">DEFAULT</span>
+                            <p class="font-bold mb-1">fayas_kp</p>
+                            <p class="text-sm opacity-60">Tech Hub Plaza, 4th Floor</p>
+                            <p class="text-sm opacity-60">Bangalore, KA 560100</p>
+                            <p class="text-sm opacity-60">+91 98765 43210</p>
+                        </div>
+                        <div class="saved-address-card flex items-center justify-center opacity-40 border-dashed">
+                            <i class="fas fa-plus mr-2"></i> Add New Address
+                        </div>
+                    </div>
+
+                    <form class="form-grid">
+                        <div class="input-group">
+                            <label>USERNAME</label>
+                            <input type="text" name="username" value="fayas_kp">
+                        </div>
+                        <div class="input-group">
+                            <label>MOBILE NUMBER</label>
+                            <input type="text" value="+91 75 9204 7575">
+                        </div>
+                        <div class="input-group full-width">
+                            <label>STREET ADDRESS</label>
+                            <input type="text" value="Tech Hub Plaza, 4th Floor, Electronic City">
+                        </div>
+                        <div class="input-group">
+                            <label>CITY</label>
+                            <input type="text" value="Bangalore">
+                        </div>
+                        <div class="input-group">
+                            <label>STATE</label>
+                            <input type="text" value="Karnataka">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="checkout-section">
+                    <h2 class="section-title"><i class="fas fa-credit-card"></i> Payment Method</h2>
+
+                    <div class="payment-method selected">
+                        <div class="method-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="flex-1">
+                            <p class="font-bold">Cash on Delivery</p>
+                            <p class="text-xs opacity-50">Pay when you receive the product</p>
+                        </div>
+                        <i class="fas fa-check-circle text-orange-500"></i>
+                    </div>
+
+                    <div class="payment-method">
+                        <div class="method-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="flex-1">
+                            <p class="font-bold">My Wallet</p>
+                            <p class="text-xs opacity-50">Balance: ₹12,500.00</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-method">
+                        <div class="method-icon"><i class="fas fa-bolt"></i></div>
+                        <div class="flex-1">
+                            <p class="font-bold">Razorpay</p>
+                            <p class="text-xs opacity-50">Cards, UPI, Netbanking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Review Sidebar -->
+            <aside>
+                <div class="summary-mini">
+                    <h3 class="font-bold mb-6 text-xl">Order Review</h3>
+                    <div class="space-y-4 mb-8">
+                        <div class="flex justify-between text-sm">
+                            <span>ZiGo Neo 1 Flagship</span>
+                            <span class="font-bold">₹82,339.00</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>ZiGo Watch S Series</span>
+                            <span class="font-bold">₹22,805.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Coupon Section -->
+                    <div class="coupon-section">
+                        <div class="coupon-toggle" onclick="toggleCoupon()">
+                            <span><i class="fas fa-ticket-alt mr-2"></i> Have a coupon?</span>
+                            <i class="fas fa-chevron-down text-xs opacity-40" id="couponChevron"></i>
+                        </div>
+                        <div id="couponInputCont" class="hidden">
+                            <div class="coupon-input-group">
+                                <input type="text" class="coupon-input" placeholder="Enter Code">
+                                <button class="apply-coupon-btn">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-6 space-y-3">
+                        <div class="flex justify-between text-sm opacity-60">
+                            <span>Subtotal</span>
+                            <span>₹1,05,144.00</span>
+                        </div>
+                        <div class="flex justify-between text-sm opacity-60">
+                            <span>Tax</span>
+                            <span>₹18,925.92</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-orange-500 mt-4">
+                            <span>Total</span>
+                            <span>₹1,24,069.92</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-orange-500 text-white font-bold py-4 rounded-xl mt-8" id="placeOrderBtn">
+                        Place Order Now
+                    </button>
+                    <p class="text-[10px] text-center mt-4 opacity-40 uppercase tracking-widest font-bold">
+                        Secure 256-bit SSL Encryption
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="relative bg-white max-w-md w-full rounded-[40px] p-10 text-center shadow-2xl scale-110">
+            <div class="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 mb-3">Payment Success!</h1>
+            <p class="text-gray-500 mb-8 px-4">Your order has been placed successfully. Get ready for your tech!</p>
+            <div class="space-y-3">
+                <a href="/" class="block w-full bg-orange-500 text-white font-bold py-4 rounded-2xl hover:bg-orange-600 transition-all">
+                    Continue Shopping
+                </a>
+                <a href="/user/orders" class="block w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
+                    View Order Details
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Failure Modal -->
+    <div id="errorModal" class="modal-overlay">
+        <div class="relative bg-white max-w-md w-full rounded-[40px] p-10 text-center shadow-2xl scale-110">
+            <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
+                <i class="fas fa-times"></i>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 mb-3">Payment Failed</h1>
+            <p class="text-gray-500 mb-8 px-4">There was an issue processing your transaction. Please try again or use a different method.</p>
+            <div class="space-y-3">
+                <button onclick="document.getElementById('errorModal').style.display='none'" class="block w-full bg-red-500 text-white font-bold py-4 rounded-2xl hover:bg-red-600 transition-all">
+                    Try Again
+                </button>
+                <a href="/user/cart" class="block w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
+                    Return to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('placeOrderBtn').addEventListener('click', () => {
+            // For demo purposes, we randomly show success or failure
+            const isSuccess = Math.random() > 0.3;
+            if (isSuccess) {
+                document.getElementById('successModal').style.display = 'flex';
+            } else {
+                document.getElementById('errorModal').style.display = 'flex';
+            }
+        });
+
+        function toggleCoupon() {
+            const cont = document.getElementById('couponInputCont');
+            const chev = document.getElementById('couponChevron');
+            cont.classList.toggle('hidden');
+            chev.classList.toggle('rotate-180');
+        }
+    </script>
+
+    <%- include('../../partials/footerMinimal') %>
+</body>
+
+</html>

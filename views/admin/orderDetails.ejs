@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Edit Order #<%= order.orderId %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        /* --- Edit Container --- */
+        .edit-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary-orange);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 16px;
+            color: white;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .status-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em;
+        }
+
+        select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-thumb {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-update {
+            background: var(--primary-orange);
+            color: white;
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+            cursor: pointer;
+        }
+
+        .btn-update:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #FF4757;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item active">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="page-header">
+            <div>
+                <a href="/admin/orders" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Management</p>
+                <h1 class="text-3xl font-extrabold">Edit Order <span class="text-orange-500">#<%= order.orderId %></span></h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-[10px] opacity-40 font-bold uppercase mb-1">Current Status</p>
+                    <% 
+                       let statusClass = 'bg-orange-500/10 text-orange-500';
+                       if (order.status === 'Delivered') statusClass = 'bg-green-500/10 text-green-500';
+                       else if (order.status === 'Cancelled') statusClass = 'bg-red-500/10 text-red-500';
+                    %>
+                    <span class="<%= statusClass %> px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider"><%= order.status %></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="edit-container">
+            <div class="left-col">
+                <!-- Order Items -->
+                <div class="glass-card">
+                    <h2 class="section-title"><i class="fas fa-box-open"></i> Order Items</h2>
+                    <% order.items.forEach(item => { %>
+                        <div class="order-item">
+                            <div class="item-thumb">
+                                <% if (item.variant && item.variant.images && item.variant.images.length > 0) { %>
+                                    <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>">
+                                <% } else { %>
+                                    <img src="/public/landing/no-image.png" alt="No image">
+                                <% } %>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-bold"><%= item.product.productName %></p>
+                                <p class="text-xs opacity-40">
+                                    <% if (item.variant && item.variant.variantsAttribute) { %>
+                                        <%= item.variant.variantsAttribute.map(a => a.value).join(' | ') %>
+                                    <% } %>
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-black">₹<%= item.price.toLocaleString() %></p>
+                                <p class="text-xs opacity-40">Qty: <%= item.quantity %></p>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <!-- Shipping Details -->
+                <div class="glass-card">
+                    <h2 class="section-title"><i class="fas fa-truck-loading"></i> Shipping Details</h2>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" value="<%= address ? address.username : (order.userId ? order.userId.userName : 'N/A') %>" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-input" value="<%= address ? address.mobileNumber : (order.userId ? order.userId.phoneNumber : 'N/A') %>" readonly>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label class="form-label">Shipping Address</label>
+                            <textarea class="form-input h-24" readonly><%= address ? `${address.detailedAddress}, ${address.city}, ${address.state} - ${address.pincode}` : 'Address not available' %></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Carrier</label>
+                            <input type="text" id="carrier" class="form-input" value="<%= order.carrier || '' %>" placeholder="e.g. ZiGo Express, FedEx">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tracking ID</label>
+                            <input type="text" id="trackingId" class="form-input" value="<%= order.trackingId || '' %>" placeholder="Enter tracking number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <!-- Status Management -->
+                <div class="glass-card">
+                    <h2 class="section-title"><i class="fas fa-sync-alt"></i> Update Status</h2>
+                    <div class="form-group">
+                        <label class="form-label">Order Status</label>
+                        <select id="orderStatus" class="form-input status-select">
+                            <% ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].forEach(st => { %>
+                                <option value="<%= st %>" <%= order.status === st ? 'selected' : '' %>><%= st %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Status</label>
+                        <select id="paymentStatus" class="form-input status-select">
+                            <% ['Pending', 'Paid', 'Failed', 'Refunded'].forEach(ps => { %>
+                                <option value="<%= ps %>" <%= order.paymentStatus === ps ? 'selected' : '' %>><%= ps %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <button class="btn-update" onclick="updateOrder()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="glass-card">
+                    <h2 class="section-title"><i class="fas fa-receipt"></i> Order Summary</h2>
+                    <div class="summary-row">
+                        <span class="opacity-40">Subtotal</span>
+                        <span class="font-bold">₹<%= (order.totalPrice + (order.discount || 0)).toLocaleString() %></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="opacity-40">Tax (GST 18%)</span>
+                        <span class="font-bold">₹0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="opacity-40">Shipping</span>
+                        <span class="font-bold text-green-500">FREE</span>
+                    </div>
+                    <% if (order.discount > 0) { %>
+                        <div class="summary-row text-red-500">
+                            <span class="opacity-40">Discount</span>
+                            <span class="font-bold">- ₹<%= order.discount.toLocaleString() %></span>
+                        </div>
+                    <% } %>
+                    <hr class="border-white/5 my-4">
+                    <div class="summary-row text-lg">
+                        <span class="font-bold">Total</span>
+                        <span class="font-black text-orange-500">₹<%= order.totalPrice.toLocaleString() %></span>
+                    </div>
+                    <div class="mt-6 p-4 bg-white/5 rounded-2xl">
+                        <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-wallet text-xl text-orange-400"></i>
+                            <p class="font-bold text-sm"><%= order.paymentMethod %></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function updateOrder() {
+            const status = document.getElementById('orderStatus').value;
+            const paymentStatus = document.getElementById('paymentStatus').value;
+            const carrier = document.getElementById('carrier').value;
+            const trackingId = document.getElementById('trackingId').value;
+
+            try {
+                const response = await fetch(`/admin/order-details/<%= order._id %>/update`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, paymentStatus, carrier, trackingId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Updated',
+                        text: 'The order status and fulfillment details have been saved.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', result.message || 'Failed to update order', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'An internal error occurred while updating the order.', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

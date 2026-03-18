@@ -205,7 +205,12 @@ export const deleteWishlistItem = async (userId, productId, variantId) => {
 
 export const addToCart = async (userId, productId, variantId) => {
     const existCart = await cartModel.findOne({ userId, productId, variantId });
-
+    const theProduct=await productModal.findById(productId);
+    const variant=theProduct.variants.find((v)=>v._id==variantId);
+    console.log(`the variant to add to cart :${variant}`)
+    if(existCart&&existCart.quantity>=variant.stock){
+        throw new Error(`Stock limit exceed for the ${theProduct.productName}'s this variant,(only ${variant.stock} stock available)`);
+    }
     if (existCart) {
         if (existCart.quantity < 10) {
             await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } })

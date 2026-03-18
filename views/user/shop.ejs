@@ -180,7 +180,6 @@
 
         .wishlist-heart-btn:hover {
             background: white;
-            color: #ff4757;
             transform: scale(1.1);
         }
 
@@ -361,9 +360,6 @@
                                 <!-- Sidebar -->
                                 <aside class="filters-sidebar hidden lg:block">
                                     <form id="filterForm">
-                                        <!-- Maintain search during filter -->
-                                        <input type="hidden" name="search" value="<%= search %>">
-
                                         <div class="filter-section">
                                             <h4>Categories</h4>
                                             <ul class="filter-list">
@@ -544,12 +540,17 @@
 
                                     // Remove existing array-like params to prevent duplication
                                     params.delete('category');
-                                    params.delete('price');
 
                                     // Update params from form
                                     for (const [key, value] of formData.entries()) {
                                         if (value) {
-                                            params.append(key, value);
+                                            if (key === 'category') {
+                                                params.append(key, value);
+                                            } else {
+                                                params.set(key, value);
+                                            }
+                                        } else {
+                                            params.delete(key);
                                         }
                                     }
 
@@ -697,7 +698,10 @@
                                                 position: "top",
                                                 showConfirmButton: false,
                                                 timer: 3000
-                                            })
+                                            });
+                                            if (result.cartCount !== undefined) {
+                                                window.updateCartCount(result.cartCount);
+                                            }
                                         } else {
                                             throw new Error(result.message || "Could not add to cart");
                                         }

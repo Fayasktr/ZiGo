@@ -123,6 +123,8 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     const product = await productModel.findById(productId);
     const variant = product.variants.find(v => v._id.toString() === variantId)
+    const cartItems = await cartModel.find({ userId });
+    const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 0), 0);
     if(existCart&&existCart.quantity>=variant.stock){
         throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
     }
@@ -132,22 +134,28 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
         if (newQuantity > 10) {
             throw new Error("Maximum cart limit reached (10 per item)");
         }
-        return await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } });
+        await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } });
+    } else {
+        if (!product) throw new Error("Product not found");
+        if (!variant) throw new Error("Variant not found");
+        if (variant.stock < qty) {
+            throw new Error("Insufficient stock available");
+        }
+
+        await cartModel.create({
+            userId: userId,
+            productId: productId,
+            variantId: variantId,
+            quantity: qty,
+            price: variant.price
+        });
     }
-    
-    if (!product) throw new Error("Product not found");
 
-    if (!variant) throw new Error("Variant not found");
+    const carts = await cartModel.find({ userId });
+    return carts.reduce((acc, item) => acc + (item.quantity || 0), 0);
+}
 
-    if (variant.stock < qty) {
-        throw new Error("Insufficient stock available");
-    }
-
-    return await cartModel.create({
-        userId: userId,
-        productId: productId,
-        variantId: variantId,
-        quantity: qty,
-        price: variant.price
-    });
+export const checkoutPage=async(userId)=>{
+    const cartData=await cartModel.find({userId:userId});
+    console.log(`cart data proceed to checkout: ${cartData}`);
 }
