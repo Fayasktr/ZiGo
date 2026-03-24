@@ -114,7 +114,10 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
     }
 }
 
-export const addToCart = async (productId, userId, variantId, quantity = 1) => {
+export const addToCart = async (userId, productId, variantId, quantity = 1) => {
+    // userId=new mongoose.Types.ObjectId(userId);
+    // productId=new mongoose.Types.ObjectId(productId);
+    // variantId=new mongoose.Types.ObjectId(variantId);
     if (!userId) {
         throw new Error("Login required to add items to cart");
     }
@@ -125,16 +128,20 @@ export const addToCart = async (productId, userId, variantId, quantity = 1) => {
     const variant = product.variants.find(v => v._id.toString() === variantId)
     const cartItems = await cartModel.find({ userId });
     const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 0), 0);
+    if(!variant){
+        throw new Error("this variant currently not available")
+    }
     if(existCart&&existCart.quantity>=variant.stock){
         throw new Error(`Stock limit exceed (only ${variant.stock} stock available)`)
     }
     
     if (existCart) {
+        console.log("exist cart:",existCart)
         const newQuantity = existCart.quantity + qty;
         if (newQuantity > 10) {
             throw new Error("Maximum cart limit reached (10 per item)");
         }
-        await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } });
+        await cartModel.updateOne({ userId, productId, variantId }, { $inc: { quantity: qty } },{upsert:true,new:true,setDefaultsOnInsert:true});
     } else {
         if (!product) throw new Error("Product not found");
         if (!variant) throw new Error("Variant not found");

@@ -45,9 +45,10 @@ export const addToCart = asyncHandler(async (req, res) => {
         const productId = req.params.id;
         let userId = req?.session?.user?.id || req?.user?.id;
         let variantId = req.query.variantId;
+
         let quantity = req.query.quantity || 1;
         console.log(`add to cart =product id:${productId}, and variant id:${variantId}, userId:${userId}, quantity:${quantity}`)
-        const cartCount = await shopService.addToCart(productId, userId, variantId, quantity);
+        const cartCount = await shopService.addToCart(userId, productId, variantId, quantity);
         
         res.status(200).json({ success: true, message: "Added to cart successfully", cartCount:cartCount });
     } catch (error) {

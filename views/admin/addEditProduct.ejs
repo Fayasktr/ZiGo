@@ -485,6 +485,7 @@
                 description: product.description || '',
                 isListed: product.isListed,
                 variants: product.variants.map(v => ({
+                    _id: v._id.toString(),
                     price: v.price.toString(),
                     stock: v.stock.toString(),
                     isListed: v.isListed,
@@ -814,6 +815,7 @@
                         const isListed = document.getElementById('swal-isListed').checked;
 
                         return {
+                            _id: variantData ? variantData._id : undefined,
                             price,
                             stock,
                             attributes,
@@ -939,6 +941,7 @@
                 const isEditMode = "<%= locals.isEdit ? 'true' : 'false' %>" === "true";
                 if (isEditMode && initialProductData) {
                     const currentVariants = productVariants.map(v => ({
+                        _id: v._id ? v._id.toString() : undefined,
                         price: v.price.toString(),
                         stock: v.stock.toString(),
                         isListed: v.isListed,

@@ -8,7 +8,7 @@ import { otpSendToMail } from "../utils/nodemailer.js"
 import OTPModel from "../models/otpModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
-import productModal from "../models/productModel.js"
+import productModel from "../models/productModel.js"
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -148,13 +148,11 @@ export const setDefaultService = async (userId, addressId) => {
 
 export const deleteAddress = async (userId, addressId) => {
     const isDefault = await addressModel.findOne({ userId: userId, _id: addressId, isDefault: true });
-    console.log("is default: " + isDefault)
     if (isDefault) {
         throw new Error("default address can't delete");
     }
     const result = await addressModel.deleteOne({ _id: addressId, userId: userId });
-    console.log("Deleted address:", addressId);
-    console.log("Deleted address:", result);
+
     if (result.deletedCount === 0) {
         throw new Error("address already deleted..");
     }
@@ -163,38 +161,59 @@ export const deleteAddress = async (userId, addressId) => {
 
 export const wishlistPage = async (userId) => {
     if (!userId) return [];
-    const wishlist = await wishlistModel.aggregate([
-    { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+    userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
 
-    { $lookup: {
-        from: "productmodels",
-        localField: "productId",
-        foreignField: "_id",
-        as: "product"
-    }},
+    const wishlistItems = await wishlistModel.aggregate([
+        { $match: { userId: userId } },
+        {
+            $lookup: {
+                from: "productmodels",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product"
+            }
+        },
+        { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: "categories",
+                localField: "product.category",
+                foreignField: "_id",
+                as: "category"
+            }
+        },
+        { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
+        {
+            $addFields: {
+                matchedVariant: {
+                    $first: {
+                        $filter: {
+                            input: { $ifNull: ["$product.variants", []] },
+                            as: "v",
+                            cond: { $eq: [{ $toString: "$$v._id" }, { $toString: "$variantId" }] }
+                        }
+                    }
+                }
+            }
+        },
+        { $sort: { createdAt: -1 } }
+    ]);
 
-    { $unwind: "$product" },
+    const itemsWithStatus = wishlistItems.map(item => {
+        const v = item.matchedVariant;
+        const isAvailable = !!(
+            item.product &&
+            item.product.isListed &&
+            item.category &&
+            item.category.isListed &&
+            v &&
+            v.isListed &&
+            v.stock > 0
+        );
+        return { ...item, isAvailable };
+    });
 
-    { $lookup: {
-        from: "categories",
-        localField: "product.category",
-        foreignField: "_id",
-        as: "category"
-    }},
-
-    { $unwind: "$category" },
-    { $unwind: "$product.variants" },
-
-    { $match: {
-        $expr: { $eq: ["$product.variants._id", "$variantId"] },
-        "product.isListed": true,
-        "category.isListed": true,
-        "product.variants.isListed": true
-    }}
-
-  ]).sort({ createdAt: -1 });
-
-  return wishlist;
+    return itemsWithStatus;
 };
 
 
@@ -204,8 +223,11 @@ export const deleteWishlistItem = async (userId, productId, variantId) => {
 }
 
 export const addToCart = async (userId, productId, variantId) => {
+    userId=new mongoose.Types.ObjectId(userId);
+    productId=new mongoose.Types.ObjectId(productId);
+    variantId=new mongoose.Types.ObjectId(variantId);
     const existCart = await cartModel.findOne({ userId, productId, variantId });
-    const theProduct=await productModal.findById(productId);
+    const theProduct=await productModel.findById(productId);
     const variant=theProduct.variants.find((v)=>v._id==variantId);
     console.log(`the variant to add to cart :${variant}`)
     if(existCart&&existCart.quantity>=variant.stock){
@@ -213,11 +235,14 @@ export const addToCart = async (userId, productId, variantId) => {
     }
     if (existCart) {
         if (existCart.quantity < 10) {
-            await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } })
+            await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: 1 } },{upsert:true,new:true,setDefaultsOnInsert:true})
         } else {
             throw new Error("Maximum cart limit reached (10 per item)");
         }
     } else {
+        if (variant.stock <= 0) {
+            throw new Error(`${theProduct.productName} is currently out of stock`);
+        }
         await cartModel.create({
             userId: userId,
             productId: productId,
@@ -253,8 +278,7 @@ export const getCartPage = async (userId) => {
         },
         { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
         {
-            // DON'T unwind variants here - use $filter instead
-            // This way the document stays intact even if no variant matches
+
             $addFields: {
                 matchedVariant: {
                     $first: {
@@ -299,9 +323,8 @@ export const deleteCart = async (userId, productId, variantId) => {
 }
 
 export const changeCartQuantity = async (userId, change, productId, variantId,currentQty) => {
-    const product = await productModal.findById(productId);
+    const product = await productModel.findById(productId);
     const variant = product.variants.find(v => v._id.toString() === variantId)
-    console.log(variant)
     if(!variant){
         throw new Error("this variant not found")
     }

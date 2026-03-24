@@ -103,14 +103,46 @@ export const editProductPage = async (productId) => {
 }
 
 export const updateProduct = async (productData) => {
-    const { id, ...updateFields } = productData;
-    const updatedProduct = await productModel.findByIdAndUpdate(
-        id,
-        { $set: updateFields },
-        { new: true, runValidators: true }
-    );
-    if (!updatedProduct) {
-        throw new Error("Product not found");
+    const { id, variants, ...updateFields } = productData;
+
+    try {
+        const product = await productModel.findById(id);
+        if (!product) {
+            throw new Error("Product not found");
+        }
+
+        Object.assign(product, updateFields);
+
+        if (variants && Array.isArray(variants)) {
+            const incomingIds = variants
+                .filter(v => v._id)
+                .map(v => v._id.toString());
+            const updatedVariants = [];
+
+            for (const incomingVariant of variants) {
+                if (incomingVariant._id) {
+                    const existingSubDoc = product.variants.id(incomingVariant._id);
+                    if (existingSubDoc) {
+                        existingSubDoc.set(incomingVariant);
+                        updatedVariants.push(existingSubDoc);
+                    } else {
+                        product.variants.push(incomingVariant);
+                        updatedVariants.push(product.variants[product.variants.length - 1]);
+                    }
+                } else {
+                    product.variants.push(incomingVariant);
+                    updatedVariants.push(product.variants[product.variants.length - 1]);
+                }
+            }
+
+            product.variants = updatedVariants;
+        }
+
+        const updatedProduct = await product.save();
+        return updatedProduct;
+
+    } catch (error) {
+        console.error("product update service error:", error);
+        throw error;
     }
-    return updatedProduct;
 }
