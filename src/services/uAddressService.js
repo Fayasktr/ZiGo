@@ -254,6 +254,70 @@ export const addToCart = async (userId, productId, variantId) => {
     return true;
 }
 
+// export const getCartPage = async (userId) => {
+//     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+
+//     const cartItems = await cartModel.aggregate([
+//         { $match: { userId: userId } },
+//         {
+//             $lookup: {
+//                 from: "productmodels",
+//                 localField: "productId",
+//                 foreignField: "_id",
+//                 as: "product"
+//             }
+//         },
+//         { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+//         {
+//             $lookup: {
+//                 from: "categories",
+//                 localField: "product.category",
+//                 foreignField: "_id",
+//                 as: "category"
+//             }
+//         },
+//         { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
+//         {
+
+//             $addFields: {
+//                 matchedVariant: {
+//                     $first: {
+//                         $filter: {
+//                             input: { $ifNull: ["$product.variants", []] },
+//                             as: "v",
+//                             cond: {
+//                                 $eq: [{ $toString: "$$v._id" }, { $toString: "$variantId" }]
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         },
+//         { $sort: { createdAt: -1 } }
+//     ]);
+
+//     const itemsWithStatus = cartItems.map(item => {
+//         const v = item.matchedVariant;
+//         const isAvailable = !!(
+//             item.product &&
+//             item.product.isListed &&
+//             item.category &&
+//             item.category.isListed &&
+//             v &&
+//             v.isListed &&
+//             v.stock > 0
+//         );
+//         return { ...item, isAvailable };
+//     });
+
+//     const totalPrice = itemsWithStatus.reduce((acc, item) => {
+//         if (!item.isAvailable) return acc;
+//         return acc + ((item.matchedVariant?.price || 0) * item.quantity);
+//     }, 0);
+
+//     return { items: itemsWithStatus, totalPrice };
+// };
+
 export const getCartPage = async (userId) => {
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
 
@@ -278,7 +342,6 @@ export const getCartPage = async (userId) => {
         },
         { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
         {
-
             $addFields: {
                 matchedVariant: {
                     $first: {
@@ -296,6 +359,9 @@ export const getCartPage = async (userId) => {
         { $sort: { createdAt: -1 } }
     ]);
 
+    // Collect items that need quantity updates in DB
+    const quantityUpdateOps = [];
+
     const itemsWithStatus = cartItems.map(item => {
         const v = item.matchedVariant;
         const isAvailable = !!(
@@ -307,8 +373,31 @@ export const getCartPage = async (userId) => {
             v.isListed &&
             v.stock > 0
         );
-        return { ...item, isAvailable };
+
+        let quantity = item.quantity;
+        let quantityReduced = false;
+
+        // Auto-adjust quantity if it exceeds current stock
+        if (isAvailable && v.stock < item.quantity) {
+            quantity = v.stock;
+            quantityReduced = true;
+
+            // Queue a DB update so cart stays in sync
+            quantityUpdateOps.push({
+                updateOne: {
+                    filter: { _id: item._id },
+                    update: { $set: { quantity: v.stock } }
+                }
+            });
+        }
+
+        return { ...item, quantity, isAvailable, quantityReduced };
     });
+
+    // Persist adjusted quantities to DB in one batch
+    if (quantityUpdateOps.length > 0) {
+        await cartModel.bulkWrite(quantityUpdateOps);
+    }
 
     const totalPrice = itemsWithStatus.reduce((acc, item) => {
         if (!item.isAvailable) return acc;

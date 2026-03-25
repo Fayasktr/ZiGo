@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import * as shopService from "../services/shopService.js";
+import cartModel from "../models/cartModel.js";
 
 export const loadShop = asyncHandler(async (req, res) => {
     try {
@@ -60,10 +61,37 @@ export const addToCart = asyncHandler(async (req, res) => {
 export const proceedToCheckout=asyncHandler(async(req,res)=>{
     try {
         const userId=req.session?.user.id||req.user?.id;
-        const checkoutData=await shopService.checkoutPage(userId);
-        res.render("user/userAfterLogin/checkout",checkoutData);
+        const checkout=await shopService.checkoutPage(userId);
+        res.render("user/userAfterLogin/checkout",{checkout});
     } catch (error) {
         req.flash("error",error.message)
         res.redirect("/user/cart");
+    }
+})
+
+export const placeOrder=asyncHandler(async(req,res)=>{
+    try {
+        const userId=req.session.user.id||req.user.id;
+        const {addressId, paymentMethod} =req.body;
+        if (!addressId) {
+            req.flash("error", "Please select a shipping address");
+            return res.redirect("/user/checkout");
+        }
+        if (!paymentMethod) {
+            req.flash("error", "Please select a payment method");
+            return res.redirect("/user/checkout");
+        }
+        const cartItems = await cartModel.find({ userId: userId })
+            .populate({
+                path: 'productId',
+                populate: {
+                    path: 'category'
+                }
+        });        
+        const place=await shopService.placeOrder(userId,addressId,paymentMethod,cartItems);
+        res.render("user/userAfterLogin/orderSuccess");
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/checkout");
     }
 })

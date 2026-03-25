@@ -395,38 +395,47 @@
                 <div class="space-y-4">
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <span class="font-bold" id="cartSubtotal">₹<%= (typeof cart !=='undefined' && cart) ?
+                        <span class="font-bold" id="cartSubtotal">₹<%= (typeof cart !== 'undefined' && cart) ?
                                 cart.totalPrice.toLocaleString() : '0.00' %></span>
                     </div>
+                    <% 
+                        let subtotal = (typeof cart !== 'undefined' && cart && cart.totalPrice) ? cart.totalPrice : 0;
+                        let shippingCharge = (subtotal > 1000 || subtotal === 0) ? 0 : 40;
+                        let tax = subtotal * 0.18;
+                        let total = subtotal + tax + shippingCharge;
+                    %>
                     <div class="summary-row">
                         <span>Estimated Shipping</span>
-                        <span class="text-green-500 font-bold">FREE</span>
+                        <span id="cartShipping" class="<%= shippingCharge === 0 ? 'text-green-500' : '' %> font-bold">
+                            <%= shippingCharge === 0 ? 'FREE' : '₹' + shippingCharge.toLocaleString() %>
+                        </span>
                     </div>
-                    <% let subtotal=(typeof cart !=='undefined' && cart && cart.totalPrice) ? cart.totalPrice : 0; %>
-                        <% let tax=subtotal * 0.18; %>
-                            <div class="summary-row">
-                                <span>Tax (GST 18%)</span>
-                                <span class="font-bold" id="cartTax">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2}) %></span>
-                            </div>
+                    <div class="summary-row">
+                        <span>Tax (GST 18%)</span>
+                        <span class="font-bold" id="cartTax">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                    </div>
 
-                            <div class="summary-total">
-                                <span>Total</span>
-                                <span id="cartTotal">₹<%= (subtotal + tax).toLocaleString(undefined, {minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2}) %></span>
-                            </div>
+
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span id="cartTotal">₹<%= total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                    </div>
                 </div>
 
                 <%
                     const hasOutOfStock = cart && cart.items.some(i => !i.isAvailable);
                 %>
 
-                <% if (hasOutOfStock) { %>
+                <% if (!cart || cart.items.length === 0) { %>
+                    <button class="checkout-btn opacity-50 cursor-not-allowed" disabled>
+                        Cart is Empty
+                    </button>
+                <% } else if (hasOutOfStock) { %>
                     <button class="checkout-btn opacity-50 cursor-not-allowed" disabled>
                         Fix Out-of-Stock Items First
                     </button>
                 <% } else { %>
-                    <a href="/checkout" class="checkout-btn">
+                    <a href="/user/checkout" class="checkout-btn">
                         Proceed to Checkout
                     </a>
                 <% } %>
@@ -527,11 +536,23 @@
                         window.updateCartCount(totalItemsCount);
                     }
 
+                    // Dynamic Shipping Logic
+                    const shippingCharge = (subtotal > 1000 || subtotal === 0) ? 0 : 40;
                     const tax = subtotal * 0.18;
-                    const total = subtotal + tax;
+                    const total = subtotal + tax + shippingCharge;
 
                     // Update summary display
                     document.getElementById('cartSubtotal').innerText = `₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    
+                    const shippingEl = document.getElementById('cartShipping');
+                    if (shippingCharge === 0) {
+                        shippingEl.innerText = 'FREE';
+                        shippingEl.classList.add('text-green-500');
+                    } else {
+                        shippingEl.innerText = `₹${shippingCharge.toLocaleString()}`;
+                        shippingEl.classList.remove('text-green-500');
+                    }
+
                     document.getElementById('cartTax').innerText = `₹${tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     document.getElementById('cartTotal').innerText = `₹${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }

@@ -11,6 +11,7 @@
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -323,202 +324,474 @@
             background: var(--primary-orange);
             transform: translateY(-2px);
         }
+
+        /* --- Refined Address Selection --- */
+        .select-address-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border: 1px solid var(--gray-light);
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .select-address-field:hover {
+            border-color: var(--primary-orange);
+        }
+
+        .change-address-btn {
+            background: var(--off-white);
+            color: var(--primary-orange);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            border: 1px solid var(--gray-light);
+            transition: var(--transition);
+        }
+
+        .change-address-btn:hover {
+            background: var(--primary-orange);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+
+        .add-address-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: white;
+            color: var(--dark-navy);
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px;
+            border: 1px dashed var(--gray-light);
+            transition: var(--transition);
+            white-space: nowrap;
+            height: 100%;
+        }
+
+        .add-address-link-btn:hover {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.02);
+        }
+
+        /* --- Address Modal Specific --- */
+        .address-modal-content {
+            text-align: left !important;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-address-item {
+            padding: 1.25rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .modal-address-item:hover {
+            border-color: var(--primary-orange);
+            background: var(--off-white);
+        }
+
+        .modal-address-item.active {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.03);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 1.25rem;
+            opacity: 0.4;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .modal-close-btn:hover {
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+
+        /* --- Loading Spinner --- */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #placeOrderBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        #placeOrderBtn.loading .spinner {
+            display: inline-block;
+        }
+
     </style>
 </head>
 
 <body>
     <%- include('../../partials/headerMinimal') %>
 
-    <main class="checkout-container">
-        <h1 class="text-4xl font-extrabold mb-10">Checkout</h1>
+        <main class="checkout-container">
+            <h1 class="text-4xl font-extrabold mb-10">Checkout</h1>
 
-        <div class="checkout-grid">
-            <div class="checkout-main">
-                <!-- Address Section -->
-                <div class="checkout-section">
-                    <h2 class="section-title"><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
+            <div class="checkout-grid">
+                <div class="checkout-main">
+                    <!-- Address Section -->
+                    <div class="checkout-section">
+                        <h2 class="section-title"><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                        <div class="saved-address-card selected">
-                            <span class="address-badge">DEFAULT</span>
-                            <p class="font-bold mb-1">fayas_kp</p>
-                            <p class="text-sm opacity-60">Tech Hub Plaza, 4th Floor</p>
-                            <p class="text-sm opacity-60">Bangalore, KA 560100</p>
-                            <p class="text-sm opacity-60">+91 98765 43210</p>
+                        <div class="flex flex-col md:flex-row gap-4 mb-8">
+                            <div class="select-address-field flex-1 mb-0" id="selectedAddressDisplay">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center text-xl">
+                                        <i class="fas fa-location-dot"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-bold text-sm" id="current_addr_name">
+                                            <%= checkout.defaultAddress ? checkout.defaultAddress.userName : 'No Address Selected' %>
+                                        </p>
+                                        <p class="text-xs opacity-60" id="current_addr_text">
+                                            <%= checkout.defaultAddress ? (checkout.defaultAddress.detailedAddress + ', ' + checkout.defaultAddress.city) : 'Please select a shipping address' %>
+                                        </p>
+                                    </div>
+                                </div>
+                                <button type="button" class="change-address-btn" onclick="openAddressModal()">
+                                    <i class="fas fa-exchange-alt mr-2"></i> change Address
+                                </button>
+                            </div>
+                            
+                            <a href="/user/addresses/add" class="add-address-link-btn">
+                                <i class="fas fa-plus text-orange-500"></i>
+                                <span>Add New Address</span>
+                            </a>
                         </div>
-                        <div class="saved-address-card flex items-center justify-center opacity-40 border-dashed">
-                            <i class="fas fa-plus mr-2"></i> Add New Address
+
+                        <form class="form-grid" id="checkoutForm" action="/user/checkout/place" method="POST">
+                            <input type="hidden" name="addressId" id="selectedAddressId"
+                                value="<%= checkout.defaultAddress ? checkout.defaultAddress._id : '' %>">
+                            <input type="hidden" name="paymentMethod" id="selectedPaymentMethod" value="cash">
+
+                            <div class="input-group">
+                                <label>USERNAME</label>
+                                <input type="text" id="display_name" readonly
+                                    value="<%= checkout.defaultAddress ? checkout.defaultAddress.userName : '' %>">
+                            </div>
+                            <div class="input-group">
+                                <label>MOBILE NUMBER</label>
+                                <input type="text" id="display_phone" readonly
+                                    value="<%= checkout.defaultAddress ? checkout.defaultAddress.phoneNumber : '' %>">
+                            </div>
+                            <div class="input-group full-width">
+                                <label>STREET ADDRESS</label>
+                                <input type="text" id="display_address" readonly
+                                    value="<%= checkout.defaultAddress ? checkout.defaultAddress.detailedAddress : '' %>">
+                            </div>
+                            <div class="input-group">
+                                <label>CITY</label>
+                                <input type="text" id="display_city" readonly
+                                    value="<%= checkout.defaultAddress ? checkout.defaultAddress.city : '' %>">
+                            </div>
+                            <div class="input-group">
+                                <label>PINCODE / COUNTRY</label>
+                                <input type="text" id="display_pincode" readonly
+                                    value="<%= checkout.defaultAddress ? (checkout.defaultAddress.pincode + ' / ' + checkout.defaultAddress.country) : '' %>">
+                            </div>
+                        </form>
+                    </div>
+
+
+                    <!-- Payment Section -->
+                    <div class="checkout-section">
+                        <h2 class="section-title"><i class="fas fa-credit-card"></i> Payment Method</h2>
+
+                        <div class="payment-method selected" onclick="selectPayment(this, 'cash')">
+                            <div class="method-icon"><i class="fas fa-money-bill-wave"></i></div>
+                            <div class="flex-1">
+                                <p class="font-bold">Cash on Delivery</p>
+                                <p class="text-xs opacity-50">Pay when you receive the product</p>
+                            </div>
+                            <i class="fas fa-check-circle text-orange-500 check-icon"></i>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPayment(this, 'Wallet')">
+                            <div class="method-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="flex-1">
+                                <p class="font-bold">My Wallet</p>
+                                <p class="text-xs opacity-50">Secure and fast checkout</p>
+                            </div>
+                            <i class="fas fa-check-circle text-orange-500 check-icon hidden"></i>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPayment(this, 'Razorpay')">
+                            <div class="method-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="flex-1">
+                                <p class="font-bold">Razorpay</p>
+                                <p class="text-xs opacity-50">Cards, UPI, Netbanking</p>
+                            </div>
+                            <i class="fas fa-check-circle text-orange-500 check-icon hidden"></i>
                         </div>
                     </div>
 
-                    <form class="form-grid">
-                        <div class="input-group">
-                            <label>USERNAME</label>
-                            <input type="text" name="username" value="fayas_kp">
-                        </div>
-                        <div class="input-group">
-                            <label>MOBILE NUMBER</label>
-                            <input type="text" value="+91 75 9204 7575">
-                        </div>
-                        <div class="input-group full-width">
-                            <label>STREET ADDRESS</label>
-                            <input type="text" value="Tech Hub Plaza, 4th Floor, Electronic City">
-                        </div>
-                        <div class="input-group">
-                            <label>CITY</label>
-                            <input type="text" value="Bangalore">
-                        </div>
-                        <div class="input-group">
-                            <label>STATE</label>
-                            <input type="text" value="Karnataka">
-                        </div>
-                    </form>
                 </div>
 
-                <!-- Payment Section -->
-                <div class="checkout-section">
-                    <h2 class="section-title"><i class="fas fa-credit-card"></i> Payment Method</h2>
+                <!-- Order Review Sidebar -->
+                <aside>
+                    <div class="summary-mini">
+                        <h3 class="font-bold mb-6 text-xl">Order Review</h3>
+                        <div class="space-y-4 mb-8 max-h-[300px] overflow-y-auto pr-2">
+                            <% if (checkout.checkoutData && checkout.checkoutData.length> 0) { %>
+                                <% checkout.checkoutData.forEach(item=> { %>
+                                    <div class="flex justify-between text-sm items-start gap-4">
+                                        <div class="flex-1">
+                                            <p class="<%= item.isAvailable ? '' : 'text-red-500 line-through' %>">
+                                                <%= item.productName %>
+                                            </p>
+                                            <p class="text-[10px] opacity-50">
+                                                <%= item.quantity %> x ₹<%= item.price.toLocaleString('en-IN') %>
+                                            </p>
+                                            <% if (!item.isAvailable) { %>
+                                                <p class="text-[9px] text-red-500 font-bold uppercase">Not Available</p>
+                                                <% } %>
+                                        </div>
+                                        <span
+                                            class="font-bold whitespace-nowrap <%= item.isAvailable ? '' : 'opacity-30' %>">₹
+                                            <%= item.totalPrice.toLocaleString('en-IN') %></span>
+                                    </div>
+                                    <% }) %>
+                                        <% } %>
+                        </div>
 
-                    <div class="payment-method selected">
-                        <div class="method-icon"><i class="fas fa-money-bill-wave"></i></div>
-                        <div class="flex-1">
-                            <p class="font-bold">Cash on Delivery</p>
-                            <p class="text-xs opacity-50">Pay when you receive the product</p>
-                        </div>
-                        <i class="fas fa-check-circle text-orange-500"></i>
-                    </div>
-
-                    <div class="payment-method">
-                        <div class="method-icon"><i class="fas fa-wallet"></i></div>
-                        <div class="flex-1">
-                            <p class="font-bold">My Wallet</p>
-                            <p class="text-xs opacity-50">Balance: ₹12,500.00</p>
-                        </div>
-                    </div>
-
-                    <div class="payment-method">
-                        <div class="method-icon"><i class="fas fa-bolt"></i></div>
-                        <div class="flex-1">
-                            <p class="font-bold">Razorpay</p>
-                            <p class="text-xs opacity-50">Cards, UPI, Netbanking</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Review Sidebar -->
-            <aside>
-                <div class="summary-mini">
-                    <h3 class="font-bold mb-6 text-xl">Order Review</h3>
-                    <div class="space-y-4 mb-8">
-                        <div class="flex justify-between text-sm">
-                            <span>ZiGo Neo 1 Flagship</span>
-                            <span class="font-bold">₹82,339.00</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span>ZiGo Watch S Series</span>
-                            <span class="font-bold">₹22,805.00</span>
-                        </div>
-                    </div>
-
-                    <!-- Coupon Section -->
-                    <div class="coupon-section">
-                        <div class="coupon-toggle" onclick="toggleCoupon()">
-                            <span><i class="fas fa-ticket-alt mr-2"></i> Have a coupon?</span>
-                            <i class="fas fa-chevron-down text-xs opacity-40" id="couponChevron"></i>
-                        </div>
-                        <div id="couponInputCont" class="hidden">
-                            <div class="coupon-input-group">
-                                <input type="text" class="coupon-input" placeholder="Enter Code">
-                                <button class="apply-coupon-btn">Apply</button>
+                        <!-- Coupon Section -->
+                        <div class="coupon-section">
+                            <div class="coupon-toggle" onclick="toggleCoupon()">
+                                <span><i class="fas fa-ticket-alt mr-2"></i> Have a coupon?</span>
+                                <i class="fas fa-chevron-down text-xs opacity-40" id="couponChevron"></i>
+                            </div>
+                            <div id="couponInputCont" class="hidden">
+                                <div class="coupon-input-group">
+                                    <input type="text" class="coupon-input" placeholder="Enter Code">
+                                    <button class="apply-coupon-btn">Apply</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="border-t border-gray-100 pt-6 space-y-3">
-                        <div class="flex justify-between text-sm opacity-60">
-                            <span>Subtotal</span>
-                            <span>₹1,05,144.00</span>
+                        <div class="border-t border-gray-100 pt-6 space-y-3">
+                            <div class="flex justify-between text-sm opacity-60">
+                                <span>Subtotal</span>
+                                <span>₹<%= checkout.totals.subtotal.toLocaleString('en-IN') %></span>
+                            </div>
+                            <div class="flex justify-between text-sm opacity-60">
+                                <span>Tax (18%)</span>
+                                <span>₹<%= checkout.totals.tax.toLocaleString('en-IN') %></span>
+                            </div>
+                            <% if (checkout.totals.shipping> 0) { %>
+                                <div class="flex justify-between text-sm opacity-60">
+                                    <span>Shipping</span>
+                                    <span>₹<%= checkout.totals.shipping.toLocaleString('en-IN') %></span>
+                                </div>
+                                <% } else { %>
+                                    <div class="flex justify-between text-sm text-green-600 font-bold">
+                                        <span>Shipping</span>
+                                        <span>FREE</span>
+                                    </div>
+                                    <% } %>
+                                        <div class="flex justify-between text-xl font-bold text-orange-500 mt-4">
+                                            <span>Total</span>
+                                            <span>₹<%= checkout.totals.total.toLocaleString('en-IN') %></span>
+                                        </div>
                         </div>
-                        <div class="flex justify-between text-sm opacity-60">
-                            <span>Tax</span>
-                            <span>₹18,925.92</span>
-                        </div>
-                        <div class="flex justify-between text-xl font-bold text-orange-500 mt-4">
-                            <span>Total</span>
-                            <span>₹1,24,069.92</span>
-                        </div>
-                    </div>
 
-                    <button class="w-full bg-orange-500 text-white font-bold py-4 rounded-xl mt-8" id="placeOrderBtn">
-                        Place Order Now
-                    </button>
-                    <p class="text-[10px] text-center mt-4 opacity-40 uppercase tracking-widest font-bold">
-                        Secure 256-bit SSL Encryption
-                    </p>
+
+
+                        <button class="w-full bg-orange-500 text-white font-bold py-4 rounded-xl mt-8 flex items-center justify-center" id="placeOrderBtn">
+                            <div class="spinner"></div>
+                            <span class="btn-text">Place Order Now</span>
+                        </button>
+
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- Success Modal Removed: Replaced by orderSuccess.ejs -->
+
+        <!-- Failure Modal -->
+        <div id="errorModal" class="modal-overlay">
+            <div class="relative bg-white max-w-md w-full rounded-[40px] p-10 text-center shadow-2xl scale-110">
+                <div
+                    class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
+                    <i class="fas fa-times"></i>
                 </div>
-            </aside>
-        </div>
-    </main>
-
-    <!-- Success Modal -->
-    <div id="successModal" class="modal-overlay">
-        <div class="relative bg-white max-w-md w-full rounded-[40px] p-10 text-center shadow-2xl scale-110">
-            <div class="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
-                <i class="fas fa-check"></i>
-            </div>
-            <h1 class="text-3xl font-black text-gray-900 mb-3">Payment Success!</h1>
-            <p class="text-gray-500 mb-8 px-4">Your order has been placed successfully. Get ready for your tech!</p>
-            <div class="space-y-3">
-                <a href="/" class="block w-full bg-orange-500 text-white font-bold py-4 rounded-2xl hover:bg-orange-600 transition-all">
-                    Continue Shopping
-                </a>
-                <a href="/user/orders" class="block w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
-                    View Order Details
-                </a>
+                <h1 class="text-3xl font-black text-gray-900 mb-3">Payment Failed</h1>
+                <p class="text-gray-500 mb-8 px-4">There was an issue processing your transaction. Please try again or
+                    use a different method.</p>
+                <div class="space-y-3">
+                    <button onclick="document.getElementById('errorModal').style.display='none'"
+                        class="block w-full bg-red-500 text-white font-bold py-4 rounded-2xl hover:bg-red-600 transition-all">
+                        Try Again
+                    </button>
+                    <a href="/user/cart"
+                        class="block w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
+                        Return to Cart
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Failure Modal -->
-    <div id="errorModal" class="modal-overlay">
-        <div class="relative bg-white max-w-md w-full rounded-[40px] p-10 text-center shadow-2xl scale-110">
-            <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8">
-                <i class="fas fa-times"></i>
-            </div>
-            <h1 class="text-3xl font-black text-gray-900 mb-3">Payment Failed</h1>
-            <p class="text-gray-500 mb-8 px-4">There was an issue processing your transaction. Please try again or use a different method.</p>
-            <div class="space-y-3">
-                <button onclick="document.getElementById('errorModal').style.display='none'" class="block w-full bg-red-500 text-white font-bold py-4 rounded-2xl hover:bg-red-600 transition-all">
-                    Try Again
+        <!-- Address Selection Modal -->
+        <div id="addressModal" class="modal-overlay">
+            <div class="modal-card address-modal-content">
+                <i class="fas fa-times modal-close-btn" onclick="closeAddressModal()"></i>
+                <h2 class="text-2xl font-black mb-6">Select Shipping Address</h2>
+                
+                <div class="space-y-3 mb-8">
+                    <% if (checkout.addresses && checkout.addresses.length > 0) { %>
+                        <% checkout.addresses.forEach(addr => { %>
+                            <div class="modal-address-item <%= (checkout.defaultAddress && addr._id.toString() === checkout.defaultAddress._id.toString()) ? 'active' : '' %>"
+                                 onclick="selectAddressFromModal(this, '<%= addr._id %>')"
+                                 data-id="<%= addr._id %>"
+                                 data-name="<%= addr.userName %>"
+                                 data-phone="<%= addr.phoneNumber %>"
+                                 data-address="<%= addr.detailedAddress %>"
+                                 data-city="<%= addr.city %>"
+                                 data-pincode="<%= addr.pincode %>"
+                                 data-country="<%= addr.country %>">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-sm"><%= addr.userName %></p>
+                                        <p class="text-xs opacity-60"><%= addr.detailedAddress %></p>
+                                        <p class="text-xs opacity-60"><%= addr.city %>, <%= addr.country %> - <%= addr.pincode %></p>
+                                    </div>
+                                    <% if (addr.isDefault) { %>
+                                        <span class="bg-orange-100 text-orange-500 text-[9px] font-black px-2 py-1 rounded-md flex items-center gap-1">
+                                            <i class="fas fa-star text-[7px]"></i> DEFAULT
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+
+                <button type="button" onclick="closeAddressModal()" class="w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
+                    Cancel
                 </button>
-                <a href="/user/cart" class="block w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
-                    Return to Cart
-                </a>
             </div>
         </div>
-    </div>
 
-    <script>
-        document.getElementById('placeOrderBtn').addEventListener('click', () => {
-            // For demo purposes, we randomly show success or failure
-            const isSuccess = Math.random() > 0.3;
-            if (isSuccess) {
-                document.getElementById('successModal').style.display = 'flex';
-            } else {
-                document.getElementById('errorModal').style.display = 'flex';
+        <script>
+            function openAddressModal() {
+                document.getElementById('addressModal').style.display = 'flex';
             }
-        });
 
-        function toggleCoupon() {
-            const cont = document.getElementById('couponInputCont');
-            const chev = document.getElementById('couponChevron');
-            cont.classList.toggle('hidden');
-            chev.classList.toggle('rotate-180');
-        }
-    </script>
+            function closeAddressModal() {
+                document.getElementById('addressModal').style.display = 'none';
+            }
 
-    <%- include('../../partials/footerMinimal') %>
+            // Close modal if clicking outside the card
+            window.onclick = function(event) {
+                const modal = document.getElementById('addressModal');
+                const successModal = document.getElementById('successModal');
+                const errorModal = document.getElementById('errorModal');
+                
+                if (event.target == modal) closeAddressModal();
+                if (event.target == successModal) successModal.style.display = 'none';
+                if (event.target == errorModal) errorModal.style.display = 'none';
+            }
+
+            function selectAddressFromModal(element, addressId) {
+                // Remove active class from all items
+                document.querySelectorAll('.modal-address-item').forEach(item => item.classList.remove('active'));
+                // Add to current
+                element.classList.add('active');
+
+                // Update hidden ID input
+                document.getElementById('selectedAddressId').value = addressId;
+
+                // Update display fields in the form
+                document.getElementById('display_name').value = element.dataset.name;
+                document.getElementById('display_phone').value = element.dataset.phone;
+                document.getElementById('display_address').value = element.dataset.address;
+                document.getElementById('display_city').value = element.dataset.city;
+                document.getElementById('display_pincode').value = element.dataset.pincode + ' / ' + element.dataset.country;
+
+                // Update main select field display
+                document.getElementById('current_addr_name').textContent = element.dataset.name;
+                document.getElementById('current_addr_text').textContent = element.dataset.address + ', ' + element.dataset.city;
+
+                // Close modal
+                closeAddressModal();
+            }
+
+            function selectPayment(element, method) {
+                // Remove selected class from all payment methods
+                document.querySelectorAll('.payment-method').forEach(m => {
+                    m.classList.remove('selected');
+                    const check = m.querySelector('.check-icon');
+                    if (check) check.classList.add('hidden');
+                });
+                // Add to current
+                element.classList.add('selected');
+                const currentCheck = element.querySelector('.check-icon');
+                if (currentCheck) currentCheck.classList.remove('hidden');
+
+                // Update hidden input
+                document.getElementById('selectedPaymentMethod').value = method;
+            }
+
+            document.getElementById('placeOrderBtn').addEventListener('click', (e) => {
+                const addressId = document.getElementById('selectedAddressId').value;
+                const paymentMethod = document.getElementById('selectedPaymentMethod').value;
+                const checkoutForm = document.getElementById('checkoutForm');
+
+                if (!addressId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selection Required',
+                        text: 'Please select a shipping address before placing your order.'
+                    });
+                    return;
+                }
+
+                // Simply submit the form
+                checkoutForm.submit();
+            });
+
+            function toggleCoupon() {
+                const cont = document.getElementById('couponInputCont');
+                const chev = document.getElementById('couponChevron');
+                cont.classList.toggle('hidden');
+                chev.classList.toggle('rotate-180');
+            }
+        </script>
+
+
+        <%- include('../../partials/footerMinimal') %>
 </body>
 
 </html>

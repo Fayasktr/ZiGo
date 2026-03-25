@@ -2,6 +2,7 @@ import productModel from "../models/productModel.js";
 import categoryModel from "../models/categoryModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
+import addressModel from "../models/addressModel.js";
 import mongoose from "mongoose";
 
 export const getShopData = async (quary, userId) => {
@@ -162,7 +163,70 @@ export const addToCart = async (userId, productId, variantId, quantity = 1) => {
     return carts.reduce((acc, item) => acc + (item.quantity || 0), 0);
 }
 
-export const checkoutPage=async(userId)=>{
-    const cartData=await cartModel.find({userId:userId});
-    console.log(`cart data proceed to checkout: ${cartData}`);
+export const checkoutPage = async (userId) => {
+    try {
+        const cartData = await cartModel.find({ userId: userId }).populate("productId");
+        
+        const checkoutData = cartData.map(item => {
+            const product = item.productId;
+            if (!product) return null;
+
+            const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            
+            return {
+                _id: item._id,
+                productId: product._id,
+                productName: product.productName,
+                variantId: item.variantId,
+                quantity: item.quantity,
+                price: variant ? variant.price : 0,
+                images: variant ? variant.images : [],
+                attributes: variant ? variant.attributes : {},
+                stock: variant ? variant.stock : 0,
+                totalPrice: (variant ? variant.price : 0) * item.quantity,
+                isAvailable: variant ? (variant.stock >= item.quantity && variant.isListed && product.isListed) : false
+            };
+        }).filter(item => item !== null);
+
+        const addresses = await addressModel.find({ userId: userId }).sort({ isDefault: -1, createdAt: -1 });
+        const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0] || null;
+
+        const subtotal = checkoutData.reduce((sum, item) => sum + (item.isAvailable ? item.totalPrice : 0), 0);
+        const shipping = subtotal > 1000 ? 0 : 40;
+        const tax = subtotal * 0.18;
+        const total = subtotal + shipping + tax;
+
+        console.log(`Checkout page loaded for user ${userId}. Items: ${checkoutData.length}`);
+        
+        return {
+            checkoutData,
+            defaultAddress,
+            addresses,
+            totals: {
+                subtotal,
+                shipping,
+                tax,
+                total
+            }
+        };
+    } catch (error) {
+        console.error("Checkout Service Error:", error);
+        throw error;
+    }
+}
+
+
+export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
+    const user=await userModal.findById(userId);
+    if(!user||user.isBlocked){
+        throw new Error("Account not autherized");
+    }
+    console.log(`cart items:${cartItems}`)
+    if(!cartItems.length){
+        throw new Error("cart is empty");
+    };
+    const address=await addressModel.find({userId:userId,_id:addressId});
+    if(!address){
+        throw new Error("Invalid shiping address.");
+    }
 }
