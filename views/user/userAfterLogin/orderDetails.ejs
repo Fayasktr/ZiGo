@@ -12,6 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -174,6 +176,19 @@
         .step-icon.completed {
             background: var(--primary-orange);
             color: white;
+        }
+
+        .timeline-step.cancelled::before {
+            background: #FF4757;
+        }
+
+        .step-icon.cancelled {
+            background: #FF4757;
+            color: white;
+        }
+
+        .text-cancelled {
+            color: #FF4757 !important;
         }
 
         /* --- Action Buttons --- */
@@ -364,28 +379,46 @@
                    // Tracking progress logic
                    let currentLevel = 0;
                    const status = order.orderStatus.toLowerCase();
+                   const isCancelled = status === 'cancelled';
+                   
                    if (status === 'processing' || status === 'pending') currentLevel = 1;
                    else if (status === 'shipped') currentLevel = 3;
                    else if (status === 'delivered') currentLevel = 4;
+                   else if (isCancelled) currentLevel = -1; // Indicate cancelled state
                    else currentLevel = 0;
                 %>
 
-                <% if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Returned') { %>
+                <% if (order.orderStatus !== 'Returned') { %>
                 <div class="timeline">
                     <h3 class="text-xl font-extrabold mb-8 text-center text-orange-500">Tracking Progress</h3>
                     <div class="max-w-md mx-auto">
-                        <!-- Step 1: Placed -->
-                        <div class="timeline-step <%= currentLevel >= 1 ? 'completed' : '' %>">
-                            <div class="step-icon <%= currentLevel >= 1 ? 'completed' : '' %>">
-                                <% if (currentLevel >= 1) { %><i class="fas fa-check"></i><% } else { %>1<% } %>
+                        <% if (isCancelled) { %>
+                            <!-- Cancellation State -->
+                            <div class="timeline-step cancelled">
+                                <div class="step-icon cancelled">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-cancelled">Order Cancelled</h4>
+                                    <p class="text-xs opacity-50">
+                                        Your order has been cancelled on <%= new Date(order.updatedAt).toLocaleDateString() %>
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="font-bold <%= currentLevel < 1 ? 'opacity-40' : '' %>">Order Placed</h4>
-                                <p class="text-xs <%= currentLevel < 1 ? 'opacity-30' : 'opacity-50' %>">
-                                    <%= new Date(order.createdAt).toLocaleDateString() %>
-                                </p>
+                        <% } else { %>
+                            <!-- Step 1: Placed -->
+                            <div class="timeline-step <%= currentLevel >= 1 ? 'completed' : '' %>">
+                                <div class="step-icon <%= currentLevel >= 1 ? 'completed' : '' %>">
+                                    <% if (currentLevel >= 1) { %><i class="fas fa-check"></i><% } else { %>1<% } %>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold <%= currentLevel < 1 ? 'opacity-40' : '' %>">Order Placed</h4>
+                                    <p class="text-xs <%= currentLevel < 1 ? 'opacity-30' : 'opacity-50' %>">
+                                        <%= new Date(order.createdAt).toLocaleDateString() %>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        <% } %>
                         <!-- Step 2: Packed -->
                         <div class="timeline-step <%= currentLevel >= 2 ? 'completed' : '' %>">
                             <div class="step-icon <%= currentLevel >= 2 ? 'completed' : '' %>">
@@ -546,13 +579,48 @@
             });
         }
 
-        function confirmCancellation() {
+        async function confirmCancellation() {
             const reason = document.getElementById('cancelReason').value;
             const comments = document.getElementById('cancelComments').value;
-            // Logic to send cancellation request to backend
-            console.log('Cancelling order:', '<%= order._id %>', reason, comments);
-            closeModal('cancelModal');
-            Swal.fire('Success', 'Your cancellation request has been submitted.', 'success');
+            
+            try {
+                const response = await fetch(`/user/orders/<%= order._id %>/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason, comments })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeModal('cancelModal');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Cancelled',
+                        text: 'Your order has been cancelled successfully.',
+                        confirmButtonColor: '#FF5A1F'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: data.message || 'Failed to cancel order.',
+                        confirmButtonColor: '#FF5A1F'
+                    });
+                }
+            } catch (error) {
+                console.error('Error cancelling order:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again later.',
+                    confirmButtonColor: '#FF5A1F'
+                });
+            }
         }
 
         function confirmReturn() {

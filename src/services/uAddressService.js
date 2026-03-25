@@ -454,3 +454,7 @@ export const orderDetailse=async(userId,orderId)=>{
     if(!orderData)throw new Error("cannot find this order");
     return orderData;
 }
+
+export const orderCancel=async(userId,orderId)=>{
+    const canselOrder=await orderModel.findOneAndUpdate({userId:userId,_id:orderId},{$set:{orderStatus:"Cancelled"}});
+}

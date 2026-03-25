@@ -315,3 +315,14 @@ export const orderDetailse=asynchandler(async(req,res)=>{
         res.redirect("/user/orders");
     }
 })
+
+export const ordercancel=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.id;
+        const cancelling=await addressService.orderCancel(userId,orderid);
+        res.status(200).json({success:true,message:"order canselled"});
+    } catch (error) {
+        res.status(400).json({success:false,message:"can't change order status"});
+    }
+})
