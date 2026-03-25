@@ -43,4 +43,8 @@ router.get("/user/cart", userProfile.cartPage);
 router.patch("/user/cart/delete/:id",userProfile.deleteCartItem)
 router.patch("/user/cart/changeQty",userProfile.changeCartQty,cartMiddlware.cartCount);
 
+router.get("/user/orders",userProfile.orderHistory);
+router.get("/user/orders/:id",userProfile.orderDetailse);
+
+
 export default router;

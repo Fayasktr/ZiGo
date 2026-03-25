@@ -291,3 +291,27 @@ export const changeCartQty=asynchandler(async(req,res)=>{
         res.status(400).json({success:false,message:error.message||"cannot change the quatity"});
     }
 })
+
+export const orderHistory=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orders=await addressService.orderHistory(userId);
+        console.log(`orders collection: ${orders}`)
+        res.render("user/userAfterLogin/orderHistory",{orders});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/profile");
+    }
+})
+
+export const orderDetailse=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.id;
+        const order=await addressService.orderDetailse(userId,orderId);
+        res.render("user/userAfterLogin/orderDetails",{order});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/orders");
+    }
+})

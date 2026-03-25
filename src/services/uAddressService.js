@@ -9,6 +9,7 @@ import OTPModel from "../models/otpModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js"
+import orderModel from "../models/orderModel.js";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -437,4 +438,19 @@ export const changeCartQuantity = async (userId, change, productId, variantId,cu
             return await cartModel.findOneAndUpdate({ userId, productId, variantId }, { $inc: { quantity: -1 } }, { new: true });
         }
     }
+}
+
+
+export const orderHistory=async(userId)=>{
+    if(!userId){
+        throw new Error("need to login");
+    }
+    return await orderModel.find({userId:userId});
+}
+
+export const orderDetailse=async(userId,orderId)=>{
+    if(!orderId)throw new Error("order id needed");
+    const orderData=await orderModel.findOne({_id:orderId,userId:userId});
+    if(!orderData)throw new Error("cannot find this order");
+    return orderData;
 }

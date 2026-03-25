@@ -74,6 +74,7 @@
         .status-shipped { background: #E0F2FE; color: #0EA5E9; }
         .status-cancelled { background: #FFEEEE; color: #FF4757; }
         .status-returned { background: #F3E8FF; color: #A855F7; }
+        .status-pending { background: #F1F5F9; color: #64748B; }
 
         .details-body {
             padding: 2.5rem;
@@ -280,11 +281,11 @@
         <div class="details-card">
             <div class="details-header">
                 <div>
-                    <h1 class="text-3xl font-extrabold mb-1">Order #<%= order.orderId %></h1>
+                    <h1 class="text-3xl font-extrabold mb-1">Order #<%= order.orderNumber %></h1>
                     <p class="opacity-50">Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span class="order-status-badge status-<%= order.status.toLowerCase() %>"><%= order.status.toUpperCase() %></span>
+                    <span class="order-status-badge status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus.toUpperCase() %></span>
                 </div>
             </div>
 
@@ -292,11 +293,12 @@
                 <div class="info-grid text-sm">
                     <div class="info-box">
                         <h4>Shipping Address</h4>
-                        <% if (typeof address !== 'undefined' && address) { %>
-                            <p class="font-bold"><%= address.username || user.userName %></p>
-                            <p class="opacity-60"><%= address.detailedAddress %></p>
-                            <p class="opacity-60"><%= address.city %>, <%= address.state %> <%= address.pincode %></p>
-                            <p class="opacity-60">+91 <%= address.mobileNumber %></p>
+                        <% if (order.shippingAddress) { %>
+                            <p class="font-bold text-lg mb-1"><%= order.shippingAddress.fullName %></p>
+                            <p class="opacity-60 whitespace-pre-line leading-relaxed"><%= order.shippingAddress.addressLine %></p>
+                            <p class="opacity-60"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %></p>
+                            <p class="opacity-60"><%= order.shippingAddress.country %></p>
+                            <p class="mt-2 font-bold text-orange-500"><i class="fas fa-phone mr-2"></i>+91 <%= order.shippingAddress.phone %></p>
                         <% } else { %>
                             <p class="opacity-60">Address details unavailable.</p>
                         <% } %>
@@ -311,21 +313,27 @@
                         <div class="space-y-2">
                             <div class="flex justify-between">
                                 <span class="opacity-60">Subtotal</span>
-                                <span class="font-bold">₹<%= (order.totalPrice + (order.discount || 0)).toLocaleString() %></span>
+                                <span class="font-bold">₹<%= order.pricing.subTotal.toLocaleString() %></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="opacity-60">Shipping</span>
-                                <span class="text-green-500 font-bold">FREE</span>
+                                <span class="<%= order.pricing.shipping === 0 ? 'text-green-500' : '' %> font-bold">
+                                    <%= order.pricing.shipping === 0 ? 'FREE' : '₹' + order.pricing.shipping.toLocaleString() %>
+                                </span>
                             </div>
-                            <% if (order.discount && order.discount > 0) { %>
+                            <div class="flex justify-between">
+                                <span class="opacity-60">Tax (GST 18%)</span>
+                                <span class="font-bold">₹<%= order.pricing.tax.toLocaleString() %></span>
+                            </div>
+                            <% if (order.pricing.discound && order.pricing.discound > 0) { %>
                                 <div class="flex justify-between text-red-500">
                                     <span class="opacity-60">Discount</span>
-                                    <span class="font-bold">- ₹<%= order.discount.toLocaleString() %></span>
+                                    <span class="font-bold">- ₹<%= order.pricing.discound.toLocaleString() %></span>
                                 </div>
                             <% } %>
                             <div class="flex justify-between text-lg text-orange-500 font-black mt-2 pt-2 border-t">
                                 <span>Grand Total</span>
-                                <span>₹<%= order.totalPrice.toLocaleString() %></span>
+                                <span>₹<%= order.pricing.total.toLocaleString() %></span>
                             </div>
                         </div>
                     </div>
@@ -335,26 +343,19 @@
                 <% order.items.forEach(item => { %>
                     <div class="order-item">
                         <div class="item-thumb">
-                            <% if (item.variant && item.variant.images && item.variant.images.length > 0) { %>
-                                <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>">
+                            <% if (item.image) { %>
+                                <img src="<%= item.image %>" alt="<%= item.productName %>">
                             <% } else { %>
                                 <img src="/public/landing/no-image.png" alt="No image">
                             <% } %>
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-lg font-bold"><%= item.product.productName %></h4>
-                            <% if (item.variant) { %>
-                                <p class="opacity-50 text-sm">
-                                    <% // Display variant attributes if they exist %>
-                                    <% if (item.variant.variantsAttribute && item.variant.variantsAttribute.length > 0) { %>
-                                        <%= item.variant.variantsAttribute.map(attr => attr.value).join(' | ') %>
-                                    <% } %>
-                                </p>
-                            <% } %>
+                            <h4 class="text-lg font-bold"><%= item.productName %></h4>
+                            <p class="opacity-50 text-sm">Quantity: <%= item.quantity %></p>
                         </div>
                         <div class="text-right">
-                            <p class="font-black">₹<%= item.price.toLocaleString() %></p>
-                            <p class="text-sm opacity-50">Qty: <%= item.quantity %></p>
+                            <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
+                            <p class="text-xs opacity-50 font-bold mt-1">Total: ₹<%= item.itemTotal.toLocaleString() %></p>
                         </div>
                     </div>
                 <% }) %>
@@ -362,13 +363,14 @@
                 <% 
                    // Tracking progress logic
                    let currentLevel = 0;
-                   if (order.status === 'Processing' || order.status === 'Pending') currentLevel = 1;
-                   else if (order.status === 'Shipped') currentLevel = 3;
-                   else if (order.status === 'Delivered') currentLevel = 4;
-                   else if (order.status === 'Cancelled' || order.status === 'Returned') currentLevel = 0;
+                   const status = order.orderStatus.toLowerCase();
+                   if (status === 'processing' || status === 'pending') currentLevel = 1;
+                   else if (status === 'shipped') currentLevel = 3;
+                   else if (status === 'delivered') currentLevel = 4;
+                   else currentLevel = 0;
                 %>
 
-                <% if (order.status !== 'Cancelled' && order.status !== 'Returned') { %>
+                <% if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Returned') { %>
                 <div class="timeline">
                     <h3 class="text-xl font-extrabold mb-8 text-center text-orange-500">Tracking Progress</h3>
                     <div class="max-w-md mx-auto">
@@ -431,7 +433,7 @@
                 <!-- Interactive Actions -->
                 <div class="mt-12 pt-12 border-t flex flex-wrap gap-4 justify-center">
                     
-                    <% if (order.status === 'Delivered') { %>
+                    <% if (order.orderStatus === 'Delivered') { %>
                         <!-- Visible for 'Delivered' orders -->
                         <button class="action-btn btn-return" onclick="openModal('returnModal')">
                             <i class="fas fa-undo"></i> Return / Resend
@@ -440,7 +442,7 @@
                         <button class="action-btn bg-black text-white hover:bg-zinc-800" onclick="openModal('ratingModal')">
                             <i class="fas fa-star text-yellow-500"></i> Rate & Review
                         </button>
-                    <% } else if (order.status === 'Processing' || order.status === 'Shipped' || order.status === 'Pending') { %>
+                    <% } else if (['processing', 'shipped', 'pending'].includes(order.orderStatus.toLowerCase())) { %>
                         <!-- Hidden for 'Delivered' orders -->
                         <button class="action-btn btn-cancel" onclick="openModal('cancelModal')">
                             <i class="fas fa-times-circle"></i> Cancel Order

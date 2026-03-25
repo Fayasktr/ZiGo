@@ -34,7 +34,8 @@ const itemsSchema = mongoose.Schema({
         default: "active"
     },
     cancelReason: { type: String },
-    returnReason: { type: String }
+    returnReason: { type: String },
+    addishnalCommand:{type:String}
 })
 
 
