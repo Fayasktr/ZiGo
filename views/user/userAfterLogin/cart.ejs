@@ -426,19 +426,21 @@
                     const hasOutOfStock = cart && cart.items.some(i => !i.isAvailable);
                 %>
 
-                <% if (!cart || cart.items.length === 0) { %>
-                    <button class="checkout-btn opacity-50 cursor-not-allowed" disabled>
-                        Cart is Empty
-                    </button>
-                <% } else if (hasOutOfStock) { %>
-                    <button class="checkout-btn opacity-50 cursor-not-allowed" disabled>
-                        Fix Out-of-Stock Items First
-                    </button>
-                <% } else { %>
-                    <a href="/user/checkout" class="checkout-btn">
-                        Proceed to Checkout
-                    </a>
-                <% } %>
+                <div id="checkoutBtnContainer">
+                    <% if (!cart || cart.items.length === 0) { %>
+                        <button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>
+                            Cart is Empty
+                        </button>
+                    <% } else if (hasOutOfStock) { %>
+                        <button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>
+                            Fix Out-of-Stock Items First
+                        </button>
+                    <% } else { %>
+                        <a href="/user/checkout" class="checkout-btn block text-center w-full">
+                            Proceed to Checkout
+                        </a>
+                    <% } %>
+                </div>
 
                 <div class="coupon-box">
                     <p class="text-sm font-bold mb-3 opacity-60">PROMO CODE</p>
@@ -555,6 +557,12 @@
 
                     document.getElementById('cartTax').innerText = `₹${tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     document.getElementById('cartTotal').innerText = `₹${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                    // Synchronize Checkout Button
+                    const btnCont = document.getElementById('checkoutBtnContainer');
+                    if (subtotal === 0) {
+                        btnCont.innerHTML = `<button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>Cart is Empty</button>`;
+                    }
                 }
 
                 async function removeFromCart(productId, variantId) {
@@ -600,6 +608,33 @@
                     }
                 }
             </script>
+
+    <!-- Flash Message Alerts -->
+    <% if (success && success.length > 0) { %>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '<%= success %>',
+                    confirmButtonColor: '#FF5A1F',
+                    timer: 3000
+                });
+            });
+        </script>
+    <% } %>
+    <% if (error && error.length > 0) { %>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '<%= error %>',
+                    confirmButtonColor: '#FF5A1F',
+                });
+            });
+        </script>
+    <% } %>
 </body>
 
 </html>

@@ -491,6 +491,33 @@
                             </a>
                         </div>
 
+                        <!-- Flash Message Alerts -->
+                        <% if (success && success.length > 0) { %>
+                            <script>
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: '<%= success %>',
+                                        confirmButtonColor: '#FF5A1F',
+                                        timer: 3000
+                                    });
+                                });
+                            </script>
+                        <% } %>
+                        <% if (error && error.length > 0) { %>
+                            <script>
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: '<%= error %>',
+                                        confirmButtonColor: '#FF5A1F',
+                                    });
+                                });
+                            </script>
+                        <% } %>
+
                         <form class="form-grid" id="checkoutForm" action="/user/checkout/place" method="POST">
                             <input type="hidden" name="addressId" id="selectedAddressId"
                                 value="<%= checkout.defaultAddress ? checkout.defaultAddress._id : '' %>">
@@ -770,15 +797,22 @@
                 const checkoutForm = document.getElementById('checkoutForm');
 
                 if (!addressId) {
-                    Swal.fire({
+                    return Swal.fire({
                         icon: 'warning',
                         title: 'Selection Required',
-                        text: 'Please select a shipping address before placing your order.'
+                        text: 'Please select a shipping address before placing your order.',
+                        confirmButtonColor: '#FF5A1F',
                     });
-                    return;
                 }
 
-                // Simply submit the form
+                // Show spinner visually before the browser reloads
+                const placeOrderBtn = document.getElementById('placeOrderBtn');
+                const btnText = placeOrderBtn.querySelector('.btn-text');
+                placeOrderBtn.disabled = true;
+                placeOrderBtn.classList.add('loading');
+                btnText.textContent = 'Processing...';
+
+                // Submit the form normally (Full page reload)
                 checkoutForm.submit();
             });
 

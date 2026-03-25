@@ -3,7 +3,9 @@ import categoryModel from "../models/categoryModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
 import addressModel from "../models/addressModel.js";
+import userModel from "../models/userModel.js"
 import mongoose from "mongoose";
+import orderModel from "../models/orderModel.js";
 
 export const getShopData = async (quary, userId) => {
     let { page = 1, search = "", category = "", price = "" } = quary;
@@ -215,18 +217,91 @@ export const checkoutPage = async (userId) => {
     }
 }
 
+let ordNumSelect=124281;
 
 export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
-    const user=await userModal.findById(userId);
+    const user=await userModel.findById(userId);
     if(!user||user.isBlocked){
         throw new Error("Account not autherized");
     }
-    console.log(`cart items:${cartItems}`)
+    console.log(JSON.stringify(cartItems, null, 2))
     if(!cartItems.length){
         throw new Error("cart is empty");
     };
-    const address=await addressModel.find({userId:userId,_id:addressId});
+    const address=await addressModel.findOne({userId:userId,_id:addressId});
     if(!address){
         throw new Error("Invalid shiping address.");
     }
+
+    let orderItems=[];
+    let subTotal=0;
+    for(let item of cartItems){
+
+        if(item.category?.isListed==false){
+            throw new Error("category not available");
+        }
+        if(item.variant?.isListed==false){
+            throw new Error("item variant not available");
+        };  
+        let stockUpdate = await productModel.updateOne(
+            {_id: item.productId,
+                "variants._id": new mongoose.Types.ObjectId(item.variant._id),
+                "variants.stock": { $gte: item.quantity }
+            },
+            { $inc: { "variants.$.stock": -item.quantity }});
+
+        if (stockUpdate.modifiedCount === 0) {
+            throw new Error(`"${item.productName}" just ran out of stock. Please update your cart.`);
+        }
+        
+        let itemTotal=item.variant.price*item.quantity;
+        subTotal+=itemTotal;
+
+        orderItems.push({
+            productId: item.productId,
+            variantId: item.variant._id,
+            productName: item.productName,
+            variantAttributes: item.variant.attributes || {},
+            price: item.variant.price,
+            quantity: item.quantity,
+            itemTotal,
+            image: item.variant.images?.[0] || "../../public/public/no-image.jpg",
+            itemStatus: "active"
+        });
+    }
+    const tax = parseFloat((subTotal * 0.18).toFixed(2));
+    const total = parseFloat((subTotal + tax).toFixed(2));
+    
+    let orderNumber=`ORD-${new Date()-Math.floor(Math.random(1000))}/${ordNumSelect++}`;
+
+    const order = await orderModel.create({
+        orderNumber,
+        userId,
+        shippingAddress: {
+            fullName: address.userName,
+            phone: address.phoneNumber,
+            addressLine: address.detailedAddress,
+            city: address.city,
+            state: address.state || "N/A",
+            pincode: address.pincode,
+            country: address.country || "India"
+        },
+        items: orderItems,
+        pricing: { subTotal, tax, shipping: 0, discount: 0, total },
+        paymentMethod,
+        paymentStatus: "pending",
+        orderStatus: "Pending"
+    });
+    
+    await cartModel.deleteMany({userId:userId});
+    return order;
+}
+
+export const successPage=async(userId,orderNumber)=>{
+    const order=await orderModel.findOne({userId,orderNumber});
+    console.log(`order detailse: ${order}`);
+    if(!order){
+        throw new Error("order detailse not found");
+    }
+    return order
 }

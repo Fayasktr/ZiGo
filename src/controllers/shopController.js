@@ -1,6 +1,8 @@
 import asyncHandler from "express-async-handler";
 import * as shopService from "../services/shopService.js";
 import cartModel from "../models/cartModel.js";
+import { populate } from "dotenv";
+import mongoose from "mongoose";
 
 export const loadShop = asyncHandler(async (req, res) => {
     try {
@@ -81,17 +83,50 @@ export const placeOrder=asyncHandler(async(req,res)=>{
             req.flash("error", "Please select a payment method");
             return res.redirect("/user/checkout");
         }
-        const cartItems = await cartModel.find({ userId: userId })
-            .populate({
-                path: 'productId',
-                populate: {
-                    path: 'category'
-                }
-        });        
-        const place=await shopService.placeOrder(userId,addressId,paymentMethod,cartItems);
-        res.render("user/userAfterLogin/orderSuccess");
+        
+
+        const cartItems = await cartModel.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+            { $lookup: { from: "productmodels", localField: "productId", foreignField: "_id", as: "product" } },
+            { $unwind: "$product" },
+            { $lookup: { from: "categories", localField: "product.category", foreignField: "_id", as: "product.category" } },
+            { $unwind: "$product.category" },
+            { $unwind: "$product.variants" },
+            { $match: { $expr: { $eq: ["$product.variants._id", "$variantId"] } } },
+            { $match: {"product.isListed":true}},
+            { $project: {
+                quantity: 1,
+                productId: "$product._id",
+                productName: "$product.productName",
+                brand: "$product.brand",
+                categoryName: "$product.category.categoryName",
+                variant: "$product.variants"
+            }}
+        ]);
+   
+        const placeOrder=await shopService.placeOrder(userId,addressId,paymentMethod,cartItems);
+        res.redirect(`/order/success/${placeOrder.orderNumber}`);
     } catch (error) {
         req.flash("error",error.message);
         res.redirect("/user/checkout");
     }
 })
+
+export const successPage=asyncHandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user?.id||req.user?.id;
+        const orderNumber=req.params.orderNumber;
+        if(!userId )throw new Error("Login required");
+        if(!orderNumber)throw new Error("order Number not found");
+        const successPageData=await shopService.successPage(userId,orderNumber);
+        res.render("user/userAfterLogin/orderSuccess",successPageData);
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/shop");
+    }
+})
+
+
+
+
+
