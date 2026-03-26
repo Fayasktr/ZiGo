@@ -410,6 +410,7 @@
                             <%= shippingCharge === 0 ? 'FREE' : '₹' + shippingCharge.toLocaleString() %>
                         </span>
                     </div>
+                    <p class="text-[10px] text-gray-400 mt-[-10px] mb-4">Free delivery on orders above ₹1,000. Else ₹40 applies.</p>
                     <div class="summary-row">
                         <span>Tax (GST 18%)</span>
                         <span class="font-bold" id="cartTax">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>

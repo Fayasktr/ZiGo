@@ -224,9 +224,9 @@ export const deleteWishlistItem = async (userId, productId, variantId) => {
 }
 
 export const addToCart = async (userId, productId, variantId) => {
-    userId=new mongoose.Types.ObjectId(userId);
-    productId=new mongoose.Types.ObjectId(productId);
-    variantId=new mongoose.Types.ObjectId(variantId);
+    // userId=new mongoose.Types.ObjectId(userId);
+    // productId=new mongoose.Types.ObjectId(productId);
+    // variantId=new mongoose.Types.ObjectId(variantId);
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     const theProduct=await productModel.findById(productId);
     const variant=theProduct.variants.find((v)=>v._id==variantId);
@@ -255,69 +255,6 @@ export const addToCart = async (userId, productId, variantId) => {
     return true;
 }
 
-// export const getCartPage = async (userId) => {
-//     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
-
-//     const cartItems = await cartModel.aggregate([
-//         { $match: { userId: userId } },
-//         {
-//             $lookup: {
-//                 from: "productmodels",
-//                 localField: "productId",
-//                 foreignField: "_id",
-//                 as: "product"
-//             }
-//         },
-//         { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
-//         {
-//             $lookup: {
-//                 from: "categories",
-//                 localField: "product.category",
-//                 foreignField: "_id",
-//                 as: "category"
-//             }
-//         },
-//         { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
-//         {
-
-//             $addFields: {
-//                 matchedVariant: {
-//                     $first: {
-//                         $filter: {
-//                             input: { $ifNull: ["$product.variants", []] },
-//                             as: "v",
-//                             cond: {
-//                                 $eq: [{ $toString: "$$v._id" }, { $toString: "$variantId" }]
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         },
-//         { $sort: { createdAt: -1 } }
-//     ]);
-
-//     const itemsWithStatus = cartItems.map(item => {
-//         const v = item.matchedVariant;
-//         const isAvailable = !!(
-//             item.product &&
-//             item.product.isListed &&
-//             item.category &&
-//             item.category.isListed &&
-//             v &&
-//             v.isListed &&
-//             v.stock > 0
-//         );
-//         return { ...item, isAvailable };
-//     });
-
-//     const totalPrice = itemsWithStatus.reduce((acc, item) => {
-//         if (!item.isAvailable) return acc;
-//         return acc + ((item.matchedVariant?.price || 0) * item.quantity);
-//     }, 0);
-
-//     return { items: itemsWithStatus, totalPrice };
-// };
 
 export const getCartPage = async (userId) => {
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
@@ -360,7 +297,6 @@ export const getCartPage = async (userId) => {
         { $sort: { createdAt: -1 } }
     ]);
 
-    // Collect items that need quantity updates in DB
     const quantityUpdateOps = [];
 
     const itemsWithStatus = cartItems.map(item => {
@@ -378,12 +314,10 @@ export const getCartPage = async (userId) => {
         let quantity = item.quantity;
         let quantityReduced = false;
 
-        // Auto-adjust quantity if it exceeds current stock
         if (isAvailable && v.stock < item.quantity) {
             quantity = v.stock;
             quantityReduced = true;
 
-            // Queue a DB update so cart stays in sync
             quantityUpdateOps.push({
                 updateOne: {
                     filter: { _id: item._id },
@@ -395,7 +329,6 @@ export const getCartPage = async (userId) => {
         return { ...item, quantity, isAvailable, quantityReduced };
     });
 
-    // Persist adjusted quantities to DB in one batch
     if (quantityUpdateOps.length > 0) {
         await cartModel.bulkWrite(quantityUpdateOps);
     }
@@ -445,7 +378,7 @@ export const orderHistory=async(userId)=>{
     if(!userId){
         throw new Error("need to login");
     }
-    return await orderModel.find({userId:userId});
+    return await orderModel.find({userId:userId}).sort({createdAt:-1});
 }
 
 export const orderDetailse=async(userId,orderId)=>{
@@ -459,7 +392,7 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
     const order = await orderModel.findOne({ _id: orderId, userId });
     if (!order) throw new Error("Order not found");
 
-    if (!["Pending", "Processing"].includes(order.orderStatus)) {
+    if (!["pending", "processing"].includes(order.orderStatus)) {
         throw new Error("This order cannot be cancelled");
     }
 
@@ -470,8 +403,9 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
                 {$inc:{"variants.$.stock":item.quantity}}
             );
             item.itemStatus="cancelled";
-            item.reason=reason;
-            item.comments=comments;
+            item.cancelReason = reason; 
+            item.comments = comments;   
+            console.log(`item comment saved: ${item.comments}`);
         }
     }
     order.orderStatus ="cancelled";
@@ -479,4 +413,40 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
     await order.save();
     return order;
 
+}
+
+export const itemCancel=async(userId,orderId,itemId,reason,comments)=>{
+    const order = await orderModel.findOne({ _id: orderId, userId });
+    if (!order) throw new Error("Order not found");
+
+    if (!["pending", "processing"].includes(order.orderStatus)) {
+        throw new Error("This order cannot be cancelled");
+    }
+
+    const item=order.items.id(itemId);
+    if(!item)throw new Error("item not found on the order");
+    if(item.itemStatus != "active")throw new Error("item alredy returned or cancelled");
+
+    await productModel.updateOne(
+        { _id: item.productId, "variants._id": item.variantId },
+        { $inc: { "variants.$.stock": item.quantity } }
+    );
+    item.itemStatus = "cancelled";
+    item.cancelReason = reason;
+    item.comments = comments; 
+    
+    console.log(`order detailse: ${order}`);
+
+    order.pricing.subTotal = order.items
+        .filter(i => i.itemStatus === 'active')
+        .reduce((sum, i) => sum + i.itemTotal, 0);
+
+    order.pricing.tax = parseFloat((order.pricing.subTotal * 0.18).toFixed(2));
+    order.pricing.total = order.pricing.subTotal + order.pricing.tax + order.pricing.shipping;
+
+    const allCancelled=order.items.every(item=>item.itemStatus =="cancelled");
+    if(allCancelled)order.orderStatus="cancelled";
+
+    await order.save();
+    return order;
 }

@@ -328,3 +328,17 @@ export const ordercancel=asynchandler(async(req,res)=>{
         res.status(400).json({success:false,message:"can't change order status"});
     }
 })
+
+export const itemCancel=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.orderId;
+        const itemId=req.params.itemId;
+        const reason= req.body.reason;
+        const comments=req.body.comments;
+        await addressService.itemCancel(userId,orderId,itemId,reason,comments);
+        res.status(200).json({success:true,message:"item canselled"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message ||"can't change item status"});
+    }
+})

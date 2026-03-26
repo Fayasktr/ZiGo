@@ -636,17 +636,18 @@
                                 <span>Tax (18%)</span>
                                 <span>₹<%= checkout.totals.tax.toLocaleString('en-IN') %></span>
                             </div>
-                            <% if (checkout.totals.shipping> 0) { %>
+                            <% if (checkout.totals.shipping > 0) { %>
                                 <div class="flex justify-between text-sm opacity-60">
                                     <span>Shipping</span>
                                     <span>₹<%= checkout.totals.shipping.toLocaleString('en-IN') %></span>
                                 </div>
-                                <% } else { %>
-                                    <div class="flex justify-between text-sm text-green-600 font-bold">
-                                        <span>Shipping</span>
-                                        <span>FREE</span>
-                                    </div>
-                                    <% } %>
+                            <% } else { %>
+                                <div class="flex justify-between text-sm text-green-600 font-bold">
+                                    <span>Shipping</span>
+                                    <span>FREE</span>
+                                </div>
+                            <% } %>
+                            <p class="text-[9px] text-gray-400 mt-[-5px] mb-2 text-right opacity-60">Small order fee ₹40 for orders under ₹1,000</p>
                                         <div class="flex justify-between text-xl font-bold text-orange-500 mt-4">
                                             <span>Total</span>
                                             <span>₹<%= checkout.totals.total.toLocaleString('en-IN') %></span>

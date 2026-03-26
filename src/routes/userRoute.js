@@ -45,7 +45,7 @@ router.patch("/user/cart/changeQty",userProfile.changeCartQty,cartMiddlware.cart
 
 router.get("/user/orders",userProfile.orderHistory);
 router.get("/user/order/:id",userProfile.orderDetailse);
-router.post("/user/order/:id/cancel",userProfile.ordercancel);
-
+router.patch("/user/order/:id/cancel",userProfile.ordercancel);
+router.patch("/user/order/:orderId/item/:itemId/cancel",userProfile.itemCancel);
 
 export default router;

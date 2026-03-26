@@ -15,6 +15,7 @@ router.post("/shop/cart/:id",wishlistAndCart.isThereUser,shopCntrl.addToCart);
 router.get("/user/checkout",wishlistAndCart.isThereUser,shopCntrl.proceedToCheckout);
 router.post("/user/checkout/place",wishlistAndCart.isThereUser,shopCntrl.placeOrder);
 router.get("/order/success/:orderNumber",wishlistAndCart.isThereUser,shopCntrl.successPage);
+router.post("/productDetailse/buyNow",shopCntrl.buyNow);
 
 const shopRoute = router;
 

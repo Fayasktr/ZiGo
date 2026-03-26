@@ -20,7 +20,6 @@ export const loadProductDetailsePage = asyncHandler(async (req, res) => {
         const productId = req.params.productId;
         const userId=req?.session?.user?.id||req?.user?.id||"";
         const { product, relatedProducts ,wishlist} = await shopService.productDetailsePage(productId,userId);
-        console.log("product detailse:",product)
         res.render("user/productDetailse", { product, relatedProducts ,wishlist});
     } catch (error) {
         console.log(error)
@@ -50,7 +49,6 @@ export const addToCart = asyncHandler(async (req, res) => {
         let variantId = req.query.variantId;
 
         let quantity = req.query.quantity || 1;
-        console.log(`add to cart =product id:${productId}, and variant id:${variantId}, userId:${userId}, quantity:${quantity}`)
         const cartCount = await shopService.addToCart(userId, productId, variantId, quantity);
         
         res.status(200).json({ success: true, message: "Added to cart successfully", cartCount:cartCount });
@@ -126,7 +124,18 @@ export const successPage=asyncHandler(async(req,res)=>{
     }
 })
 
-
-
+export const buyNow=asyncHandler(async(req,res)=>{
+    try {
+        const {productId,variantId,quantity} =req.body;
+        const buy=await shopService.buynow(productId,variantId,quantity)
+        req.session.buyNowItem={productId,variantId,quantity};
+        res.status(200).json({
+            success:true,
+            redirectUrl:"/user/checkout?type=buyNow";
+        })
+    } catch (error) {
+            res.status(400).json({ success: false, message: error.message });
+    }
+})
 
 

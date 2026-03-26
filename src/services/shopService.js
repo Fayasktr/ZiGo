@@ -93,8 +93,7 @@ export const productDetailsePage = async (productId, userId) => {
         wishlist = wishlistData.filter(Boolean).map(id => id.toString());
     }
     const variantAttributes = relatedProducts[0]?.variantAttributes;
-    console.log(`variant attribute:${variantAttributes}`);
-    console.log(category);
+
     return { product, relatedProducts, wishlist };
 }
 
@@ -118,9 +117,7 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
 }
 
 export const addToCart = async (userId, productId, variantId, quantity = 1) => {
-    // userId=new mongoose.Types.ObjectId(userId);
-    // productId=new mongoose.Types.ObjectId(productId);
-    // variantId=new mongoose.Types.ObjectId(variantId);
+
     if (!userId) {
         throw new Error("Login required to add items to cart");
     }
@@ -139,7 +136,6 @@ export const addToCart = async (userId, productId, variantId, quantity = 1) => {
     }
     
     if (existCart) {
-        console.log("exist cart:",existCart)
         const newQuantity = existCart.quantity + qty;
         if (newQuantity > 10) {
             throw new Error("Maximum cart limit reached (10 per item)");
@@ -224,7 +220,6 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
     if(!user||user.isBlocked){
         throw new Error("Account not autherized");
     }
-    console.log(JSON.stringify(cartItems, null, 2))
     if(!cartItems.length){
         throw new Error("cart is empty");
     };
@@ -299,9 +294,18 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
 
 export const successPage=async(userId,orderNumber)=>{
     const order=await orderModel.findOne({userId,orderNumber});
-    console.log(`order detailse: ${order}`);
     if(!order){
         throw new Error("order detailse not found");
     }
     return order
+}
+
+export const buynow=async(productId,variantId,quantity)=>{
+    
+    const product=await productModel.findOne({_id:productId,variantId:variantId});
+    console.log(`the product to buy: ${product}`);
+    if(!product){
+        throw new Error("product not available");
+    }
+    return product
 }

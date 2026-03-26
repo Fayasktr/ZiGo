@@ -77,6 +77,17 @@
         .status-cancelled { background: #FFEEEE; color: #FF4757; }
         .status-returned { background: #F3E8FF; color: #A855F7; }
         .status-pending { background: #F1F5F9; color: #64748B; }
+        
+        .item-status-badge {
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-top: 4px;
+        }
 
         .details-body {
             padding: 2.5rem;
@@ -336,6 +347,7 @@
                                     <%= order.pricing.shipping === 0 ? 'FREE' : '₹' + order.pricing.shipping.toLocaleString() %>
                                 </span>
                             </div>
+                            <p class="text-[9px] text-gray-400 mt-[-5px] mb-1 text-right opacity-60">Small order fee ₹40 for orders under ₹1,000</p>
                             <div class="flex justify-between">
                                 <span class="opacity-60">Tax (GST 18%)</span>
                                 <span class="font-bold">₹<%= order.pricing.tax.toLocaleString() %></span>
@@ -367,10 +379,20 @@
                         <div class="flex-1">
                             <h4 class="text-lg font-bold"><%= item.productName %></h4>
                             <p class="opacity-50 text-sm">Quantity: <%= item.quantity %></p>
+                            <span class="item-status-badge status-<%= item.itemStatus.toLowerCase() %>">
+                                <%= item.itemStatus %>
+                            </span>
                         </div>
                         <div class="text-right">
                             <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
                             <p class="text-xs opacity-50 font-bold mt-1">Total: ₹<%= item.itemTotal.toLocaleString() %></p>
+                            
+                            <% if (item.itemStatus === 'active' && ['pending', 'processing'].includes(order.orderStatus.toLowerCase())) { %>
+                                <button onclick="cancelOrderItem('<%= order._id %>', '<%= item._id %>')" 
+                                    class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
+                                    Cancel Item
+                                </button>
+                            <% } %>
                         </div>
                     </div>
                 <% }) %>
@@ -585,7 +607,7 @@
             
             try {
                 const response = await fetch(`/user/order/<%= order._id %>/cancel`, {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -638,6 +660,76 @@
             console.log('Rating order:', '<%= order._id %>', selectedRating, feedback);
             closeModal('ratingModal');
             Swal.fire('Thank You', 'Your feedback has been received.', 'success');
+        }
+
+        async function cancelOrderItem(orderId, itemId) {
+            const { value: reason } = await Swal.fire({
+                title: 'Cancel Product',
+                text: 'Why do you want to cancel this item?',
+                input: 'select',
+                inputOptions: {
+                    'Changed my mind': 'Changed my mind',
+                    'Found better price elsewhere': 'Found better price elsewhere',
+                    'Incorrect item/details': 'Incorrect item/details',
+                    'Other': 'Other'
+                },
+                inputPlaceholder: 'Select a reason',
+                showCancelButton: true,
+                confirmButtonColor: '#FF5A1F',
+                cancelButtonColor: '#d33',
+                inputValidator: (value) => {
+                    return !value && 'You need to select a reason!'
+                }
+            });
+
+            if (reason) {
+                const { value: comments } = await Swal.fire({
+                    title: 'Additional Comments',
+                    input: 'textarea',
+                    inputPlaceholder: 'Type your comments here...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A1F',
+                });
+
+                try {
+                    // Note: This route must be implemented in your backend
+                    const response = await fetch(`/user/order/${orderId}/item/${itemId}/cancel`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason, comments })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Item Cancelled',
+                            text: 'The product has been removed from your order.',
+                            confirmButtonColor: '#FF5A1F'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to cancel item.',
+                            confirmButtonColor: '#FF5A1F'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Something went wrong. Please try again.',
+                        confirmButtonColor: '#FF5A1F'
+                    });
+                }
+            }
         }
     </script>
 
