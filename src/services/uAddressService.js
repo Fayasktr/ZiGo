@@ -455,6 +455,28 @@ export const orderDetailse=async(userId,orderId)=>{
     return orderData;
 }
 
-export const orderCancel=async(userId,orderId)=>{
-    const canselOrder=await orderModel.findOneAndUpdate({userId:userId,_id:orderId},{$set:{orderStatus:"Cancelled"}});
+export const orderCancel=async(userId,orderId,reason="",comments="")=>{
+    const order = await orderModel.findOne({ _id: orderId, userId });
+    if (!order) throw new Error("Order not found");
+
+    if (!["Pending", "Processing"].includes(order.orderStatus)) {
+        throw new Error("This order cannot be cancelled");
+    }
+
+    for(let item of order.items){
+        if(item.itemStatus=='active'){
+            await productModel.updateOne(
+                {_id:item.productId,"variants._id":item.variantId},
+                {$inc:{"variants.$.stock":item.quantity}}
+            );
+            item.itemStatus="cancelled";
+            item.reason=reason;
+            item.comments=comments;
+        }
+    }
+    order.orderStatus ="cancelled";
+    order.cancelReason = reason;
+    await order.save();
+    return order;
+
 }

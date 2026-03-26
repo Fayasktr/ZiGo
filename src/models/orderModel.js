@@ -30,12 +30,12 @@ const itemsSchema = mongoose.Schema({
     },
     itemStatus: {
         type: String,
-        enum: ["active", "cancelled", "returned"],
+        enum: ["active", "cancelled","delivered", "returned"],
         default: "active"
     },
     cancelReason: { type: String },
     returnReason: { type: String },
-    addishnalCommand:{type:String}
+    comments:{type:String}
 })
 
 
@@ -67,8 +67,12 @@ const orderSchema=mongoose.Schema({
     },
     orderStatus:{
         type:String,
-        enum:["Pending","Processing","Shipped","Delivered","Cancelled"],
+        enum:["pending","processing","shipped","delivered","cancelled"],
         default:"Pending"
+    },
+    cancelReason:{
+        type:String,
+        default:""
     },
     paymentMethod:{
         type:String,

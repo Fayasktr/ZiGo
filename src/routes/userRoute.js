@@ -44,7 +44,7 @@ router.patch("/user/cart/delete/:id",userProfile.deleteCartItem)
 router.patch("/user/cart/changeQty",userProfile.changeCartQty,cartMiddlware.cartCount);
 
 router.get("/user/orders",userProfile.orderHistory);
-router.get("/user/orders/:id",userProfile.orderDetailse);
+router.get("/user/order/:id",userProfile.orderDetailse);
 router.post("/user/order/:id/cancel",userProfile.ordercancel);
 
 

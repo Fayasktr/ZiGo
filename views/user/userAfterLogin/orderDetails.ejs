@@ -584,7 +584,7 @@
             const comments = document.getElementById('cancelComments').value;
             
             try {
-                const response = await fetch(`/user/orders/<%= order._id %>/cancel`, {
+                const response = await fetch(`/user/order/<%= order._id %>/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

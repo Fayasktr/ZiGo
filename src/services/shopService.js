@@ -272,7 +272,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
     const tax = parseFloat((subTotal * 0.18).toFixed(2));
     const total = parseFloat((subTotal + tax).toFixed(2));
     
-    let orderNumber=`ORD-${new Date()-Math.floor(Math.random(1000))}-${ordNumSelect++}`;
+    let orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
 
     const order = await orderModel.create({
         orderNumber,
@@ -290,7 +290,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
         pricing: { subTotal, tax, shipping: 0, discount: 0, total },
         paymentMethod,
         paymentStatus: "pending",
-        orderStatus: "Pending"
+        orderStatus: "pending"
     });
     
     await cartModel.deleteMany({userId:userId});

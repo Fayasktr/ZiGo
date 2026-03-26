@@ -340,7 +340,10 @@
                                             <% } %>
                                         </div>
                                         <span class="order-status status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
-                                        <a href="/user/orders/<%= order._id %>" class="block mt-4 text-xs font-bold text-orange-500 hover:underline">View Details</a>
+                                        <a href="/user/order/<%= order._id %>" class="block mt-4 text-xs font-bold text-orange-500 hover:underline">View Details</a>
+                                        <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
+                                            <button onclick="cancelOrder('<%= order._id %>')" class="block w-full mt-2 text-xs font-bold text-red-500 hover:underline">Cancel Order</button>
+                                        <% } %>
                                         <% if (order.orderStatus === 'Delivered') { %>
                                             <button class="block w-full mt-2 text-xs font-bold text-orange-500 hover:underline">Download Invoice</button>
                                         <% } %>
@@ -383,6 +386,83 @@
             </div>
         </div>
     </main>
+
+    <script>
+        async function cancelOrder(orderId) {
+            const { value: reason } = await Swal.fire({
+                title: 'Cancel Order',
+                input: 'select',
+                inputOptions: {
+                    'Changed my mind': 'Changed my mind',
+                    'Found better price elsewhere': 'Found better price elsewhere',
+                    'Order taking too long': 'Order taking too long',
+                    'Incorrect item/details': 'Incorrect item/details',
+                    'Other': 'Other'
+                },
+                inputPlaceholder: 'Select a reason',
+                showCancelButton: true,
+                confirmButtonColor: '#FF5A1F',
+                cancelButtonColor: '#d33',
+                inputValidator: (value) => {
+                    return new Promise((resolve) => {
+                        if (value) {
+                            resolve();
+                        } else {
+                            resolve('Please select a reason');
+                        }
+                    });
+                }
+            });
+
+            if (reason) {
+                const { value: comments } = await Swal.fire({
+                    title: 'Additional Comments',
+                    input: 'textarea',
+                    inputPlaceholder: 'Type your comments here...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A1F',
+                });
+
+                try {
+                    const response = await fetch(`/user/order/${orderId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason, comments })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Cancelled',
+                            text: 'Your order has been cancelled successfully.',
+                            confirmButtonColor: '#FF5A1F'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message || 'Failed to cancel order.',
+                            confirmButtonColor: '#FF5A1F'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again later.',
+                        confirmButtonColor: '#FF5A1F'
+                    });
+                }
+            }
+        }
+    </script>
 
     <%- include('../../partials/footer') %>
 </body>
