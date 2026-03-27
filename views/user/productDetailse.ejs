@@ -577,7 +577,7 @@
                                         <div class="flex gap-6 h-[60px]">
                                             <div class="qty-selector">
                                                 <button class="qty-btn" onclick="changeQty(-1)">-</button>
-                                                <input type="number" class="qty-input" value="1" id="qty" readonly>
+                                                <input type="number" class="qty-input" value="1" id="qty" min="1" max="10" readonly>
                                                 <button class="qty-btn" onclick="changeQty(1)">+</button>
                                             </div>
                                             <button class="add-to-cart-btn-large flex-1"
@@ -784,8 +784,19 @@
                                     function changeQty(n) {
                                         let i = document.getElementById('qty');
                                         let v = parseInt(i.value) + n;
-                                        if (v > 0) i.value = v;
-                                        if (v == 10) return "limit reached"
+                                        if (v >= 1 && v <= 10) {
+                                            i.value = v;
+                                        } else if (v > 10) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Limit Reached',
+                                                text: 'Maximum quantity per item is 10.',
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 2000
+                                            });
+                                        }
                                     }
                                     function scrollToSection(id) {
                                         const el = document.getElementById(id);
@@ -1147,9 +1158,9 @@
                                         const vId = currentVariantId;
                                         try {
                                             const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
-                                            let response = await fetch(`/shop/cart/${productId}?variantId=${currentVariantId}&quantity=${quantity}`, {
+                                            let response = await fetch(`/productDetailse/buyNow`, {
                                                 method: "POST",
-                                                headers: { "Content-Type": "application/json" }
+                                                headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, variantId: vId, quantity })
                                             });
 
                                             if (response.status === 401) {
@@ -1169,7 +1180,7 @@
                                             let result = await response.json();
                                             if (response.ok && result.success) {
                                                 // If added to cart successfully, redirect to checkout/cart
-                                                window.location.href = '/user/cart';
+                                                window.location.href = '/user/checkout?type=buynow&productId=' + productId + '&variantId=' + vId;
                                             } else {
                                                 throw new Error(result.message || "Checkout failed");
                                             }

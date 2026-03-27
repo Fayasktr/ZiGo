@@ -522,6 +522,10 @@
                             <input type="hidden" name="addressId" id="selectedAddressId"
                                 value="<%= checkout.defaultAddress ? checkout.defaultAddress._id : '' %>">
                             <input type="hidden" name="paymentMethod" id="selectedPaymentMethod" value="cash">
+                            
+                            <!-- Support for Buy Now -->
+                            <input type="hidden" name="productId" id="buyNowProductId" value="">
+                            <input type="hidden" name="variantId" id="buyNowVariantId" value="">
 
                             <div class="input-group">
                                 <label>USERNAME</label>
@@ -629,8 +633,8 @@
 
                         <div class="border-t border-gray-100 pt-6 space-y-3">
                             <div class="flex justify-between text-sm opacity-60">
-                                <span>Subtotal</span>
-                                <span>₹<%= checkout.totals.subtotal.toLocaleString('en-IN') %></span>
+                                <span>SubTotal</span>
+                                <span>₹<%= checkout.totals.subTotal.toLocaleString('en-IN') %></span>
                             </div>
                             <div class="flex justify-between text-sm opacity-60">
                                 <span>Tax (18%)</span>
@@ -815,6 +819,21 @@
 
                 // Submit the form normally (Full page reload)
                 checkoutForm.submit();
+            });
+
+            // Initialize Buy Now data if applicable
+            window.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('type') === 'buynow') {
+                    document.getElementById('buyNowProductId').value = urlParams.get('productId') || '';
+                    document.getElementById('buyNowVariantId').value = urlParams.get('variantId') || '';
+                    
+                    // Change form action if needed, or point to the same endpoint if the user's backend handles both
+                    // Based on the user's snippet, they might want to point to /productDetailse/buyNow
+                    // for the final placement too, or just use the standard one but with extra fields.
+                    // Given the snippet: action="/user/checkout/place"
+                    // If the user's backend is ready to handle productId in body on /user/checkout/place:
+                }
             });
 
             function toggleCoupon() {

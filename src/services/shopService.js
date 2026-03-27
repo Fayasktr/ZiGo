@@ -121,7 +121,7 @@ export const addToCart = async (userId, productId, variantId, quantity = 1) => {
     if (!userId) {
         throw new Error("Login required to add items to cart");
     }
-
+    if(quantity>10)throw new Error("select maximum 10 quantity for a single product")
     const qty = parseInt(quantity) || 1;
     const existCart = await cartModel.findOne({ userId, productId, variantId });
     const product = await productModel.findById(productId);
@@ -145,7 +145,7 @@ export const addToCart = async (userId, productId, variantId, quantity = 1) => {
         if (!product) throw new Error("Product not found");
         if (!variant) throw new Error("Variant not found");
         if (variant.stock < qty) {
-            throw new Error("Insufficient stock available");
+            throw new Error(`Insufficient stock available, only ${variant.stock} stock available`);
         }
 
         await cartModel.create({
@@ -189,10 +189,10 @@ export const checkoutPage = async (userId) => {
         const addresses = await addressModel.find({ userId: userId }).sort({ isDefault: -1, createdAt: -1 });
         const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0] || null;
 
-        const subtotal = checkoutData.reduce((sum, item) => sum + (item.isAvailable ? item.totalPrice : 0), 0);
-        const shipping = subtotal > 1000 ? 0 : 40;
-        const tax = subtotal * 0.18;
-        const total = subtotal + shipping + tax;
+        const subTotal = checkoutData.reduce((sum, item) => sum + (item.isAvailable ? item.totalPrice : 0), 0);
+        const shipping = subTotal > 1000 ? 0 : 40;
+        const tax = subTotal * 0.18;
+        const total = subTotal + shipping + tax;
 
         console.log(`Checkout page loaded for user ${userId}. Items: ${checkoutData.length}`);
         
@@ -201,7 +201,7 @@ export const checkoutPage = async (userId) => {
             defaultAddress,
             addresses,
             totals: {
-                subtotal,
+                subTotal,
                 shipping,
                 tax,
                 total
@@ -212,6 +212,43 @@ export const checkoutPage = async (userId) => {
         throw error;
     }
 }
+
+
+export const checkoutBuyNowOrder = async (userId,buyNowItem) => {
+    const product = await productModel.findById(buyNowItem.productId);
+    console.log(buyNowItem);
+    console.log("variants ",product)
+    const variant = product.variants.find(v => v._id.toString() === buyNowItem.variantId.toString());
+    if(!product){
+        throw new Error("product not available");
+    }
+    if(product && product.variants.stock<buyNowItem.quantity){
+        throw new Error(`limited stock availbale, (only ${product.variants.stock} available`);
+    }
+    const itemData = {
+        productName: product.productName,
+        price: variant.price,
+        quantity: buyNowItem.quantity,
+        totalPrice: variant.price * buyNowItem.quantity,
+        images: variant.images,
+        isAvailable: true 
+    };
+
+    const addresses = await addressModel.find({ userId }).sort({ isDefault: -1 });
+    const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0] || null;
+
+    const subTotal = itemData.totalPrice;
+    const shipping = subTotal > 1000 ? 0 : 40;
+    const tax = subTotal * 0.18;
+    console.log(4)
+    return {
+        checkoutData: [itemData], 
+        totals: { subTotal, shipping, tax, total: subTotal + shipping + tax },
+        addresses,
+        defaultAddress
+    };
+};
+
 
 let ordNumSelect=124281;
 
@@ -251,7 +288,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
         
         let itemTotal=item.variant.price*item.quantity;
         subTotal+=itemTotal;
-
+        
         orderItems.push({
             productId: item.productId,
             variantId: item.variant._id,
@@ -265,6 +302,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
         });
     }
     const tax = parseFloat((subTotal * 0.18).toFixed(2));
+    const shipingCharge=subTotal<1000?40:0;
     const total = parseFloat((subTotal + tax).toFixed(2));
     
     let orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
@@ -282,7 +320,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
             country: address.country || "India"
         },
         items: orderItems,
-        pricing: { subTotal, tax, shipping: 0, discount: 0, total },
+        pricing: { subTotal, tax, shipping: shipingCharge, discount: 0, total },
         paymentMethod,
         paymentStatus: "pending",
         orderStatus: "pending"
@@ -302,10 +340,88 @@ export const successPage=async(userId,orderNumber)=>{
 
 export const buynow=async(productId,variantId,quantity)=>{
     
-    const product=await productModel.findOne({_id:productId,variantId:variantId});
+    const product=await productModel.findOne({_id:productId,"variants._id":variantId});
     console.log(`the product to buy: ${product}`);
     if(!product){
         throw new Error("product not available");
     }
+    if(product && product.variants.stock<quantity){
+        throw new Error(`limited stock availbale, (only ${product.variants.stock} available`);
+    }
+    console.log(2)
     return product
+}
+
+export const placeBuyNowOrder=async(userId,addressId,paymentMethod,buyNowItem)=>{
+    const address=await addressModel.findOne({userId:userId,_id:addressId});
+    if(!address){
+        throw new Error("Invalid shiping address.");
+    }
+    const product=await productModel.findById(buyNowItem.productId).populate("category");
+    console.log(`the product to buy: ${product}`);
+    if(!product){
+        throw new Error("product not available");
+    }
+    if (product.category && !product.category.isListed) {
+        throw new Error("Category not available");
+    }
+    console.log(buyNowItem)
+
+    const variant = product.variants.find(
+        (v) => v._id.toString() === buyNowItem.variantId.toString()
+    );
+    if (!variant || !variant.isListed) {
+        throw new Error("Variant not available");
+    }
+    const stockUpdate = await productModel.updateOne(
+        {
+        _id: buyNowItem.productId,
+        "variants._id": new mongoose.Types.ObjectId(buyNowItem.variantId),
+        "variants.stock": { $gte: buyNowItem.quantity },
+        },
+        { $inc: { "variants.$.stock": -buyNowItem.quantity } }
+    );
+
+    if (stockUpdate.modifiedCount === 0) {
+        throw new Error("Item just went out of stock. Please try again.");
+    }
+    const itemTotal=variant.price*buyNowItem.quantity;
+    const subTotal=itemTotal;
+    const shipping=subTotal<1000?40:0;
+    const tax = parseFloat((subTotal * 0.18).toFixed(2));
+    const total = parseFloat((subTotal + shipping + tax).toFixed(2));
+    const orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
+
+    const order = await orderModel.create({
+        orderNumber,
+        userId,
+        shippingAddress: {
+            fullName: address.userName,
+            phone: address.phoneNumber,
+            addressLine: address.detailedAddress,
+            city: address.city,
+            state: address.state || "N/A",
+            pincode: address.pincode,
+            country: address.country || "India",
+        },
+        items: [
+        {
+            productId: product._id,
+            variantId: variant._id,
+            productName: product.productName,
+            variantAttributes: variant.attributes || {},
+            price: variant.price,
+            quantity:buyNowItem.quantity,
+            itemTotal,
+            image: variant.images?.[0] || "/public/no-image.jpg",
+            itemStatus: "active",
+        }],
+        pricing: { subTotal, tax, shipping, discount: 0, total },
+        paymentMethod,
+        paymentStatus: "pending",
+        orderStatus: "pending",
+    });
+
+    return order;
+
 }
