@@ -8,6 +8,7 @@ router.route("/admin")
     .post(adminControl.adminAccess)
 
 router.use(adminAuth.preventCache);
+
 router.use("/admin", adminAuth.protectAdmin);
 
 router.get("/admin/dashbord", adminControl.adminDashbord);
@@ -16,7 +17,9 @@ router.get("/admin/logout", adminControl.adminLogout);
 router.get("/admin/users", adminControl.userManagementPage);
 router.patch("/admin/users/:id/:action", adminControl.blockAndUnblock);
 
-
+router.get("/admin/orders",adminControl.adminOrderList);
+router.get("/admin/orderDetails/:id",adminControl.orderDetailsePage);
+router.patch("/admin/orderDetails/:id/update",adminControl.orderStatusUpdate);
 
 const adminRoute = router;
 

@@ -10,8 +10,8 @@ async function submitAddressFormForEditAddress() {
 
     let isValid = true;
 
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    if (!nameRegex.test(data.userName)) {
+    const nameRegex = /^[A-Za-z\s.]{3,}$/;
+    if (!nameRegex.test(data.userName.trim())) {
         showError('userName');
         isValid = false;
     }
@@ -43,8 +43,9 @@ async function submitAddressFormForEditAddress() {
         isValid = false;
     }
 
-    if (!numRegex.test(data.phoneNumber)) {
-        showError('phoneNumber');
+    const digitsOnly = data.phoneNumber.replace(/\D/g, '');
+    if (digitsOnly.length !== 10) {
+        showError('phoneNumber', 'Phone number must be exactly 10 digits.');
         isValid = false;
     }
 
@@ -96,9 +97,12 @@ async function submitAddressFormForEditAddress() {
     }
 }
 
-function showError(fieldId) {
+function showError(fieldId, message) {
     const errorSpan = document.getElementById(`error-${fieldId}`);
     const input = document.getElementById(fieldId);
-    if (errorSpan) errorSpan.style.display = 'block';
+    if (errorSpan) {
+        if (message) errorSpan.textContent = message;
+        errorSpan.style.display = 'block';
+    }
     if (input) input.classList.add('error');
 }

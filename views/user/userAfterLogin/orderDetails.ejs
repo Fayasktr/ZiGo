@@ -382,16 +382,34 @@
                             <span class="item-status-badge status-<%= item.itemStatus.toLowerCase() %>">
                                 <%= item.itemStatus %>
                             </span>
+                            
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <% if (item.variantAttributes) { 
+                                    const attrs = (item.variantAttributes instanceof Map) ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
+                                    Object.entries(attrs).forEach(([key, value]) => { %>
+                                        <span class="px-2.5 py-1 bg-gray-100 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 border border-gray-200">
+                                            <%= key %>: <span class="text-orange-600"><%= value %></span>
+                                        </span>
+                                    <% }) 
+                                } %>
+                            </div>
                         </div>
                         <div class="text-right">
                             <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
                             <p class="text-xs opacity-50 font-bold mt-1">Total: ₹<%= item.itemTotal.toLocaleString() %></p>
                             
-                            <% if (item.itemStatus === 'active' && ['pending', 'processing'].includes(order.orderStatus.toLowerCase())) { %>
-                                <button onclick="cancelOrderItem('<%= order._id %>', '<%= item._id %>')" 
-                                    class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
-                                    Cancel Item
-                                </button>
+                            <% if (item.itemStatus === 'active') { %>
+                                <% if (order.orderStatus.toLowerCase() === 'delivered') { %>
+                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>, true)" 
+                                        class="text-[10px] font-bold text-blue-500 hover:underline mt-2 block w-full text-right">
+                                        Return Item
+                                    </button>
+                                <% } else if (['pending', 'processing', 'shipped'].includes(order.orderStatus.toLowerCase())) { %>
+                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>, false)" 
+                                        class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
+                                        Cancel Item
+                                    </button>
+                                <% } %>
                             <% } %>
                         </div>
                     </div>
@@ -488,17 +506,11 @@
                 <!-- Interactive Actions -->
                 <div class="mt-12 pt-12 border-t flex flex-wrap gap-4 justify-center">
                     
-                    <% if (order.orderStatus === 'Delivered') { %>
-                        <!-- Visible for 'Delivered' orders -->
+                    <% if (order.orderStatus.toLowerCase() === 'delivered') { %>
                         <button class="action-btn btn-return" onclick="openModal('returnModal')">
-                            <i class="fas fa-undo"></i> Return / Resend
-                        </button>
-
-                        <button class="action-btn bg-black text-white hover:bg-zinc-800" onclick="openModal('ratingModal')">
-                            <i class="fas fa-star text-yellow-500"></i> Rate & Review
+                            <i class="fas fa-undo"></i> Return Order
                         </button>
                     <% } else if (['processing', 'shipped', 'pending'].includes(order.orderStatus.toLowerCase())) { %>
-                        <!-- Hidden for 'Delivered' orders -->
                         <button class="action-btn btn-cancel" onclick="openModal('cancelModal')">
                             <i class="fas fa-times-circle"></i> Cancel Order
                         </button>
@@ -645,13 +657,46 @@
             }
         }
 
-        function confirmReturn() {
+        async function confirmReturn() {
             const reason = document.getElementById('returnReason').value;
             const description = document.getElementById('returnDescription').value;
-            // Logic to send return request to backend
-            console.log('Returning order:', '<%= order._id %>', reason, description);
-            closeModal('returnModal');
-            Swal.fire('Success', 'Your return request has been submitted.', 'success');
+            
+            try {
+                const response = await fetch(`/user/order/<%= order._id %>/return`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason, comments: description })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeModal('returnModal');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Return Requested',
+                        text: 'Your return request for the entire order has been submitted.',
+                        confirmButtonColor: '#3395FF'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to submit return request.',
+                        confirmButtonColor: '#FF5A1F'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'Something went wrong. Please try again.',
+                    confirmButtonColor: '#FF5A1F'
+                });
+            }
         }
 
         function submitRating() {
@@ -662,43 +707,57 @@
             Swal.fire('Thank You', 'Your feedback has been received.', 'success');
         }
 
-        async function cancelOrderItem(orderId, itemId) {
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel Product',
-                text: 'Why do you want to cancel this item?',
-                input: 'select',
-                inputOptions: {
-                    'Changed my mind': 'Changed my mind',
-                    'Found better price elsewhere': 'Found better price elsewhere',
-                    'Incorrect item/details': 'Incorrect item/details',
-                    'Other': 'Other'
-                },
-                inputPlaceholder: 'Select a reason',
+        async function initiateItemAction(orderId, itemId, maxQty, isReturn) {
+            const actionTitle = isReturn ? 'Return Product' : 'Cancel Product';
+            const actionVerb = isReturn ? 'return' : 'cancel';
+            const endpoint = isReturn ? `/user/order/${orderId}/item/${itemId}/return` : `/user/order/${orderId}/item/${itemId}/cancel`;
+
+            const { value: formValues } = await Swal.fire({
+                title: actionTitle,
+                html: `
+                    <p class="text-sm mb-4">Please provide the details for your request.</p>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-400 mb-1 text-left">REASON FOR ${actionVerb.toUpperCase()}</label>
+                        <select id="swal-reason" class="w-full p-3 rounded-lg bg-gray-50 border outline-none">
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Found better price elsewhere">Found better price elsewhere</option>
+                            <option value="Incorrect item/details">Incorrect item/details</option>
+                            <option value="Damaged product">Damaged product</option>
+                            <option value="Quality not as expected">Quality not as expected</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-400 mb-1 text-left">QUANTITY TO ${actionVerb.toUpperCase()} (Max: ${maxQty})</label>
+                        <input id="swal-quantity" type="number" min="1" max="${maxQty}" value="${maxQty}" class="w-full p-3 rounded-lg bg-gray-50 border outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1 text-left">ADDITIONAL COMMENTS</label>
+                        <textarea id="swal-comments" class="w-full p-3 rounded-lg bg-gray-50 border outline-none" placeholder="Type your comments here..." rows="3"></textarea>
+                    </div>
+                `,
+                focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonColor: '#FF5A1F',
-                cancelButtonColor: '#d33',
-                inputValidator: (value) => {
-                    return !value && 'You need to select a reason!'
+                confirmButtonColor: isReturn ? '#3395FF' : '#FF5A1F',
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-reason').value;
+                    const quantity = parseInt(document.getElementById('swal-quantity').value);
+                    const comments = document.getElementById('swal-comments').value;
+
+                    if (!quantity || quantity < 1 || quantity > maxQty) {
+                        Swal.showValidationMessage(`Please enter a quantity between 1 and ${maxQty}`);
+                        return false;
+                    }
+                    return { reason, quantity, comments };
                 }
             });
 
-            if (reason) {
-                const { value: comments } = await Swal.fire({
-                    title: 'Additional Comments',
-                    input: 'textarea',
-                    inputPlaceholder: 'Type your comments here...',
-                    showCancelButton: true,
-                    confirmButtonColor: '#FF5A1F',
-                });
-
+            if (formValues) {
                 try {
-                    // Note: This route must be implemented in your backend
-                    const response = await fetch(`/user/order/${orderId}/item/${itemId}/cancel`, {
+                    const response = await fetch(endpoint, {
                         method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reason, comments })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formValues)
                     });
 
                     const data = await response.json();
@@ -706,9 +765,9 @@
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Item Cancelled',
-                            text: 'The product has been removed from your order.',
-                            confirmButtonColor: '#FF5A1F'
+                            title: `Item ${isReturn ? 'Returned' : 'Cancelled'}`,
+                            text: `The product request has been submitted successfully.`,
+                            confirmButtonColor: isReturn ? '#3395FF' : '#FF5A1F'
                         }).then(() => {
                             window.location.reload();
                         });
@@ -716,7 +775,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: data.message || 'Failed to cancel item.',
+                            text: data.message || `Failed to ${actionVerb} item.`,
                             confirmButtonColor: '#FF5A1F'
                         });
                     }

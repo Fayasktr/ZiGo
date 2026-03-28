@@ -244,7 +244,7 @@
 
             <form class="form-card" id="categoryForm"
                 action="<%= locals.isEdit ? '/admin/category/edit/' + category._id : '/admin/category/add' %>"
-                method="POST">
+                method="PUT">
                 <div class="form-group">
                     <input type="text" name="categoryName" id="categoryName" class="form-input"
                         placeholder="e.g. Smart Watches" value="<%= locals.isEdit ? category.categoryName : '' %>">

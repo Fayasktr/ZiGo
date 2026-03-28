@@ -309,7 +309,7 @@
                 <h1 class="text-3xl font-extrabold">Order <span class="text-orange-500">Fulfillment</span></h1>
             </div>
             <form action="/admin/orders" method="GET" class="flex items-center gap-4">
-                <input type="text" name="search" placeholder="Search Order ID..." value="<%= typeof search !== 'undefined' ? search : '' %>"
+                <input type="text" name="search" placeholder="Search Order #..." value="<%= typeof search !== 'undefined' ? search : '' %>"
                     class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl outline-none text-sm w-64 focus:border-orange-500 transition-colors">
                 <% if (typeof status !== 'undefined') { %>
                     <input type="hidden" name="status" value="<%= status %>">
@@ -320,12 +320,12 @@
 
         <div class="orders-container">
             <% 
-               const statuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-               const currentStatus = typeof status !== 'undefined' ? status : 'All';
+               const statuses = ['all', 'processing', 'shipped', 'delivered', 'cancelled'];
+               const currentStatus = (typeof status !== 'undefined' && status) ? status.toLowerCase() : 'all';
             %>
             <div class="filter-tabs">
                 <% statuses.forEach(s => { %>
-                    <a href="/admin/orders?status=<%= s %>" class="tab-item <%= currentStatus === s ? 'active' : '' %>"><%= s %> Orders</a>
+                    <a href="/admin/orders?status=<%= s %>" class="tab-item <%= currentStatus === s ? 'active' : '' %>"><%= s.charAt(0).toUpperCase() + s.slice(1) %> Orders</a>
                 <% }) %>
             </div>
 
@@ -345,20 +345,20 @@
                         <% if (typeof orders !== 'undefined' && orders && orders.length > 0) { %>
                             <% orders.forEach(order => { %>
                                 <tr>
-                                    <td class="font-bold">#<%= order.orderId %></td>
+                                    <td class="font-bold">#<%= order.orderNumber %></td>
                                     <td>
-                                        <p class="font-bold"><%= order.userId ? order.userId.userName : 'Unknown User' %></p>
+                                        <p class="font-bold"><%= order.userId ? order.shippingAddress.fullName : 'Unknown User' %></p>
                                         <p class="text-[10px] opacity-40"><%= order.userId ? order.userId.email : 'N/A' %></p>
                                     </td>
-                                    <td><span class="font-black">₹<%= order.totalPrice.toLocaleString() %></span></td>
+                                    <td><span class="font-black">₹<%= order.pricing.total.toLocaleString() %></span></td>
                                     <td><span class="text-sm opacity-60"><%= new Date(order.createdAt).toLocaleDateString() %></span></td>
                                     <td>
-                                        <span class="status-badge st-<%= order.status.toLowerCase() %>">
-                                            <%= order.status %>
+                                        <span class="status-badge st-<%= order.orderStatus.toLowerCase() %>">
+                                            <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
                                         </span>
                                     </td>
                                     <td class="text-right">
-                                        <a href="/admin/order-details/<%= order._id %>" class="action-link">Edit Order</a>
+                                        <a href="/admin/orderDetails/<%= order._id %>" class="action-link">Edit Order</a>
                                     </td>
                                 </tr>
                             <% }) %>

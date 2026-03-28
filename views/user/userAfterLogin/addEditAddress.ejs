@@ -16,7 +16,7 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Address JS -->
-    <script src="/public/frendend.js/addressEdit.js"></script>
+    <script src="/public/frentend.js/addressEdit.js"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -276,8 +276,7 @@
                                             <input type="tel" name="phoneNumber" id="phoneNumber" class="form-input"
                                                 placeholder="+91 "
                                                 value="<%= (typeof address !== 'undefined') ? address.phoneNumber : '' %>">
-                                            <span class="error-msg" id="error-phoneNumber">Please enter a valid numeric
-                                                phone number.</span>
+                                            <span class="error-msg" id="error-phoneNumber">Phone number must be exactly 10 digits.</span>
                                         </div>
 
                                         <div class="form-group full-width flex items-center gap-3 mt-4">

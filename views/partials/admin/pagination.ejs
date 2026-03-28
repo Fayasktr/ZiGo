@@ -71,7 +71,7 @@
     // Build query portion
     let queryStr = "";
     if (search) queryStr += `&search=${search}`;
-    if (status && status !== 'All') queryStr += `&status=${status}`;
+    if (status && status.toLowerCase() !== 'all') queryStr += `&status=${status.toLowerCase()}`;
 %>
 
     <div class="pagination-bar">

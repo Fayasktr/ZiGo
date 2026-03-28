@@ -119,7 +119,7 @@ export const editAddress = async (userId, addressId, addressData) => {
     }
 
     return await addressModel.findByIdAndUpdate(
-        { _id: addressId },
+        addressId,
         {
             $set: {
                 userName: addressData.userName,

@@ -28,13 +28,10 @@ const itemsSchema = mongoose.Schema({
         type:String,
         required:true
     },
-<<<<<<< HEAD
     variantAttributes: {
         type: Map,
         of: String
     },
-=======
->>>>>>> week15
     itemStatus: {
         type: String,
         enum: ["active", "cancelled","delivered", "returned"],
@@ -68,17 +65,13 @@ const orderSchema=mongoose.Schema({
         subTotal:{type:Number,required:true},
         tax:{type:Number,default:0},
         shipping:{type:Number,default:0},
-<<<<<<< HEAD
-        discount:{type:Number,default:0},
-=======
         discound:{type:Number,default:0},
->>>>>>> week15
         total:{type:Number,required:true}
 
     },
     orderStatus:{
         type:String,
-        enum:["pending","processing","shipped","delivered","cancelled"],
+        enum:["pending","processing","shipped","delivered","cancelled","returned"],
         default:"pending"
     },
     cancelReason:{

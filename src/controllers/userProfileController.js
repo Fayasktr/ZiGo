@@ -296,7 +296,6 @@ export const orderHistory=asynchandler(async(req,res)=>{
     try {
         const userId=req.session?.user.id||req?.user.id;
         const orders=await addressService.orderHistory(userId);
-        console.log(`orders collection: ${orders}`)
         res.render("user/userAfterLogin/orderHistory",{orders});
     } catch (error) {
         req.flash("error",error.message);

@@ -71,3 +71,49 @@ export const blockAndUnblock = asynchandler(async (req, res) => {
         return res.status(400).json({ success: false, message: error.message })
     }
 })
+
+export const adminOrderList=asynchandler(async(req,res)=>{
+    try {
+        let page=parseInt(req.query.page)||1;
+        const limit=10;
+        const search=req.query.search||"";
+        const status=req.query.status||"all";
+
+        const {orders,totalCount}=await adminService.adminOrderList(page,limit,search,status);
+        const totalPages=Math.ceil(totalCount/limit);
+        res.render("admin/orders",{orders,totalCount,currentPage:page,totalPages,limit,search,status})
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/dashbord");
+    }
+})
+
+export const orderDetailsePage=asynchandler(async(req,res)=>{
+    try {
+        const orderId=req.params.id;
+        const orderData=await adminService.orderDetailsePage(orderId);
+        res.render("admin/orderDetails",{order:orderData})
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/orders");
+    }
+})
+
+export const orderStatusUpdate=asynchandler(async(req,res)=>{
+    try {
+        const orderId=req.params.id;
+        const {status,paymentStatus}=req.body;
+        console.log(`order id and status: ${status}, pay:${paymentStatus}, orderId:${orderId}`);
+        const order=await adminService.orderStatusUpdate(orderId,status,paymentStatus);
+        res.status(200).json({ 
+            success: true, 
+            message: "Order updated successfully",
+            order: {
+                orderStatus: order.orderStatus,
+                paymentStatus: order.paymentStatus
+            }
+        });
+    } catch (error) {
+        res.json({success:false,message:error.message});
+    }
+})
