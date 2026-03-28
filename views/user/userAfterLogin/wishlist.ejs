@@ -182,6 +182,10 @@
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
         }
+
+        .item-unavailable {
+            filter: grayscale(1) opacity(0.6);
+        }
     </style>
 </head>
 
@@ -245,55 +249,72 @@
                         <% if (wishlist && wishlist.length> 0) { %>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <% wishlist.forEach(item=> { %>
-                                    <% if (item.productId) { %>
+                                    <% 
+                                        const hasProduct = !!item.product;
+                                        const wishlistVariant = item.matchedVariant;
+                                        const isAvailable = !!item.isAvailable;
+                                        
+                                        let wishlistImg = '/public/landing/no-image.png';
+                                        if (wishlistVariant && wishlistVariant.images && wishlistVariant.images[0]) {
+                                            wishlistImg = wishlistVariant.images[0];
+                                        } else if (hasProduct && item.product.variants && item.product.variants[0] && item.product.variants[0].images && item.product.variants[0].images[0]) {
+                                            wishlistImg = item.product.variants[0].images[0];
+                                        }
+                                    %>
+                                    <% if (hasProduct) { %>
                                         <div
                                             class="wishlist-card bg-white p-6 rounded-[32px] border border-gray-100 flex flex-col items-center relative group">
                                             <!-- Remove Button -->
                                             <button
-                                                onclick="removeFromWishlist('<%= item.productId._id %>', '<%= item.variantId %>')"
-                                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                                                onclick="removeFromWishlist('<%= item.product._id %>', '<%= item.variantId %>')"
+                                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors z-10">
                                                 <i class="fas fa-times"></i>
                                             </button>
 
-                                            <div class="w-40 h-40 flex items-center justify-center mb-4 cursor-pointer"
-                                                onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
-                                                <% const wishlistVariant=(item.productId && item.productId.variants &&
-                                                    item.variantId) ? item.productId.variants.find(v=> v._id &&
-                                                    item.variantId && v._id.toString() === item.variantId.toString()) :
-                                                    (item.productId && item.productId.variants ?
-                                                    item.productId.variants[0] : null);
-
-                                                    const wishlistImg = (wishlistVariant && wishlistVariant.images &&
-                                                    wishlistVariant.images[0]) ?
-                                                    wishlistVariant.images[0] :
-                                                    '/public/landing/no-image.png';
-                                                    %>
-                                                    <img src="<%= wishlistImg %>"
-                                                        alt="<%= item.productId.productName %>"
-                                                        class="max-w-full max-h-full object-contain">
+                                            <div class="w-40 h-40 flex items-center justify-center mb-4 cursor-pointer <%= !isAvailable ? 'item-unavailable' : '' %>"
+                                                <% if (isAvailable) { %> onclick="window.location.href='/productDetailse/<%= item.product._id %>'" <% } %>>
+                                                <img src="<%= wishlistImg %>" alt="<%= item.product.productName %>"
+                                                    class="max-w-full max-h-full object-contain">
                                             </div>
 
                                             <h4 class="font-bold text-center mb-1 text-lg">
-                                                <%= item.productId.productName %>
+                                                <%= item.product.productName %>
                                             </h4>
-                                            <p class="text-gray-400 text-xs mb-3 uppercase tracking-wider font-bold">
-                                                <%= item.productId.brand || 'Premium Tech' %>
+                                            <p class="text-gray-400 text-xs mb-1 uppercase tracking-wider font-bold">
+                                                <%= item.product.brand || 'Premium Tech' %> | <%= (item.category) ?
+                                                        item.category.categoryName : 'Electronics' %>
                                             </p>
+
+                                            <% if (!isAvailable) { %>
+                                                <span class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full mb-3 uppercase tracking-tighter">
+                                                    ⚠ <%= (wishlistVariant && wishlistVariant.stock <= 0) ? 'Out of Stock' : 'Currently Unavailable' %>
+                                                </span>
+                                            <% } else { %>
+                                                <div class="h-6 mb-3"></div> <!-- Spacer -->
+                                            <% } %>
 
                                             <p class="text-orange-500 font-extrabold text-xl mb-6">
                                                 ₹<%= wishlistVariant ? wishlistVariant.price.toLocaleString() : 'N/A' %>
                                             </p>
 
-                                            <div class="flex flex-col gap-2 w-full">
-                                                <button
-                                                    onclick="moveToCart('<%= item.productId._id %>', '<%= item.variantId %>')"
-                                                    class="w-full bg-black text-white py-4 rounded-2xl font-bold text-sm hover:bg-orange-600 transition-all duration-300">
-                                                    Move to Cart
-                                                </button>
+                                            <div class="flex flex-col gap-2 w-full mt-auto">
+                                                <% if (isAvailable) { %>
+                                                    <button
+                                                        onclick="moveToCart('<%= item.product._id %>', '<%= item.variantId %>')"
+                                                        class="w-full bg-black text-white py-4 rounded-2xl font-bold text-sm hover:bg-orange-600 transition-all duration-300">
+                                                        Move to Cart
+                                                    </button>
+                                                <% } else { %>
+                                                    <button
+                                                        class="w-full bg-gray-100 text-gray-400 py-4 rounded-2xl font-bold text-sm cursor-not-allowed"
+                                                        disabled>
+                                                        Currently Unavailable
+                                                    </button>
+                                                <% } %>
                                             </div>
                                         </div>
-                                        <% } %>
-                                            <% }) %>
+                                    <% } %>
+                                <% }) %>
                             </div>
                             <% } else { %>
                                 <div

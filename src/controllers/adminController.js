@@ -1,7 +1,6 @@
 import asynchandler from "express-async-handler"
 import * as adminService from "../services/admin/adminService.js"
 
-
 export const adminLoginPage = asynchandler(async (req, res) => {
     res.render("admin/adminLogin");
 })
@@ -49,7 +48,7 @@ export const userManagementPage = asynchandler(async (req, res) => {
             totalCount: totalCountOfUsers,
             currentPage: page,
             totalPages,
-            limit,
+            limit, 
             search
         });
     } catch (error) {

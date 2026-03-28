@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>ZiGo Admin | Edit Order #<%= order.orderNumber %></title>
+=======
+    <title>ZiGo Admin | Edit Order #<%= order.orderId %></title>
+>>>>>>> week15
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -312,17 +316,28 @@
             <div>
                 <a href="/admin/orders" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Orders</a>
                 <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Management</p>
+<<<<<<< HEAD
                 <h1 class="text-3xl font-extrabold">Edit Order <span class="text-orange-500">#<%= order.orderNumber %></span></h1>
+=======
+                <h1 class="text-3xl font-extrabold">Edit Order <span class="text-orange-500">#<%= order.orderId %></span></h1>
+>>>>>>> week15
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
                     <p class="text-[10px] opacity-40 font-bold uppercase mb-1">Current Status</p>
                     <% 
                        let statusClass = 'bg-orange-500/10 text-orange-500';
+<<<<<<< HEAD
                        if (order.orderStatus === 'Delivered') statusClass = 'bg-green-500/10 text-green-500';
                        else if (order.orderStatus === 'Cancelled') statusClass = 'bg-red-500/10 text-red-500';
                     %>
                     <span class="<%= statusClass %> px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider"><%= order.orderStatus %></span>
+=======
+                       if (order.status === 'Delivered') statusClass = 'bg-green-500/10 text-green-500';
+                       else if (order.status === 'Cancelled') statusClass = 'bg-red-500/10 text-red-500';
+                    %>
+                    <span class="<%= statusClass %> px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider"><%= order.status %></span>
+>>>>>>> week15
                 </div>
             </div>
         </header>
@@ -335,17 +350,29 @@
                     <% order.items.forEach(item => { %>
                         <div class="order-item">
                             <div class="item-thumb">
+<<<<<<< HEAD
                                 <% if (item.image) { %>
                                     <img src="<%= item.image %>" alt="<%= item.productName %>">
+=======
+                                <% if (item.variant && item.variant.images && item.variant.images.length > 0) { %>
+                                    <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>">
+>>>>>>> week15
                                 <% } else { %>
                                     <img src="/public/landing/no-image.png" alt="No image">
                                 <% } %>
                             </div>
                             <div class="flex-1">
+<<<<<<< HEAD
                                 <p class="font-bold text-sm"><%= item.productName %></p>
                                 <p class="text-[10px] opacity-60">
                                     <% if (item.variantAttributes) { %>
                                         <%= Object.entries(item.variantAttributes).map(([k, v]) => `${k}: ${v}`).join(' | ') %>
+=======
+                                <p class="font-bold"><%= item.product.productName %></p>
+                                <p class="text-xs opacity-40">
+                                    <% if (item.variant && item.variant.variantsAttribute) { %>
+                                        <%= item.variant.variantsAttribute.map(a => a.value).join(' | ') %>
+>>>>>>> week15
                                     <% } %>
                                 </p>
                             </div>
@@ -363,6 +390,7 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div class="form-group">
                             <label class="form-label">Full Name</label>
+<<<<<<< HEAD
                             <input type="text" class="form-input" value="<%= order.shippingAddress.fullName %>" readonly>
                         </div>
                         <div class="form-group">
@@ -372,6 +400,17 @@
                         <div class="form-group col-span-2">
                             <label class="form-label">Shipping Address</label>
                             <textarea class="form-input h-24" readonly><%= `${order.shippingAddress.addressLine}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}` %></textarea>
+=======
+                            <input type="text" class="form-input" value="<%= address ? address.username : (order.userId ? order.userId.userName : 'N/A') %>" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-input" value="<%= address ? address.mobileNumber : (order.userId ? order.userId.phoneNumber : 'N/A') %>" readonly>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label class="form-label">Shipping Address</label>
+                            <textarea class="form-input h-24" readonly><%= address ? `${address.detailedAddress}, ${address.city}, ${address.state} - ${address.pincode}` : 'Address not available' %></textarea>
+>>>>>>> week15
                         </div>
                         <div class="form-group">
                             <label class="form-label">Carrier</label>
@@ -393,7 +432,11 @@
                         <label class="form-label">Order Status</label>
                         <select id="orderStatus" class="form-input status-select">
                             <% ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].forEach(st => { %>
+<<<<<<< HEAD
                                 <option value="<%= st %>" <%= order.orderStatus === st ? 'selected' : '' %>><%= st %></option>
+=======
+                                <option value="<%= st %>" <%= order.status === st ? 'selected' : '' %>><%= st %></option>
+>>>>>>> week15
                             <% }) %>
                         </select>
                     </div>
@@ -415,7 +458,11 @@
                     <h2 class="section-title"><i class="fas fa-receipt"></i> Order Summary</h2>
                     <div class="summary-row">
                         <span class="opacity-40">Subtotal</span>
+<<<<<<< HEAD
                         <span class="font-bold">₹<%= (order.pricing.total + (order.pricing.discount || 0)).toLocaleString() %></span>
+=======
+                        <span class="font-bold">₹<%= (order.totalPrice + (order.discount || 0)).toLocaleString() %></span>
+>>>>>>> week15
                     </div>
                     <div class="summary-row">
                         <span class="opacity-40">Tax (GST 18%)</span>
@@ -425,16 +472,27 @@
                         <span class="opacity-40">Shipping</span>
                         <span class="font-bold text-green-500">FREE</span>
                     </div>
+<<<<<<< HEAD
                     <% if (order.pricing.discount > 0) { %>
                         <div class="summary-row text-red-500">
                             <span class="opacity-40">Discount</span>
                             <span class="font-bold">- ₹<%= order.pricing.discount.toLocaleString() %></span>
+=======
+                    <% if (order.discount > 0) { %>
+                        <div class="summary-row text-red-500">
+                            <span class="opacity-40">Discount</span>
+                            <span class="font-bold">- ₹<%= order.discount.toLocaleString() %></span>
+>>>>>>> week15
                         </div>
                     <% } %>
                     <hr class="border-white/5 my-4">
                     <div class="summary-row text-lg">
                         <span class="font-bold">Total</span>
+<<<<<<< HEAD
                         <span class="font-black text-orange-500">₹<%= order.pricing.total.toLocaleString() %></span>
+=======
+                        <span class="font-black text-orange-500">₹<%= order.totalPrice.toLocaleString() %></span>
+>>>>>>> week15
                     </div>
                     <div class="mt-6 p-4 bg-white/5 rounded-2xl">
                         <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>

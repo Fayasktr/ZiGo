@@ -267,3 +267,78 @@ export const cartPage=asynchandler(async(req,res)=>{
         res.redirect("/user/profile");
     }
 })
+
+export const deleteCartItem =asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session.user?.id||req.user?.id;
+        const productId=req.params.id;
+        const variantId=req.query.variantId;
+        const update=await addressService.deleteCart(userId,productId,variantId);
+        res.status(200).json({success:true,message:"item removed"});
+    } catch (error) {
+        res.status(400).json({success:false,message:"item not removed"});
+    }
+})
+
+export const changeCartQty=asynchandler(async(req,res)=>{
+    try {
+        const {change,productId,variantId,currentQty}=req.query;
+        const userId=req.session?.user.id||req?.user.id;
+        const update=await addressService.changeCartQuantity(userId,change,productId,variantId,currentQty);
+        res.status(200).json({success:true,message:"quantity changed",update:update});
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({success:false,message:error.message||"cannot change the quatity"});
+    }
+})
+
+export const orderHistory=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orders=await addressService.orderHistory(userId);
+        console.log(`orders collection: ${orders}`)
+        res.render("user/userAfterLogin/orderHistory",{orders});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/profile");
+    }
+})
+
+export const orderDetailse=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.id;
+        const order=await addressService.orderDetailse(userId,orderId);
+        res.render("user/userAfterLogin/orderDetails",{order});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/orders");
+    }
+})
+
+export const ordercancel=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.id;
+        const reason= req.body.reason ||""
+        const comments=req.body.comments;
+        const cancelling=await addressService.orderCancel(userId,orderId,reason,comments);
+        res.status(200).json({success:true,message:"order canselled"});
+    } catch (error) {
+        res.status(400).json({success:false,message:"can't change order status"});
+    }
+})
+
+export const itemCancel=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user.id||req?.user.id;
+        const orderId=req.params.orderId;
+        const itemId=req.params.itemId;
+        const reason= req.body.reason;
+        const comments=req.body.comments;
+        await addressService.itemCancel(userId,orderId,itemId,reason,comments);
+        res.status(200).json({success:true,message:"item canselled"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message ||"can't change item status"});
+    }
+})

@@ -1,6 +1,9 @@
 import asynchandler from 'express-async-handler';
 import * as serviceOfProductAndCategory from '../../services/admin/categoryAndProductService.js';
 import { uploadToCloudinary } from '../../config/cloudinary.js';
+import productModel from '../../models/productModel.js';
+import mongoose from "mongoose";
+
 import sharp from "sharp";
 
 export const getCategory = asynchandler(async (req, res) => {
@@ -70,7 +73,7 @@ export const updateCategory = asynchandler(async (req, res) => {
         await serviceOfProductAndCategory.updateCategory(categoryData);
         res.status(200).json({ success: true, message: "updated category" });
     } catch (error) {
-        res.status(400).json({ success: false, messge: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 })
 
@@ -82,7 +85,6 @@ export const productPage = asynchandler(async (req, res) => {
         let limit = 10;
         let { products, totalCountOfProducts } = await serviceOfProductAndCategory.productPage(page, limit, search);
         let totalPages = Math.ceil(totalCountOfProducts / limit)
-        // console.log("products detailse:-", products)
         res.render("admin/products", {
             products,
             totalCount: totalCountOfProducts,
@@ -124,6 +126,11 @@ export const listAndUnlistProduct = asynchandler(async (req, res) => {
 
 export const addProduct = asynchandler(async (req, res) => {
     try {
+        let productName=req.body.name;
+        const existProduct = await productModel.find({ productName:productName });
+        if (existProduct.length > 0) {
+            throw new Error("this product name alread exist");
+        }
         const variantsImageUrls = {}
         if (req.files && req.files.length > 0) {
             for (let file of req.files) {
@@ -178,9 +185,7 @@ export const addProduct = asynchandler(async (req, res) => {
 export const editProductPage = asynchandler(async (req, res) => {
     try {
         const productId = req.params.id;
-        console.log("product Id: ", productId);
         const { productForEdit, category } = await serviceOfProductAndCategory.editProductPage(productId);
-        console.log(productForEdit)
         res.render("admin/addEditProduct", { product: productForEdit, isEdit: true, category });
     } catch (error) {
         req.flash("error", error.message);
@@ -191,7 +196,58 @@ export const editProductPage = asynchandler(async (req, res) => {
 
 export const updateProduct = asynchandler(async (req, res) => {
     try {
-        const update = await serviceOfProductAndCategory.updateProduct(req.body);
+        const productId = req.body.id
+        const productName = req.body.name.trim();
+        const existProduct = await productModel.findOne({productName: { $regex: `^${productName}$`, $options: "i" },_id: { $ne: productId }});
+        console.log(`productId: ${productId}, existProduct: ${existProduct}, product name:${productName}`)
+        if (existProduct) {
+            throw new Error("This product name already exists");
+        }
+        const variantsImageUrls = {}
+        if (req.files && req.files.length > 0) {
+            for (let file of req.files) {
+                const webpBuffer = await sharp(file.buffer).webp().toBuffer();
+                const url = await uploadToCloudinary(webpBuffer, 'ZiGo_products_images');
+
+                if (file.fieldname.startsWith("variant_")) {
+                    if (!variantsImageUrls[file.fieldname]) {
+                        variantsImageUrls[file.fieldname] = [];
+                    }
+                    variantsImageUrls[file.fieldname].push(url);
+                }
+            }
+        }
+
+        let variantsArray = [];
+        if (req.body.variantsData && req.body.variantsData != "[]") {
+            variantsArray = JSON.parse(req.body.variantsData);
+        }
+
+        let formatedVariants = variantsArray.map((variant, index) => {
+            let newlyUploadedImages = variantsImageUrls[`variant_${index}_images`] || [];
+            let currentImages = Array.isArray(variant.images) ? variant.images : [];
+            return {
+                _id: variant._id, 
+                price: Number(variant.price),
+                stock: Number(variant.stock),
+                attributes: variant.attributes || {},
+                images: [...currentImages, ...newlyUploadedImages],
+                isListed: variant.isListed === true || variant.isListed === 'true' 
+            }
+        });
+
+        const finalProductData = {
+            id: req.body.id,
+            productName: req.body.name,
+            description: req.body.description,
+            brand: req.body.brand,
+            category: req.body.category,
+            basePrice: formatedVariants.length > 0 ? formatedVariants[0].price : 0,
+            isListed: req.body.isListed === "on", 
+            variants: formatedVariants
+        }
+
+        const update = await serviceOfProductAndCategory.updateProduct(finalProductData);
         res.status(200).json({ success: true, message: "product update success.." })
     } catch (error) {
         console.error("Update Product Error:", error);

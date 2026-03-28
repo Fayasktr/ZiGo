@@ -17,4 +17,4 @@ const preventCache = (req, res, next) => {
     res.set('Expires', '0');
     next();
 };
-export default {redirectIfLoggedIn,protectAdmin,preventCache}
+export default { redirectIfLoggedIn, protectAdmin, preventCache }

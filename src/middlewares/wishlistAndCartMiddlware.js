@@ -1,4 +1,3 @@
-import wishlistModel from "../models/wishlistModel.js"
 const isThereUser = async (req, res, next) => {
     if (req.session.user || req.user) {
         next()
@@ -7,7 +6,6 @@ const isThereUser = async (req, res, next) => {
         return res.status(401).json({ success: false, message: `${actionFor} need to login` })
     }
 }
-
 
 
 const wishlistAndCart = { isThereUser }

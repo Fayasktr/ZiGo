@@ -3,6 +3,7 @@ import * as userProfile from '../controllers/userProfileController.js';
 import * as userCntrl from '../controllers/userAuthCtrler.js';
 import userAuth from '../middlewares/userAuthMiddlware.js';
 import upload from "../middlewares/uploadMiddleware.js";
+import * as cartMiddlware from '../middlewares/categoryAndProductMiddlware.js';
 
 const router = express.Router()
 router.use(userAuth.preventCache,userAuth.checkBlocked);
@@ -36,7 +37,15 @@ router.get("/user/wishlist",userProfile.wishlistPage);
 
 router.get("/user/wishlist", userProfile.wishlistPage);
 router.patch("/user/wishlist/:id", userProfile.removeWishlist);
+
 router.patch("/user/wishlist/cart/:id",userProfile.addToCart);
 router.get("/user/cart", userProfile.cartPage);
+router.patch("/user/cart/delete/:id",userProfile.deleteCartItem)
+router.patch("/user/cart/changeQty",userProfile.changeCartQty,cartMiddlware.cartCount);
+
+router.get("/user/orders",userProfile.orderHistory);
+router.get("/user/order/:id",userProfile.orderDetailse);
+router.patch("/user/order/:id/cancel",userProfile.ordercancel);
+router.patch("/user/order/:orderId/item/:itemId/cancel",userProfile.itemCancel);
 
 export default router;

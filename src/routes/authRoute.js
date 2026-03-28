@@ -4,6 +4,7 @@ import userAuth from "../middlewares/userAuthMiddlware.js"
 import passport from "../config/passport.js";
 const router = express.Router();
 
+router.use(userAuth.checkBlocked,userAuth.preventCache)
 router.get("/auth/google",
     passport.authenticate("google", {
         scope: ["profile", "email"],

@@ -413,8 +413,11 @@
                         <% const listedVariants=product.variants.filter(v=> v.isListed !== false);
                             const defaultVariant = listedVariants.length > 0 ? listedVariants[0] : (product.variants[0]
                             || {});
-                            const variantAttributes = (product.category && product.category.variantAttributes) ?
-                            product.category.variantAttributes : [];
+                            const variantAttributes = (product.category && product.category.variantAttributes)
+                            ? product.category.variantAttributes
+                            : [];
+
+                            const hasAttributes = variantAttributes.length > 0;
 
                             const getAttrValue = (attributes, attr) => {
                             if (!attributes) return null;
@@ -509,42 +512,85 @@
                                         </div>
 
                                         <div id="variant-selectors">
-                                            <% variantAttributes.forEach(attr=> {
-                                                const values = getUniqueAttributeValues(attr);
-                                                if (values.length > 0) { %>
-                                                <div class="mb-8 variant-group" data-attribute="<%= attr %>">
-                                                    <span
-                                                        class="block font-bold mb-4 text-sm uppercase opacity-60">Select
-                                                        <%= attr %>
-                                                    </span>
-                                                    <div class="flex flex-wrap gap-4">
-                                                        <% values.forEach(val=> {
-                                                            const isActive = getAttrValue(defaultVariant.attributes,
-                                                            attr) === val;
-                                                            %>
-                                                            <div class="variant-chip <%= isActive ? 'active' : '' %>"
-                                                                data-value="<%= val %>"
-                                                                onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
-                                                                <%= val %>
-                                                            </div>
-                                                            <% }) %>
+
+                                            <% if (hasAttributes) { %>
+
+                                                <% variantAttributes.forEach(attr=> {
+                                                    const values = getUniqueAttributeValues(attr);
+                                                    if (values.length > 0) { %>
+
+                                                    <div class="mb-8 variant-group" data-attribute="<%= attr %>">
+                                                        <span class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                            Select <%= attr %>
+                                                        </span>
+
+                                                        <div class="flex flex-wrap gap-4">
+                                                            <% values.forEach(val=> {
+                                                                const isActive = getAttrValue(defaultVariant.attributes,
+                                                                attr) === val;
+                                                                %>
+
+                                                                <div class="variant-chip <%= isActive ? 'active' : '' %>"
+                                                                    data-attribute="<%= attr %>" data-value="<%= val %>"
+                                                                    onclick="selectVariantAttribute('<%= attr %>', '<%= val %>')">
+
+                                                                    <%= val %>
+
+                                                                </div>
+
+                                                                <% }) %>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <% } }) %>
+
+                                                    <% } }) %>
+
+                                                        <% } else { %>
+
+                                                            <!-- PRICE-ONLY VARIANTS -->
+                                                            <div class="mb-8">
+                                                                <span
+                                                                    class="block font-bold mb-4 text-sm uppercase opacity-60">
+                                                                    Select Option
+                                                                </span>
+
+                                                                <div class="flex flex-wrap gap-4">
+
+                                                                    <% listedVariants.forEach((v, i)=> { %>
+
+                                                                        <div class="variant-chip <%= v._id.toString() === defaultVariant._id.toString() ? 'active' : '' %>"
+                                                                            data-variant-id="<%= v._id %>"
+                                                                            onclick="selectVariantDirect('<%= v._id %>', this)">
+
+                                                                            Option <%= i + 1 %>
+
+                                                                        </div>
+
+                                                                        <% }) %>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <% } %>
+
                                         </div>
 
                                         <div class="flex gap-6 h-[60px]">
                                             <div class="qty-selector">
                                                 <button class="qty-btn" onclick="changeQty(-1)">-</button>
-                                                <input type="number" class="qty-input" value="1" id="qty" readonly>
+                                                <input type="number" class="qty-input" value="1" id="qty" min="1" max="10" readonly>
                                                 <button class="qty-btn" onclick="changeQty(1)">+</button>
                                             </div>
                                             <button class="add-to-cart-btn-large flex-1"
-                                                onclick="addToCart('<%= product._id %>', currentVariantId)">Add to
+                                                onclick="addToCart('<%= product._id %>', currentVariantId)" <%-
+                                                defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>>Add to
                                                 Cart</button>
                                             <button class="buy-now-btn-large flex-1"
-                                                onclick="buyNow('<%= product._id %>')">Buy
-                                                Now</button>
+                                                onclick="buyNow('<%= product._id %>')" <%- defaultVariant.stock <=0
+                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>><%=
+                                                    defaultVariant.stock <=0 ? 'Out of Stock'
+                                                    : 'Buy\n                                                Now' %>
+                                            </button>
                                         </div>
 
                                         <!-- Quick Specs -->
@@ -699,7 +745,24 @@
                                             zoomFactor: 2.5
                                         });
                                     }
+                                    function selectVariantDirect(variantId, element) {
 
+                                        const variant = productVariants.find(v =>
+                                            v._id.toString() === variantId.toString()
+                                        );
+
+                                        if (!variant) return;
+
+                                        currentVariantId = variant._id.toString();
+
+                                        updateVariantUI(variant);
+
+                                        document.querySelectorAll('.variant-chip').forEach(chip => {
+                                            chip.classList.remove('active');
+                                        });
+
+                                        element.classList.add('active');
+                                    }
                                     // Toggle visibility of the zoom pane manually to lay smoothly over content
                                     mainImg.addEventListener('mouseenter', () => {
                                         if (window.innerWidth > 1024) pane.classList.remove('hidden');
@@ -721,8 +784,19 @@
                                     function changeQty(n) {
                                         let i = document.getElementById('qty');
                                         let v = parseInt(i.value) + n;
-                                        if (v > 0) i.value = v;
-                                        if (v == 10) return "limit reached"
+                                        if (v >= 1 && v <= 10) {
+                                            i.value = v;
+                                        } else if (v > 10) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Limit Reached',
+                                                text: 'Maximum quantity per item is 10.',
+                                                toast: true,
+                                                position: 'top',
+                                                showConfirmButton: false,
+                                                timer: 2000
+                                            });
+                                        }
                                     }
                                     function scrollToSection(id) {
                                         const el = document.getElementById(id);
@@ -767,8 +841,8 @@
                                     });
 
                                     // --- Dynamic Variant Selection Logic ---
-                                    const productVariants = <%- JSON.stringify(product.variants || []) %>;
-                                    let userWishlist = <%- JSON.stringify(wishlist || []) %>;
+                                    const productVariants = <%-JSON.stringify(product.variants || []) %>;
+                                    let userWishlist = <%-JSON.stringify(wishlist || []) %>;
                                     let currentVariantId = '<%= defaultVariant._id || "" %>';
                                     let selectedAttributes = {};
 
@@ -886,15 +960,42 @@
                                         const priceEl = document.querySelector('.current-price');
                                         if (priceEl) priceEl.innerText = '₹' + variant.price.toLocaleString();
 
-                                        // Update Stock Status
+                                        // Update Stock Status and Buttons
                                         const stockEl = document.querySelector('.stock-status');
+                                        const buyNowBtn = document.querySelector('.buy-now-btn-large');
+                                        const addToCartBtn = document.querySelector('.add-to-cart-btn-large');
+
                                         if (stockEl) {
                                             if (variant.stock > 0) {
                                                 stockEl.innerText = 'In Stock';
                                                 stockEl.className = 'stock-status in-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Buy\n                                                Now';
+                                                    buyNowBtn.disabled = false;
+                                                    buyNowBtn.style.opacity = '1';
+                                                    buyNowBtn.style.cursor = 'pointer';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = false;
+                                                    addToCartBtn.style.opacity = '1';
+                                                    addToCartBtn.style.cursor = 'pointer';
+                                                }
                                             } else {
                                                 stockEl.innerText = 'Out of Stock';
                                                 stockEl.className = 'stock-status out-of-stock';
+
+                                                if (buyNowBtn) {
+                                                    buyNowBtn.innerHTML = 'Out of Stock';
+                                                    buyNowBtn.disabled = true;
+                                                    buyNowBtn.style.opacity = '0.7';
+                                                    buyNowBtn.style.cursor = 'not-allowed';
+                                                }
+                                                if (addToCartBtn) {
+                                                    addToCartBtn.disabled = true;
+                                                    addToCartBtn.style.opacity = '0.7';
+                                                    addToCartBtn.style.cursor = 'not-allowed';
+                                                }
                                             }
                                         }
 
@@ -1030,6 +1131,9 @@
                                                     showConfirmButton: false,
                                                     timer: 3000
                                                 });
+                                                if (result.cartCount !== undefined) {
+                                                    window.updateCartCount(result.cartCount);
+                                                }
                                             } else {
                                                 throw new Error(result.message || "Could not add to cart");
                                             }
@@ -1054,9 +1158,9 @@
                                         const vId = currentVariantId;
                                         try {
                                             const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
-                                            let response = await fetch(`/shop/cart/${productId}?variantId=${currentVariantId}&quantity=${quantity}`, {
+                                            let response = await fetch(`/productDetailse/buyNow`, {
                                                 method: "POST",
-                                                headers: { "Content-Type": "application/json" }
+                                                headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, variantId: vId, quantity })
                                             });
 
                                             if (response.status === 401) {
@@ -1076,7 +1180,7 @@
                                             let result = await response.json();
                                             if (response.ok && result.success) {
                                                 // If added to cart successfully, redirect to checkout/cart
-                                                window.location.href = '/user/cart';
+                                                window.location.href = '/user/checkout?type=buynow&productId=' + productId + '&variantId=' + vId;
                                             } else {
                                                 throw new Error(result.message || "Checkout failed");
                                             }

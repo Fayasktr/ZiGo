@@ -59,21 +59,31 @@
             }
         }
 
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
         .cart-item {
             background: white;
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 1.5rem;
             display: flex;
             align-items: center;
             gap: 2rem;
-            margin-bottom: 1.5rem;
             border: 1px solid var(--gray-light);
             transition: var(--transition);
+            position: relative;
         }
 
         .cart-item:hover {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .item-unavailable {
+            filter: grayscale(1) opacity(0.6);
         }
 
         .item-img {
@@ -286,92 +296,95 @@
                 <div class="cart-items">
                     <% if (typeof cart !=='undefined' && cart && cart.items && cart.items.length> 0) { %>
                         <% cart.items.forEach(item=> { %>
-                            <% if (item.productId) { %>
-                                <div class="cart-item" data-item-id="<%= item._id %>">
-                                    <div class="item-img"
-                                        onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
-                                        <% let cartVariant=null; if (item.productId && item.productId.variants &&
-                                            item.productId.variants.length> 0) {
-                                            if (item.variantId) {
-                                            cartVariant = item.productId.variants.find(v => v._id && v._id.toString()
-                                            === item.variantId.toString());
-                                            }
-                                            // Fallback to first variant if specific one not found or variantId missing
-                                            if (!cartVariant) cartVariant = item.productId.variants[0];
-                                            }
-
-                                            const cartImg = (cartVariant && cartVariant.images && cartVariant.images[0])
-                                            ?
-                                            cartVariant.images[0] : '/public/landing/no-image.png';
-
-                                            const currentPrice = cartVariant ? cartVariant.price : 0;
-                                            const itemTotal = currentPrice * item.quantity;
-                                            %>
-                                            <img src="<%= cartImg %>" alt="<%= item.productId.productName %>">
-                                    </div>
-                                    <div class="item-details">
-                                        <h3 class="item-title"
-                                            onclick="window.location.href='/productDetailse/<%= item.productId._id %>'">
-                                            <%= item.productId.productName %>
-                                                <% if (cartVariant && cartVariant.attributes) { %>
-                                                    <span class="text-xs text-orange-500 font-bold ml-2">
-                                                        <% let attrValues=[]; if (cartVariant.attributes instanceof Map)
-                                                            { attrValues=Array.from(cartVariant.attributes.values()); }
-                                                            else { attrValues=Object.values(cartVariant.attributes); }
-                                                            %>
-                                                            (<%= attrValues.join(' / ') %>)
-                                                </span>
-                                            <% } %>
-                                        </h3>
-                                        <div class="item-meta">
-                                            <span>Brand: <%= item.productId.brand || ' ZiGo' %>
-                                                    </span>
-                                                    <span>Category: <%= (item.productId.category) ?
-                                                            item.productId.category.categoryName : 'Electronics' %>
-                                                    </span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mt-1">Unit Price: ₹<%= currentPrice.toLocaleString()
-                                            %>
-                                    </p>
-                                    <div class="flex items-center justify-between mt-4">
-                                        <div class="qty-control">
-                                            <button class="qty-btn"
-                                                onclick="updateQuantity('<%= item.productId._id %>', -1, '<%= item.quantity %>', '<%= item.variantId %>')">-</button>
-                                            <span class="font-bold">
-                                                <%= item.quantity %>
+                            <% 
+                                const hasProduct = !!item.product;
+                                const cartVariant = item.matchedVariant; 
+                                
+                                let cartImg = '/public/landing/no-image.png';
+                                if (cartVariant && cartVariant.images && cartVariant.images[0]) {
+                                    cartImg = cartVariant.images[0];
+                                } else if (hasProduct && item.product.variants && item.product.variants[0] && item.product.variants[0].images && item.product.variants[0].images[0]) {
+                                    cartImg = item.product.variants[0].images[0];
+                                }
+                                
+                                const currentPrice = cartVariant ? (cartVariant.price || 0) : 0; 
+                                const itemTotal = currentPrice * item.quantity; 
+                                const prodIdStr = hasProduct ? item.product._id.toString() : ''; 
+                                const variantIdStr = item.variantId ? item.variantId.toString() : '';
+                                const isAvailable = !!item.isAvailable;
+                            %>
+                            <div class="cart-item" data-item-id="<%= item._id %>" data-price="<%= currentPrice %>" data-available="<%= isAvailable %>">
+                                <div class="item-img <%= !isAvailable ? 'item-unavailable' : '' %>" 
+                                     <% if (hasProduct && isAvailable) { %> onclick="window.location.href='/productDetailse/<%= prodIdStr %>'" <% } %>>
+                                    <img src="<%= cartImg %>" alt="<%= hasProduct ? item.product.productName : 'Product Unavailable' %>">
+                                </div>
+                                <div class="item-details">
+                                    <h3 class="item-title" 
+                                        <% if (hasProduct && isAvailable) { %> onclick="window.location.href='/productDetailse/<%= prodIdStr %>'" <% } %>>
+                                        <%= hasProduct ? item.product.productName : 'This product is no longer available' %>
+                                        <% if (cartVariant && cartVariant.attributes) { %>
+                                            <span class="text-xs text-orange-500 font-bold ml-2">
+                                                <% 
+                                                    let attrValues = []; 
+                                                    if (cartVariant.attributes instanceof Map) { 
+                                                        attrValues = Array.from(cartVariant.attributes.values()); 
+                                                    } else { 
+                                                        attrValues = Object.values(cartVariant.attributes); 
+                                                    }
+                                                %>
+                                                (<%= attrValues.join(' / ') %>)
                                             </span>
-                                            <button class="qty-btn"
-                                                onclick="updateQuantity('<%= item.productId._id %>', 1, '<%= item.quantity %>', '<%= item.variantId %>')">+</button>
-                                        </div>
-                                        <div class="item-price-block">
-                                            <p class="item-price">₹<%= itemTotal.toLocaleString() %>
-                                            </p>
-                                            <button class="remove-btn mt-4 ml-auto"
-                                                onclick="removeFromCart('<%= item.productId._id %>', '<%= item.variantId %>')">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
+                                        <% } %>
+                                    </h3>
+                                    <div class="item-meta">
+                                        <span>Brand: <%= (hasProduct && item.product.brand) ? item.product.brand : 'ZiGo' %></span>
+                                        <span>Category: <%= (item.category) ? item.category.categoryName : 'N/A' %></span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Unit Price: ₹<%= currentPrice.toLocaleString() %></p>
+                                    <% if (!isAvailable) { %>
+                                        <span class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full mt-2 inline-block">
+                                            ⚠ <%= (cartVariant && cartVariant.stock <= 0) ? 'Out of Stock' : 'Currently Unavailable' %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                                <div class="flex flex-col items-end gap-4 ml-auto">
+                                    <div class="qty-control">
+                                        <button class="qty-btn"
+                                            <%= !isAvailable ? 'disabled' : '' %>
+                                            onclick="updateQuantity('<%= prodIdStr %>', -1, '<%= item.quantity %>', '<%= variantIdStr %>')">-</button>
+                                        <span class="font-bold w-10 text-center" id="qtyValue-<%= variantIdStr %>">
+                                            <%= item.quantity %>
+                                        </span>
+                                        <button class="qty-btn" 
+                                            <%= !isAvailable ? 'disabled' : '' %>
+                                            onclick="updateQuantity('<%= prodIdStr %>', 1, '<%= item.quantity %>', '<%= variantIdStr %>')">+</button>
+                                    </div>
+                                    <div class="item-price-block">
+                                        <p class="item-price" id="itemTotal-<%= variantIdStr %>">₹<%= itemTotal.toLocaleString() %></p>
+                                        <button class="remove-btn mt-2 ml-auto"
+                                            onclick="removeFromCart('<%= prodIdStr %>', '<%= variantIdStr %>')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
                                     </div>
                                 </div>
-                </div>
-                <% } %>
-                    <% }) %>
-                        <% } else { %>
-                            <div class="bg-white p-12 rounded-[32px] border border-dashed border-gray-300 text-center">
-                                <div
-                                    class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                                    <i class="fas fa-shopping-cart text-3xl"></i>
-                                </div>
-                                <h2 class="text-2xl font-bold mb-4">Your cart is empty</h2>
-                                <p class="text-gray-500 mb-8">Looks like you haven't added anything to
-                                    your cart
-                                    yet.</p>
-                                <a href="/shop"
-                                    class="bg-orange-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-orange-600 transition-all inline-block">
-                                    Start Shopping
-                                </a>
                             </div>
-                            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="bg-white p-12 rounded-[32px] border border-dashed border-gray-300 text-center">
+                            <div
+                                class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                                <i class="fas fa-shopping-cart text-3xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold mb-4">Your cart is empty</h2>
+                            <p class="text-gray-500 mb-8">Looks like you haven't added anything to
+                                your cart
+                                yet.</p>
+                            <a href="/shop"
+                                class="bg-orange-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-orange-600 transition-all inline-block">
+                                Start Shopping
+                            </a>
+                        </div>
+                    <% } %>
             </div>
 
             <!-- Sidebar Summary -->
@@ -382,31 +395,53 @@
                 <div class="space-y-4">
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <span class="font-bold">₹<%= (typeof cart !=='undefined' && cart) ?
+                        <span class="font-bold" id="cartSubtotal">₹<%= (typeof cart !== 'undefined' && cart) ?
                                 cart.totalPrice.toLocaleString() : '0.00' %></span>
                     </div>
+                    <% 
+                        let subtotal = (typeof cart !== 'undefined' && cart && cart.totalPrice) ? cart.totalPrice : 0;
+                        let shippingCharge = (subtotal > 1000 || subtotal === 0) ? 0 : 40;
+                        let tax = subtotal * 0.18;
+                        let total = subtotal + tax + shippingCharge;
+                    %>
                     <div class="summary-row">
                         <span>Estimated Shipping</span>
-                        <span class="text-green-500 font-bold">FREE</span>
+                        <span id="cartShipping" class="<%= shippingCharge === 0 ? 'text-green-500' : '' %> font-bold">
+                            <%= shippingCharge === 0 ? 'FREE' : '₹' + shippingCharge.toLocaleString() %>
+                        </span>
                     </div>
-                    <% let subtotal=(typeof cart !=='undefined' && cart && cart.totalPrice) ? cart.totalPrice : 0; %>
-                        <% let tax=subtotal * 0.18; %>
-                            <div class="summary-row">
-                                <span>Tax (GST 18%)</span>
-                                <span class="font-bold">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2}) %></span>
-                            </div>
+                    <p class="text-[10px] text-gray-400 mt-[-10px] mb-4">Free delivery on orders above ₹1,000. Else ₹40 applies.</p>
+                    <div class="summary-row">
+                        <span>Tax (GST 18%)</span>
+                        <span class="font-bold" id="cartTax">₹<%= tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                    </div>
 
-                            <div class="summary-total">
-                                <span>Total</span>
-                                <span>₹<%= (subtotal + tax).toLocaleString(undefined, {minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2}) %></span>
-                            </div>
+
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span id="cartTotal">₹<%= total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                    </div>
                 </div>
 
-                <a href="/checkout" class="checkout-btn">
-                    Proceed to Checkout
-                </a>
+                <%
+                    const hasOutOfStock = cart && cart.items.some(i => !i.isAvailable);
+                %>
+
+                <div id="checkoutBtnContainer">
+                    <% if (!cart || cart.items.length === 0) { %>
+                        <button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>
+                            Cart is Empty
+                        </button>
+                    <% } else if (hasOutOfStock) { %>
+                        <button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>
+                            Fix Out-of-Stock Items First
+                        </button>
+                    <% } else { %>
+                        <a href="/user/checkout" class="checkout-btn block text-center w-full">
+                            Proceed to Checkout
+                        </a>
+                    <% } %>
+                </div>
 
                 <div class="coupon-box">
                     <p class="text-sm font-bold mb-3 opacity-60">PROMO CODE</p>
@@ -421,9 +456,114 @@
 
             <script>
                 // Placeholder for the logic you will implement
-                async function updateQuantity(productId, change, currentQty, variantId) {
-                    console.log('Update quantity:', productId, change, variantId);
-                    // TODO: Implement fetch call to update cart quantity
+                async function updateQuantity(productId, change, _, variantId) {
+                    const quantitySpan = document.getElementById(`qtyValue-${variantId}`);
+                    const currentQty = parseInt(quantitySpan.innerText);
+
+                    if (currentQty >= 10 && change == 1) {
+                        return Swal.fire({
+                            icon: 'warning',
+                            title: "Limit Reached",
+                            text: "Maximum quantity is 10 per product",
+                            timer: 2000,
+                            position: "top",
+                            toast: true,
+                            showConfirmButton: false
+                        });
+                    }
+
+                    if (currentQty <= 1 && change == -1) {
+                        return Swal.fire({
+                            icon: 'warning',
+                            title: "Minimum Reached",
+                            text: "Minimum quantity is 1",
+                            timer: 2000,
+                            position: "top",
+                            toast: true,
+                            showConfirmButton: false
+                        });
+                    }
+
+                    try {
+                        const response = await fetch(`/user/cart/changeQty/?productId=${productId}&change=${change}&variantId=${variantId}&currentQty=${currentQty}`, {
+                            method: 'PATCH',
+                            headers: { "Content-Type": "application/json" }
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            quantitySpan.innerText = result.update.quantity;
+                            
+                            // Re-calculate calculations on frontend
+                            updateFrontendTotals();
+                        } else {
+                            throw new Error(result.message || "Failed to update quantity");
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: "Update Failed",
+                            text: error.message,
+                            timer: 2500,
+                        });
+                    }
+                }
+
+                function updateFrontendTotals() {
+                    let subtotal = 0;
+                    let totalItemsCount = 0;
+                    const items = document.querySelectorAll('.cart-item');
+                    
+                    items.forEach(item => {
+                        const variantId = item.querySelector('[id^="qtyValue-"]').id.split('-')[1];
+                        const isAvailable = item.getAttribute('data-available') === 'true';
+                        const price = parseFloat(item.getAttribute('data-price'));
+                        const quantity = parseInt(document.getElementById(`qtyValue-${variantId}`).innerText);
+                        const itemTotal = price * quantity;
+                        
+                        // Update item total display
+                        const itemTotalElement = document.getElementById(`itemTotal-${variantId}`);
+                        if (itemTotalElement) {
+                            itemTotalElement.innerText = `₹${itemTotal.toLocaleString()}`;
+                        }
+                        
+                        if (isAvailable) {
+                            subtotal += itemTotal;
+                            totalItemsCount += quantity;
+                        }
+                    });
+
+                    // Update header cart badge
+                    if (window.updateCartCount) {
+                        window.updateCartCount(totalItemsCount);
+                    }
+
+                    // Dynamic Shipping Logic
+                    const shippingCharge = (subtotal > 1000 || subtotal === 0) ? 0 : 40;
+                    const tax = subtotal * 0.18;
+                    const total = subtotal + tax + shippingCharge;
+
+                    // Update summary display
+                    document.getElementById('cartSubtotal').innerText = `₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    
+                    const shippingEl = document.getElementById('cartShipping');
+                    if (shippingCharge === 0) {
+                        shippingEl.innerText = 'FREE';
+                        shippingEl.classList.add('text-green-500');
+                    } else {
+                        shippingEl.innerText = `₹${shippingCharge.toLocaleString()}`;
+                        shippingEl.classList.remove('text-green-500');
+                    }
+
+                    document.getElementById('cartTax').innerText = `₹${tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('cartTotal').innerText = `₹${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                    // Synchronize Checkout Button
+                    const btnCont = document.getElementById('checkoutBtnContainer');
+                    if (subtotal === 0) {
+                        btnCont.innerHTML = `<button class="checkout-btn opacity-50 cursor-not-allowed w-full" disabled>Cart is Empty</button>`;
+                    }
                 }
 
                 async function removeFromCart(productId, variantId) {
@@ -436,13 +576,66 @@
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Yes, remove it!'
                     });
-
+                    console.log(productId, variantId)
                     if (result.isConfirmed) {
-                        console.log('Remove product:', productId, variantId);
-                        // TODO: Implement fetch call to remove from cart
+                        try {
+                            const update = await fetch(`/user/cart/delete/${productId}?variantId=${variantId}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" }
+                            })
+
+                            const result = await update.json();
+                            if (update.ok && result.success) {
+                                await Swal.fire({
+                                    title: "item removed",
+                                    icon: "success",
+                                    position: "top",
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                })
+                                window.location.href = "/user/cart";
+                            } else {
+                                throw new Error("item not delted");
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: "error",
+                                title: "item not removed",
+                                text: "Could not delete the item from cart",
+                                position: "top",
+                                timer: 2000,
+                            })
+                        }
                     }
                 }
             </script>
+
+    <!-- Flash Message Alerts -->
+    <% if (success && success.length > 0) { %>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '<%= success %>',
+                    confirmButtonColor: '#FF5A1F',
+                    timer: 3000
+                });
+            });
+        </script>
+    <% } %>
+    <% if (error && error.length > 0) { %>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '<%= error %>',
+                    confirmButtonColor: '#FF5A1F',
+                });
+            });
+        </script>
+    <% } %>
 </body>
 
 </html>

@@ -16,7 +16,8 @@ const variantSchema = mongoose.Schema({
     },
     attributes:{
         type:Map,
-        of:String
+        of:String,
+        default:{}
     },images:{
         type:[String],
         validate:{
@@ -46,12 +47,6 @@ const productSchema = mongoose.Schema({
     category:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"category"
-    },
-    basePrice:{
-        type:Number
-    },
-    stock:{
-        type:Number
     },
     variants:[variantSchema],
     isListed:{

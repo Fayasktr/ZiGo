@@ -305,6 +305,10 @@
                         <%= error %>
                     </div>
                     <% } %>
+                <div id="clientError" class="error-toast hidden">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="clientErrorMessage">only numbers allow..</span>
+                </div>
             </div>
 
             <form id="otpForm" action="<%= locals.verifyAction || '/verifyOtp' %>" method="POST">
@@ -339,8 +343,16 @@
         inputs[0].addEventListener("paste", (event) => {
             event.preventDefault();
             const pasteData = event.clipboardData.getData("text");
-            const otpArray = pasteData.replace(/[^0-9]/g, '').split('');
+            const clientError = document.getElementById('clientError');
 
+            if (/[^0-9]/.test(pasteData)) {
+                clientError.classList.remove('hidden');
+                setTimeout(() => {
+                    clientError.classList.add('hidden');
+                }, 2000);
+            }
+
+            const otpArray = pasteData.replace(/[^0-9]/g, '').split('');
             otpArray.forEach((char, index) => {
                 if (inputs[index]) {
                     inputs[index].value = char;
@@ -348,7 +360,7 @@
             });
 
             const nextFocusIndex = Math.min(otpArray.length, inputs.length - 1);
-            inputs[nextFocusIndex].focus();
+            if (inputs[nextFocusIndex]) inputs[nextFocusIndex].focus();
             updateFullOtp();
         });
 
@@ -389,17 +401,29 @@
             timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // --- INPUT NAVIGATION ---
         inputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
-                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                const val = e.target.value;
+                const clientError = document.getElementById('clientError');
+                
+                // Allow only numbers
+                if (val && !/^\d$/.test(val)) {
+                    e.target.value = '';
+                    clientError.classList.remove('hidden');
+                    setTimeout(() => {
+                        clientError.classList.add('hidden');
+                    }, 2000);
+                    return;
+                }
+
+                if (val.length == 1 && index < inputs.length - 1) {
                     inputs[index + 1].focus();
                 }
                 updateFullOtp();
             });
 
             input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                if (e.key == 'Backspace' && !e.target.value && index > 0) {
                     inputs[index - 1].focus();
                 }
             });
@@ -413,9 +437,8 @@
 
         form.addEventListener('submit', (e) => {
             updateFullOtp();
-            if (fullOtpInput.value.length !== inputs.length) {
+            if (fullOtpInput.value.length != inputs.length) {
                 e.preventDefault();
-                // Simple vibrate or shake could go here
             }
         });
 

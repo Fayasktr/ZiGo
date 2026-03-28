@@ -20,17 +20,35 @@ const isOtpPending = (req, res, next) => {
     }
     res.redirect("signUp");
 }
+
 const checkBlocked = async (req, res, next) => {
     try {
-        if (req.session.admin) return next();
         const userId = req.session?.user?.id || req.user?._id;
         if (!userId) return next();
 
         const checkUser = await User.findById(userId);
+        if (checkUser && checkUser.isBlocked) {
+            console.log(`User ${userId} is blocked.`);
 
-        if (checkUser.isBlocked) {
-            console.log(`user blocked ${checkUser}`)
+            const msg = "Your account has been blocked by Admin.";
+
+            if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+                req.session.user = null;
+                return res.status(403).json({
+                    success: false,
+                    message: msg,
+                    redirect: "/login"
+                });
+            }
+
             req.session.user = null;
+            req.flash("error", msg);
+
+            if (req.session.admin) {
+                console.log("Admin session detected, preserving session but cleared User data.");
+                res.locals.error = [msg];
+                return next();
+            }
 
             if (req.logout) {
                 return req.logout((err) => {
