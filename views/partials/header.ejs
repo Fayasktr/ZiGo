@@ -20,22 +20,28 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.92rem 5%;
-        /* Main header padding recalibrated */
-        /* Final calibration (+5% more) */
-        /* Increased by 10% */
         z-index: 1000;
         transition: var(--transition);
+        background-color: transparent;
+    }
+
+    header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
         background-color: rgba(15, 15, 15, 0.7);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: -1;
+        transition: background-color 0.3s ease;
+    }
+
+    header.scrolled::before {
+        background-color: rgba(15, 15, 15, 0.95);
     }
 
     header.scrolled {
-        background-color: rgba(15, 15, 15, 0.95);
-        backdrop-filter: blur(10px);
         padding: 0.81rem 5%;
-        /* Scrolled header padding recalibrated */
-        /* Final calibration (+5% more) */
-        /* Increased by 10% from 0.7rem */
         box-shadow: 0 4px 40px rgba(255, 90, 31, 0.4);
     }
 
@@ -168,6 +174,11 @@
     .logout-btn:hover {
         background: #ff4757;
         color: white;
+    }
+
+    /* Global Modal Layering Safety */
+    #successModal, #errorModal, .swal2-container, .swal2-backdrop-show {
+        z-index: 999999 !important;
     }
 </style>
 

@@ -388,13 +388,13 @@
                             <p class="text-xs opacity-50 font-bold mt-1">Total: ₹<%= item.itemTotal.toLocaleString() %></p>
                             
                             <% if (item.itemStatus === 'active' && ['pending', 'processing', 'shipped'].includes(order.orderStatus.toLowerCase())) { %>
-                                <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>, false)" 
+                                <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', '<%= item.quantity %>', false)" 
                                     class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
                                     Cancel Item
                                 </button>
                             <% } else if (item.itemStatus === 'delivered' || order.orderStatus.toLowerCase() === 'delivered') { %>
                                 <% if (!item.returnStatus || item.returnStatus === 'none') { %>
-                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>, true)" 
+                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', '<%=item.quantity%>', true)" 
                                         class="text-[10px] font-bold text-blue-500 hover:underline mt-2 block w-full text-right">
                                         Request Return
                                     </button>

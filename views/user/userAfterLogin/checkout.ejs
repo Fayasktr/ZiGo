@@ -194,11 +194,15 @@
             height: 100%;
             background: rgba(15, 15, 15, 0.8);
             backdrop-filter: blur(8px);
-            z-index: 2000;
+            z-index: 3000;
             display: none;
             justify-content: center;
             align-items: center;
             padding: 2rem;
+        }
+
+        #successModal, #errorModal {
+            z-index: 4000;
         }
 
         .modal-card {
@@ -206,8 +210,8 @@
             max-width: 500px;
             width: 100%;
             border-radius: 32px;
-            padding: 3.5rem 3rem;
-            text-align: center;
+            padding: 2.5rem 3rem;
+            text-align: left;
             position: relative;
             animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -441,6 +445,37 @@
             to { transform: rotate(360deg); }
         }
 
+        #addAddressModal .modal-card,
+        #addressModal .modal-card {
+            max-width: 650px;
+            padding: 2.5rem;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .address-modal-content {
+            text-align: left !important;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-orange) transparent;
+        }
+
+        /* Custom Scrollbar for Chrome/Safari */
+        .address-modal-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .address-modal-content::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 20px 0; /* Keeps scrollbar away from top/bottom curves */
+        }
+
+        .address-modal-content::-webkit-scrollbar-thumb {
+            background-color: var(--primary-orange);
+            border-radius: 20px;
+        }
+
         #placeOrderBtn:disabled {
             opacity: 0.7;
             cursor: not-allowed;
@@ -450,6 +485,20 @@
             display: inline-block;
         }
 
+        .error-message {
+            color: #FF4757;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .input-group.has-error input, 
+        .input-group.has-error textarea, 
+        .input-group.has-error select {
+            border-color: #FF4757 !important;
+            background: #FFF5F5 !important;
+        }
     </style>
 </head>
 
@@ -485,10 +534,10 @@
                                 </button>
                             </div>
                             
-                            <a href="/user/addresses/add" class="add-address-link-btn">
+                            <button type="button" onclick="openAddAddressModal()" class="add-address-link-btn">
                                 <i class="fas fa-plus text-orange-500"></i>
                                 <span>Add New Address</span>
-                            </a>
+                            </button>
                         </div>
 
                         <!-- Flash Message Alerts -->
@@ -695,6 +744,76 @@
             </div>
         </div>
 
+        <!-- Add Address Modal -->
+        <div id="addAddressModal" class="modal-overlay">
+            <div class="modal-card address-modal-content">
+                <i class="fas fa-times modal-close-btn" onclick="closeAddAddressModal()"></i>
+                <h2 class="text-2xl font-black mb-6 text-center">Add New Shipping Address</h2>
+                
+                <form id="addAddressForm" class="form-grid">
+                    <div class="input-group">
+                        <label>FULL NAME</label>
+                        <input type="text" name="userName" required placeholder="John Doe">
+                        <span class="error-message" id="error_userName">Name is required</span>
+                    </div>
+                    <div class="input-group">
+                        <label>ADDRESS TYPE</label>
+                        <select name="type" class="w-full padding-1rem border-radius-12 border-gray-light bg-off-white outline-none focus-border-orange" 
+                            style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--gray-light); background: var(--off-white); font-size: 0.9rem;">
+                            <option value="Home">Home</option>
+                            <option value="Work">Work</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group full-width">
+                        <label>DETAILED ADDRESS</label>
+                        <textarea name="detailedAddress" rows="3" required placeholder="House No, Street, Landmark..."></textarea>
+                        <span class="error-message" id="error_detailedAddress">Please provide a detailed address</span>
+                    </div>
+                    <div class="input-group">
+                        <label>CITY</label>
+                        <input type="text" name="city" required placeholder="City">
+                        <span class="error-message" id="error_city">City is required</span>
+                    </div>
+                    <div class="input-group">
+                        <label>STATE / PROVINCE</label>
+                        <input type="text" name="state" placeholder="State">
+                    </div>
+                    <div class="input-group">
+                        <label>PINCODE</label>
+                        <input type="text" name="pincode" required placeholder="654321">
+                        <span class="error-message" id="error_pincode">Valid pincode is required</span>
+                    </div>
+                    <div class="input-group">
+                        <label>COUNTRY</label>
+                        <input type="text" name="country" required value="India">
+                    </div>
+                    <div class="input-group">
+                        <label>MOBILE NUMBER</label>
+                        <input type="tel" name="phoneNumber" required placeholder="9876543210">
+                        <span class="error-message" id="error_phoneNumber">Enter a valid 10-digit mobile number</span>
+                    </div>
+                    <div class="input-group">
+                        <label>EMAIL (OPTIONAL)</label>
+                        <input type="email" name="email" placeholder="email@example.com">
+                    </div>
+                    <div class="input-group full-width flex items-center gap-4 py-2 mt-2" style="background: var(--off-white); border-radius: 12px; padding-left: 1rem; border: 1px dashed var(--gray-light);">
+                        <input type="checkbox" name="isDefault" id="isDefaultAddr" class="w-5 h-5 accent-orange-500 cursor-pointer">
+                        <label for="isDefaultAddr" class="mb-0 text-sm font-semibold opacity-80 cursor-pointer select-none">Set as default shipping address</label>
+                    </div>
+                </form>
+
+                <div class="flex gap-4 mt-6 justify-center">
+                    <button type="button" onclick="closeAddAddressModal()" class="flex-1 bg-gray-100 text-gray-900 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="saveNewAddress()" class="flex-1 bg-orange-500 text-white font-bold py-4 rounded-2xl hover:bg-orange-600 transition-all">
+                        Save Address
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Address Selection Modal -->
         <div id="addressModal" class="modal-overlay">
             <div class="modal-card address-modal-content">
@@ -748,12 +867,147 @@
             // Close modal if clicking outside the card
             window.onclick = function(event) {
                 const modal = document.getElementById('addressModal');
+                const addModal = document.getElementById('addAddressModal');
                 const successModal = document.getElementById('successModal');
                 const errorModal = document.getElementById('errorModal');
                 
-                if (event.target == modal) closeAddressModal();
-                if (event.target == successModal) successModal.style.display = 'none';
-                if (event.target == errorModal) errorModal.style.display = 'none';
+                if (modal && event.target == modal) closeAddressModal();
+                if (addModal && event.target == addModal) closeAddAddressModal();
+                if (successModal && event.target == successModal) successModal.style.display = 'none';
+                if (errorModal && event.target == errorModal) errorModal.style.display = 'none';
+            }
+
+            function openAddAddressModal() {
+                document.getElementById('addAddressModal').style.display = 'flex';
+            }
+
+            function closeAddAddressModal() {
+                document.getElementById('addAddressModal').style.display = 'none';
+                document.getElementById('addAddressForm').reset();
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.input-group').forEach(el => el.classList.remove('has-error'));
+            }
+
+            async function saveNewAddress() {
+                const form = document.getElementById('addAddressForm');
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // Handle Checkbox separately
+                data.isDefault = document.getElementById('isDefaultAddr').checked;
+
+                // Reset Errors
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.input-group').forEach(el => el.classList.remove('has-error'));
+
+                let hasError = false;
+
+                // Enhanced Inline Validation
+                if (!data.userName.trim()) {
+                    showFieldError('userName', 'Please enter your full name');
+                    hasError = true;
+                }
+                if (!data.detailedAddress.trim()) {
+                    showFieldError('detailedAddress', 'Address cannot be empty');
+                    hasError = true;
+                }
+                if (!data.city.trim()) {
+                    showFieldError('city', 'City is required');
+                    hasError = true;
+                }
+                const pincodeRegex = /^\d{6}$/;
+                if (!pincodeRegex.test(data.pincode)) {
+                    showFieldError('pincode', 'Enter a valid 6-digit pincode');
+                    hasError = true;
+                }
+                const phoneRegex = /^[6-9]\d{9}$/;
+                if (!phoneRegex.test(data.phoneNumber)) {
+                    showFieldError('phoneNumber', 'Enter a valid 10-digit mobile number');
+                    hasError = true;
+                }
+
+                if (hasError) return;
+
+                function showFieldError(fieldName, message) {
+                    const errorEl = document.getElementById('error_' + fieldName);
+                    if (errorEl) {
+                        errorEl.innerText = message;
+                        errorEl.style.display = 'block';
+                        errorEl.closest('.input-group').classList.add('has-error');
+                    }
+                }
+
+                try {
+                    const response = await fetch('/user/addresses/add', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const newAddress = result.address;
+                        
+                        // 1. Create and Add the new address to the address list modal
+                        const addressList = document.querySelector('#addressModal .space-y-3');
+                        const newAddrHTML = `
+                            <div class="modal-address-item"
+                                 onclick="selectAddressFromModal(this, '${newAddress._id}')"
+                                 data-id="${newAddress._id}"
+                                 data-name="${newAddress.userName}"
+                                 data-phone="${newAddress.phoneNumber}"
+                                 data-address="${newAddress.detailedAddress}"
+                                 data-city="${newAddress.city}"
+                                 data-pincode="${newAddress.pincode}"
+                                 data-country="${newAddress.country}">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-sm">${newAddress.userName}</p>
+                                        <p class="text-xs opacity-60">${newAddress.detailedAddress}</p>
+                                        <p class="text-xs opacity-60">${newAddress.city}, ${newAddress.country} - ${newAddress.pincode}</p>
+                                    </div>
+                                    <span class="bg-blue-100 text-blue-500 text-[9px] font-black px-2 py-1 rounded-md flex items-center gap-1">
+                                        NEW
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        if (addressList) {
+                            addressList.insertAdjacentHTML('afterbegin', newAddrHTML);
+                        }
+
+                        // 2. Automatically select this new address
+                        const tempEl = document.createElement('div');
+                        tempEl.innerHTML = newAddrHTML;
+                        const newEl = tempEl.firstElementChild;
+                        selectAddressFromModal(newEl, newAddress._id);
+
+                        // 3. Close the Add Address modal
+                        closeAddAddressModal();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Address Saved',
+                            text: 'New shipping address has been added and selected.',
+                            confirmButtonColor: '#FF5A1F',
+                            timer: 2000
+                        });
+                    } else {
+                        throw new Error(result.message || 'Failed to save address');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message,
+                        confirmButtonColor: '#FF5A1F'
+                    });
+                }
             }
 
             function selectAddressFromModal(element, addressId) {
