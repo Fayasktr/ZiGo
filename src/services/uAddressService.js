@@ -450,3 +450,32 @@ export const itemCancel=async(userId,orderId,itemId,reason,comments)=>{
     await order.save();
     return order;
 }
+
+export const itemReturn=async(userId,orderId,itemId,reason,quantity,comments)=>{
+    if(!userId)throw new Error("need login");
+    const order=await orderModel.findById(orderId);
+    if(!order){
+        throw new Error("order not found");
+    }
+    const item=order.items.id(itemId);
+    if(!item){
+        throw new Error("item not found");
+    }
+    if(!item.itemStatus=="delivered"){
+        throw new Error("only relivered item can return");
+    }
+    if(item.returnStatus=="requested"){
+        throw new Error("this item already return requested");
+    }
+    
+    item.returnStatus="requested";
+    item.returnReason=reason;
+    item.returnRequestedAt=new Date();
+    item.returnQuantity=quantity;
+    item.returnComments=comments;
+
+    order.returnRequested=true;
+
+    await order.save();
+    return order;
+}

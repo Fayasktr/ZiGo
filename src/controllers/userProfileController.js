@@ -342,3 +342,15 @@ export const itemCancel=asynchandler(async(req,res)=>{
         res.status(400).json({success:false,message:error.message ||"can't change item status"});
     }
 })
+
+export const itemReturn=asynchandler(async(req,res)=>{
+    try {
+        const userId=req.session?.user?.id||req?.user?.id;
+        const {orderId,itemId}=req.params;
+        const {reason,quantity=1,comments}=req.body;
+        await addressService.itemReturn(userId,orderId,itemId,reason,quantity,comments);
+        res.status(200).json({success:true,message:"return requiested"});
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message ||"can't change item status"});
+    }
+})
