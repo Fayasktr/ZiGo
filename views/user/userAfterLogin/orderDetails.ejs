@@ -387,13 +387,6 @@
                             <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
                             <p class="text-xs opacity-50 font-bold mt-1">Total: ₹<%= item.itemTotal.toLocaleString() %></p>
                             
-<<<<<<< Updated upstream
-                            <% if (item.itemStatus === 'active' && ['pending', 'processing'].includes(order.orderStatus.toLowerCase())) { %>
-                                <button onclick="cancelOrderItem('<%= order._id %>', '<%= item._id %>')" 
-                                    class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
-                                    Cancel Item
-                                </button>
-=======
                             <% if (item.itemStatus === 'active' && ['pending', 'processing', 'shipped'].includes(order.orderStatus.toLowerCase())) { %>
                                 <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>, false)" 
                                     class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
@@ -418,7 +411,6 @@
                                         ✗ Return Rejected
                                     </span>
                                 <% } %>
->>>>>>> Stashed changes
                             <% } %>
                         </div>
                     </div>
@@ -515,13 +507,8 @@
                 <!-- Interactive Actions -->
                 <div class="mt-12 pt-12 border-t flex flex-wrap gap-4 justify-center">
                     
-<<<<<<< Updated upstream
-                    <% if (order.orderStatus === 'Delivered') { %>
-                        <!-- Visible for 'Delivered' orders -->
-=======
                     <% /* 
                     if (order.orderStatus.toLowerCase() === 'delivered') { %>
->>>>>>> Stashed changes
                         <button class="action-btn btn-return" onclick="openModal('returnModal')">
                             <i class="fas fa-undo"></i> Return / Resend
                         </button>
@@ -529,10 +516,6 @@
                         <button class="action-btn bg-black text-white hover:bg-zinc-800" onclick="openModal('ratingModal')">
                             <i class="fas fa-star text-yellow-500"></i> Rate & Review
                         </button>
-<<<<<<< Updated upstream
-                    <% } else if (['processing', 'shipped', 'pending'].includes(order.orderStatus.toLowerCase())) { %>
-                        <!-- Hidden for 'Delivered' orders -->
-=======
                     <% } 
                     */ %>
 
@@ -543,7 +526,6 @@
                     <% } %>
 
                     <% if (['processing', 'shipped', 'pending'].includes(order.orderStatus.toLowerCase())) { %>
->>>>>>> Stashed changes
                         <button class="action-btn btn-cancel" onclick="openModal('cancelModal')">
                             <i class="fas fa-times-circle"></i> Cancel Order
                         </button>
@@ -707,25 +689,6 @@
             Swal.fire('Thank You', 'Your feedback has been received.', 'success');
         }
 
-<<<<<<< Updated upstream
-        async function cancelOrderItem(orderId, itemId) {
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel Product',
-                text: 'Why do you want to cancel this item?',
-                input: 'select',
-                inputOptions: {
-                    'Changed my mind': 'Changed my mind',
-                    'Found better price elsewhere': 'Found better price elsewhere',
-                    'Incorrect item/details': 'Incorrect item/details',
-                    'Other': 'Other'
-                },
-                inputPlaceholder: 'Select a reason',
-                showCancelButton: true,
-                confirmButtonColor: '#FF5A1F',
-                cancelButtonColor: '#d33',
-                inputValidator: (value) => {
-                    return !value && 'You need to select a reason!'
-=======
         async function initiateItemAction(orderId, itemId, maxQty, isReturn) {
             const actionTitle = isReturn ? 'Return Product' : 'Cancel Product';
             const actionVerb = isReturn ? 'return' : 'cancel';
@@ -776,7 +739,6 @@
                         return false;
                     }
                     return { reason, quantity, comments };
->>>>>>> Stashed changes
                 }
             });
 
@@ -790,20 +752,10 @@
                 });
 
                 try {
-<<<<<<< Updated upstream
-                    // Note: This route must be implemented in your backend
-                    const response = await fetch(`/user/order/${orderId}/item/${itemId}/cancel`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reason, comments })
-=======
                     const response = await fetch(endpointUrl, {
                         method: method,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formValues)
->>>>>>> Stashed changes
                     });
 
                     const data = await response.json();
@@ -811,15 +763,9 @@
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
-<<<<<<< Updated upstream
-                            title: 'Item Cancelled',
-                            text: 'The product has been removed from your order.',
-                            confirmButtonColor: '#FF5A1F'
-=======
                             title: `Request Submitted`,
                             text: `Your ${actionVerb} request for ${formValues.quantity} item(s) has been submitted.`,
                             confirmButtonColor: isReturn ? '#3395FF' : '#FF5A1F'
->>>>>>> Stashed changes
                         }).then(() => {
                             window.location.reload();
                         });
@@ -827,11 +773,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-<<<<<<< Updated upstream
-                            text: data.message || 'Failed to cancel item.',
-=======
                             text: data.message || `Failed to process ${actionVerb}.`,
->>>>>>> Stashed changes
                             confirmButtonColor: '#FF5A1F'
                         });
                     }

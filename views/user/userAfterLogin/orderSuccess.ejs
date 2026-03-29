@@ -128,13 +128,15 @@
                 <a href="/shop" class="btn-primary">
                     <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
                 </a>
-                <a href="/user/orders" class="btn-secondary">
+                <a href="/user/orders/<%= successPageData.orderNumber %>" class="btn-secondary">
                     <i class="fas fa-list-ul mr-2"></i> View Order Details
                 </a>
             </div>
         </div>
     </main>
-
+    <script>
+        console.log(successPageData)
+    </script>
     <%- include('../../partials/footerMinimal') %>
 </body>
 
