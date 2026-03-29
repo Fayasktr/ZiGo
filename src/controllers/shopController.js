@@ -133,7 +133,7 @@ export const successPage=asyncHandler(async(req,res)=>{
         if(!userId )throw new Error("Login required");
         if(!orderNumber)throw new Error("order Number not found");
         const successPageData=await shopService.successPage(userId,orderNumber);
-        res.render("user/userAfterLogin/orderSuccess",successPageData);
+        res.render("user/userAfterLogin/orderSuccess",{successPageData});
     } catch (error) {
         req.flash("error",error.message);
         res.redirect("/shop");

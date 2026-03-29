@@ -1035,7 +1035,10 @@
                                         try {
                                             const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
                                                 method: "PATCH",
-                                                headers: { "Content-Type": "application/json" }
+                                                headers: { 
+                                                    "Content-Type": "application/json",
+                                                    "Accept": "application/json"
+                                                }
                                             });
 
                                             if (update.status === 401) {
@@ -1104,7 +1107,10 @@
 
                                             let response = await fetch(`/shop/cart/${productId}?variantId=${variantId}&quantity=${quantity}`, {
                                                 method: "POST",
-                                                headers: { "Content-Type": "application/json" }
+                                                headers: { 
+                                                    "Content-Type": "application/json",
+                                                    "Accept": "application/json"
+                                                }
                                             });
 
                                             if (response.status === 401) {
@@ -1160,7 +1166,11 @@
                                             const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
                                             let response = await fetch(`/productDetailse/buyNow`, {
                                                 method: "POST",
-                                                headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, variantId: vId, quantity })
+                                                headers: { 
+                                                    "Content-Type": "application/json",
+                                                    "Accept": "application/json"
+                                                }, 
+                                                body: JSON.stringify({ productId, variantId: vId, quantity })
                                             });
 
                                             if (response.status === 401) {

@@ -613,7 +613,10 @@
                                     try {
                                         const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
                                             method: "PATCH",
-                                            headers: { "Content-Type": "application/json" }
+                                            headers: { 
+                                                "Content-Type": "application/json",
+                                                "Accept": "application/json"
+                                            }
                                         });
 
                                         if (update.status === 401) {
@@ -669,7 +672,10 @@
                                         console.log(productId)
                                         let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
                                             method: "POST",
-                                            headers: { "Content-Type": "application/json" }
+                                            headers: { 
+                                                "Content-Type": "application/json",
+                                                "Accept": "application/json"
+                                            }
                                         });
 
                                         if (update.status === 401) {

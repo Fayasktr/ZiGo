@@ -352,6 +352,7 @@ export const buynow=async(productId,variantId,quantity)=>{
     return product
 }
 
+
 export const placeBuyNowOrder=async(userId,addressId,paymentMethod,buyNowItem)=>{
     const address=await addressModel.findOne({userId:userId,_id:addressId});
     if(!address){
