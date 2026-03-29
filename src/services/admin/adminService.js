@@ -3,6 +3,7 @@ import checkPass from "../../utils/checkPassword.js"
 import userModel from "../../models/userModel.js"
 import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
+import walletModel from "../../models/walletModel.js"
 
 export const accessToAdmin = async (adminMail, password) => {
     const adminData = await admin.findOne({ email: adminMail });
@@ -54,15 +55,18 @@ export const adminOrderList=async(page,limit,search,status)=>{
         filter.orderStatus = status.toLowerCase();
     }
 
-    const orders = await orderModel
+    const [orders, returnRequested, totalCount] = await Promise.all([
+        orderModel
         .find(filter) 
         .populate("userId", "userName email")
-        .find()
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit);
-    const totalCount=await orderModel.countDocuments(filter);
-    return {orders,totalCount}
+        .limit(limit),
+        orderModel.find({returnRequested:true}),
+        orderModel.countDocuments(filter)
+    ])
+
+    return {orders,totalCount,returnRequested}
 }
 
 export const orderDetailsePage=async(orderId)=>{
@@ -120,6 +124,60 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     if(paymentStatus){
         order.paymentStatus=paymentStatus;
     }
+    await order.save();
+    return order;
+}
+
+export const handleReturnRequest=async(orderId,itemId,action)=>{
+    if (!["approved", "rejected"].includes(action)) {
+        throw new Error("Action must be approved or rejected");
+    }
+
+    const order=await orderModel.findById(orderId);
+    if(!order)throw new Error("Order not found");
+    
+    const item=order.items.id(itemId);
+    if(!item)throw new Error("Item not found");
+
+    if(item.returnStatus!="requested"){
+        throw new Error("No pending return reqest for this item");
+    }
+
+    if(action =="approved"){
+        await productModel.updateOne(
+            { _id: item.productId, "variants._id": item.variantId },
+            { $inc: { "variants.$.stock": item.quantity } }
+        );
+
+        const refundAmount = item.itemTotal;
+        await walletModel.findOneAndUpdate(
+            { userId: order.userId },
+            { $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        type: "credit",
+                        amount: refundAmount,
+                        description: `Refund for returned item: ${item.productName}`,
+                        orderId: order._id
+                    }
+                }
+            },
+            { upsert: true, new: true }
+        );
+
+        item.itemStatus="returned";
+        item.returnStatus="approved";
+        
+        const allDone=order.items.every(i=>i.itemStatus=="returned"||i.itemStatus=="cancelled");
+        if(allDone)order.orderStatus="returned";
+
+    }else{
+        item.returnStatus="rejected";
+    }
+
+    const anyPending = order.items.some(i => i.returnStatus === "requested");
+    if (!anyPending) order.returnRequested = false;
+
     await order.save();
     return order;
 }
