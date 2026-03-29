@@ -147,6 +147,18 @@
             border-color: var(--primary-orange);
         }
 
+        .return-badge {
+            background: #FF4757;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-left: 6px;
+            font-weight: 800;
+            vertical-align: middle;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+        }
+
         .order-table-wrapper {
             overflow-x: auto;
         }
@@ -327,6 +339,12 @@
                 <% statuses.forEach(s => { %>
                     <a href="/admin/orders?status=<%= s %>" class="tab-item <%= currentStatus === s ? 'active' : '' %>"><%= s.charAt(0).toUpperCase() + s.slice(1) %> Orders</a>
                 <% }) %>
+                <a href="/admin/orders?status=returns" class="tab-item <%= currentStatus === 'returns' ? 'active' : '' %>">
+                    Return Requests
+                    <% if (typeof returnRequested !== 'undefined' && returnRequested.length > 0) { %>
+                        <span class="return-badge"><%= returnRequested.length %></span>
+                    <% } %>
+                </a>
             </div>
 
             <div class="order-table-wrapper">
@@ -342,8 +360,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (typeof orders !== 'undefined' && orders && orders.length > 0) { %>
-                            <% orders.forEach(order => { %>
+                        <% 
+                           let displayOrders = (typeof orders !== 'undefined' ? orders : []);
+                           if (currentStatus === 'returns' && typeof returnRequested !== 'undefined') {
+                               displayOrders = returnRequested;
+                           }
+                        %>
+                        <% if (displayOrders.length > 0) { %>
+                            <% displayOrders.forEach(order => { %>
                                 <tr>
                                     <td class="font-bold">#<%= order.orderNumber %></td>
                                     <td>

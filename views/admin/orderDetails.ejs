@@ -380,11 +380,43 @@
                                     } %>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <p class="font-black">₹<%= item.price.toLocaleString() %></p>
-                                <p class="text-xs opacity-40">Qty: <%= item.quantity %></p>
+                            <div class="text-right flex flex-col justify-between items-end min-w-[120px]">
+                                <div>
+                                    <p class="font-black">₹<%= item.price.toLocaleString() %></p>
+                                    <p class="text-xs opacity-40">Qty: <%= item.quantity %></p>
+                                </div>
+                                
+                                <% if (item.returnStatus === 'requested') { %>
+                                    <div class="mt-4 flex flex-col gap-2 w-full">
+                                        <span class="text-[9px] font-black text-yellow-500 uppercase tracking-widest text-right mb-1">
+                                            ⏳ Return Requested
+                                        </span>
+                                        <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'approved')"
+                                            class="text-[10px] font-bold bg-green-500/10 text-green-500 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-all">
+                                            ✓ Approve
+                                        </button>
+                                        <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'rejected')"
+                                            class="text-[10px] font-bold bg-red-500/10 text-red-500 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+                                            ✗ Reject
+                                        </button>
+                                    </div>
+                                <% } else if (item.returnStatus === 'approved') { %>
+                                    <span class="text-[9px] font-black text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg mt-4">
+                                        ✓ Return Approved
+                                    </span>
+                                <% } else if (item.returnStatus === 'rejected') { %>
+                                    <span class="text-[9px] font-black text-red-500 bg-red-500/10 px-3 py-1.5 rounded-lg mt-4">
+                                        ✗ Return Rejected
+                                    </span>
+                                <% } %>
                             </div>
                         </div>
+                        <% if (item.returnStatus === 'requested' && item.returnReason) { %>
+                            <div class="mx-4 mb-4 p-3 bg-white/5 rounded-xl border border-white/5">
+                                <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Return Reason</p>
+                                <p class="text-xs opacity-60 italic">"<%= item.returnReason %>"</p>
+                            </div>
+                        <% } %>
                     <% }) %>
                 </div>
 
@@ -514,6 +546,48 @@
             } catch (error) {
                 console.error('Error:', error);
                 Swal.fire('Error', 'An internal error occurred while updating the order.', 'error');
+            }
+        }
+
+        async function handleReturn(orderId, itemId, action) {
+            const actionText = action === 'approved' ? 'approve' : 'reject';
+            
+            const { isConfirmed } = await Swal.fire({
+                title: `${action === 'approved' ? 'Approve' : 'Reject'} Return?`,
+                text: action === 'approved' 
+                    ? 'Stock will be restored and amount refunded to customer wallet.'
+                    : 'Customer will be notified that return was rejected.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: action === 'approved' ? '#3395FF' : '#FF4757',
+                confirmButtonText: `Yes, ${actionText} it`
+            });
+
+            if (!isConfirmed) return;
+
+            try {
+                const res = await fetch(`/admin/orders/${orderId}/item/${itemId}/return`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: `Return ${action}`,
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', result.message, 'error');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                Swal.fire('Error', 'Something went wrong', 'error');
             }
         }
     </script>

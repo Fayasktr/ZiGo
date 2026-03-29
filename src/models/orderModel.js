@@ -37,6 +37,14 @@ const itemsSchema = mongoose.Schema({
         enum: ["active", "cancelled","delivered", "returned"],
         default: "active"
     },
+    returnStatus: {
+        type: String,
+        enum: ["none", "requested", "approved", "rejected"],
+        default: "none"
+    },
+    returnQuantity: { type: Number, default: 0 },
+    returnComments: { type: String }, 
+    returnRequestedAt: { type: Date },
     cancelReason: { type: String },
     returnReason: { type: String },
     comments:{type:String}
@@ -86,6 +94,10 @@ const orderSchema=mongoose.Schema({
         type:String,
         enum: ["pending", "paid", "failed", "refunded"],
         default: "pending"
+    },
+    returnRequested: {
+        type: Boolean,
+        default: false
     },
     items:[itemsSchema],
     couponId:{

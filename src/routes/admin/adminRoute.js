@@ -21,6 +21,8 @@ router.get("/admin/orders",adminControl.adminOrderList);
 router.get("/admin/orderDetails/:id",adminControl.orderDetailsePage);
 router.patch("/admin/orderDetails/:id/update",adminControl.orderStatusUpdate);
 
+router.patch("/admin/orders/:orderId/item/:itemId/return",adminControl.handleReturnRequest);
+
 const adminRoute = router;
 
 export default adminRoute;

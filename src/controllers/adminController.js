@@ -79,9 +79,9 @@ export const adminOrderList=asynchandler(async(req,res)=>{
         const search=req.query.search||"";
         const status=req.query.status||"all";
 
-        const {orders,totalCount}=await adminService.adminOrderList(page,limit,search,status);
+        const {orders,totalCount,returnRequested}=await adminService.adminOrderList(page,limit,search,status);
         const totalPages=Math.ceil(totalCount/limit);
-        res.render("admin/orders",{orders,totalCount,currentPage:page,totalPages,limit,search,status})
+        res.render("admin/orders",{orders,totalCount,currentPage:page,totalPages,limit,search,status,returnRequested})
     } catch (error) {
         req.flash("error",error.message);
         res.redirect("/admin/dashbord");
@@ -115,5 +115,19 @@ export const orderStatusUpdate=asynchandler(async(req,res)=>{
         });
     } catch (error) {
         res.json({success:false,message:error.message});
+    }
+})
+
+export const handleReturnRequest=asynchandler(async(req,res)=>{
+    try {
+        const {orderId,itemId}=req.params;
+        const {action}=req.body;
+        await adminService.handleReturnRequest(orderId,itemId,action);
+        res.status(200).json({ 
+            success: true, 
+            message: `Return ${action} successfully` 
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
 })
