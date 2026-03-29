@@ -49,4 +49,6 @@ router.patch("/user/order/:id/cancel",userProfile.ordercancel);
 router.patch("/user/order/:orderId/item/:itemId/cancel",userProfile.itemCancel);
 router.patch("/user/order/:orderId/item/:itemId/return",userProfile.itemReturn);
 
+router.get("/user/wallet",userProfile.walletPage);
+
 export default router;

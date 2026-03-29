@@ -353,3 +353,17 @@ export const itemReturn=asynchandler(async(req,res)=>{
         res.status(400).json({success:false,message:error.message ||"can't change item status"});
     }
 })
+
+export const walletPage=asynchandler(async(req,res)=>{
+    try {
+        const userId = req.session?.user?.id || req.user?.id;
+        if (!userId) {
+            throw new Error("User session not found");
+        }
+        const wallet = await addressService.getWalletData(userId);
+        res.render("user/userAfterLogin/wallet", {user: req.session.user || req.user,wallet});
+    } catch (error) {
+        req.flash("error", error.message);
+        res.redirect("/user/profile");
+    }
+})

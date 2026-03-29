@@ -10,6 +10,7 @@ import wishlistModel from "../models/wishlistModel.js";
 import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js"
 import orderModel from "../models/orderModel.js";
+import walletModel from "../models/walletModel.js";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -479,3 +480,17 @@ export const itemReturn=async(userId,orderId,itemId,reason,quantity,comments)=>{
     await order.save();
     return order;
 }
+
+export const getWalletData = async (userId) => {
+    let wallet = await walletModel.findOne({ userId });
+    if (!wallet) {
+        wallet = await walletModel.create({
+            userId,
+            balance: 0,
+            transactions: []
+        });
+    }
+    // Sort transactions by date descending (newest first)
+    wallet.transactions.sort((a, b) => b.createdAt - a.createdAt);
+    return wallet;
+}
