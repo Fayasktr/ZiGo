@@ -490,7 +490,7 @@ export const getWalletData = async (userId) => {
             transactions: []
         });
     }
-    // Sort transactions by date descending (newest first)
     wallet.transactions.sort((a, b) => b.createdAt - a.createdAt);
     return wallet;
-}
+}
+
