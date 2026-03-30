@@ -345,7 +345,7 @@
                                             <button onclick="cancelOrder('<%= order._id %>')" class="block w-full mt-2 text-xs font-bold text-red-500 hover:underline">Cancel Order</button>
                                         <% } %>
                                         <% if (order.orderStatus === 'Delivered') { %>
-                                            <button class="block w-full mt-2 text-xs font-bold text-orange-500 hover:underline">Download Invoice</button>
+                                            <a href="/user/order/<%= order._id %>/invoice" class="block w-full mt-2 text-xs font-bold text-orange-500 hover:underline">Download Invoice</a>
                                         <% } %>
                                     </div>
                                 </div>

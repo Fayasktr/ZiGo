@@ -11,6 +11,10 @@ import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js"
 import orderModel from "../models/orderModel.js";
 import walletModel from "../models/walletModel.js";
+import puppeteer from "puppeteer";
+import ejs from "ejs";
+import path from "path";
+import fs from "fs";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -494,3 +498,56 @@ export const getWalletData = async (userId) => {
     return wallet;
 }
 
+
+export const setupInvoice=async(orderId,userId)=>{
+    const order=await orderModel.findById(orderId);
+    if(!order)throw new Error("no order found");
+
+    if(order.userId.toString()!==userId.toString())throw new Error("Unauthorized user");
+
+    // Convert logos to Base64 for PDF rendering
+    const logoIconPath = path.join(process.cwd(), 'public/public/logo-icon.png');
+    const logoNamePath = path.join(process.cwd(), 'public/public/logo-name.png');
+    
+    let logoIconBase64 = "";
+    let logoNameBase64 = "";
+    
+    try {
+        if (fs.existsSync(logoIconPath)) {
+            logoIconBase64 = `data:image/png;base64,${fs.readFileSync(logoIconPath).toString('base64')}`;
+        }
+        if (fs.existsSync(logoNamePath)) {
+            logoNameBase64 = `data:image/png;base64,${fs.readFileSync(logoNamePath).toString('base64')}`;
+        }
+    } catch (err) {
+        console.error("Error reading logo files for invoice:", err);
+    }
+
+    const html = await ejs.renderFile(
+        path.join(process.cwd(), 'views/user/userAfterLogin/invoice.ejs'),
+        { order, logoIcon: logoIconBase64, logoName: logoNameBase64 }
+    );
+
+    const browser = await puppeteer.launch({ 
+        headless: true,
+        args: ['--no-sandbox']
+    });
+    let pdf;
+    try{
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+
+        pdf = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' },
+            displayHeaderFooter: true,
+            // headerTemplate: '<div style="font-size:8px">ZiGo Invoice</div>',
+            // footerTemplate: '<div style="font-size:8px">Page <span class="pageNumber"></span></div>'
+        });
+    }finally{
+        await browser.close();
+    }
+    return {order,pdf};
+    
+}

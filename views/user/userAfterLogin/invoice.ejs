@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Invoice - #<%= order.orderNumber %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --bg-light: #F8FAFC;
+            --border-color: #E2E8F0;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .invoice-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 800px;
+            padding: 50px;
+            border-radius: 24px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Header */
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo img.icon {
+            height: 50px;
+            width: auto;
+        }
+
+        .brand-logo img.name {
+            height: 22px;
+            width: auto;
+            margin-top: 4px;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary-orange);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .meta-item {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .info-section h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary-orange);
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .info-content {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .info-address {
+            color: var(--text-muted);
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+
+        .items-table th {
+            background-color: var(--bg-light);
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 800;
+        }
+
+        .items-table td {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .item-name {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .item-variant-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .item-variant {
+            font-size: 10px;
+            color: var(--primary-orange);
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255, 90, 31, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 90, 31, 0.1);
+        }
+
+        .qty-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .price-cell {
+            text-align: right;
+            font-weight: 700;
+        }
+
+        /* Summary Section */
+        .summary-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .summary-box {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--bg-light);
+            margin-top: 10px;
+            padding-top: 20px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-orange);
+        }
+
+        .summary-value {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .summary-row.total .summary-value {
+            color: var(--primary-orange);
+        }
+
+        .summary-row.discount .summary-value {
+            color: #10B981;
+        }
+
+        /* Footer */
+        .invoice-footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid var(--bg-light);
+            text-align: center;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .support-info {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .support-info span {
+            color: var(--primary-orange);
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+            }
+            .invoice-card {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-card">
+        <header class="invoice-header">
+            <div class="brand-logo">
+                <img src="<%= logoIcon %>" alt="ZiGo Icon" class="icon">
+                <img src="<%= logoName %>" alt="ZiGo" class="name">
+            </div>
+            <div class="invoice-meta">
+                <div class="invoice-title">Invoice</div>
+                <div class="meta-item">Order Number: <span class="meta-value">#<%= order.orderNumber %></span></div>
+                <div class="meta-item">Date: <span class="meta-value"><%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></div>
+                <div class="meta-item">Payment: <span class="meta-value"><%= order.paymentMethod %></span></div>
+            </div>
+        </header>
+
+        <main>
+            <div class="info-grid">
+                <div class="info-section">
+                    <h4>Billed To</h4>
+                    <div class="info-content">
+                        <div class="info-name"><%= order.shippingAddress.fullName %></div>
+                        <div class="info-address">
+                            <%= order.shippingAddress.addressLine %>
+                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %>
+                            <%= order.shippingAddress.country %>
+                            Phone: +91 <%= order.shippingAddress.phone %>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h4>Shipping Address</h4>
+                    <div class="info-content">
+                        <div class="info-name"><%= order.shippingAddress.fullName %></div>
+                        <div class="info-address">
+                            <%= order.shippingAddress.addressLine %>
+                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %>
+                            <%= order.shippingAddress.country %>
+                            Phone: +91 <%= order.shippingAddress.phone %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th style="width: 15%; text-align: center;">Qty</th>
+                        <th style="width: 15%; text-align: right;">Price</th>
+                        <th style="width: 20%; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% order.items.forEach(item => { %>
+                    <tr>
+                        <td>
+                            <div class="item-name"><%= item.productName %></div>
+                            <div class="item-variant-container">
+                                <% if (item.variantAttributes) { 
+                                    const attrs = (item.variantAttributes instanceof Map) ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
+                                    Object.entries(attrs).forEach(([key, value]) => { %>
+                                        <span class="item-variant"><%= key %>: <%= value %></span>
+                                    <% }) 
+                                } %>
+                            </div>
+                        </td>
+                        <td class="qty-cell"><%= item.quantity %></td>
+                        <td class="price-cell">₹<%= item.price.toLocaleString() %></td>
+                        <td class="price-cell">₹<%= item.itemTotal.toLocaleString() %></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <div class="summary-container">
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span class="summary-value">₹<%= order.pricing.subTotal.toLocaleString() %></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (GST 18%)</span>
+                        <span class="summary-value">₹<%= order.pricing.tax.toLocaleString() %></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span class="summary-value"><%= order.pricing.shipping === 0 ? 'FREE' : '₹' + order.pricing.shipping.toLocaleString() %></span>
+                    </div>
+                    <% if (order.pricing.discound && order.pricing.discound > 0) { %>
+                    <div class="summary-row discount">
+                        <span>Discount</span>
+                        <span class="summary-value">-₹<%= order.pricing.discound.toLocaleString() %></span>
+                    </div>
+                    <% } %>
+                    <div class="summary-row total">
+                        <span>Grand Total</span>
+                        <span class="summary-value">₹<%= order.pricing.total.toLocaleString() %></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="invoice-footer">
+            <p class="footer-note">Thank you for shopping with ZiGo! We appreciate your business.</p>
+            <div class="support-info">
+                For any questions, contact us at <span>support@zigo.com</span> or call <span>+91 1800-ZIGO-APP</span>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

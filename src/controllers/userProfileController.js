@@ -367,3 +367,19 @@ export const walletPage=asynchandler(async(req,res)=>{
         res.redirect("/user/profile");
     }
 })
+
+export const downloadInvoice=asynchandler(async(req,res)=>{
+    try {
+        const orderId=req.params.orderId;
+        const userId= req.session?.user?.id || req.user?.id;
+        const {order,pdf}=await addressService.setupInvoice(orderId,userId);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 
+            `attachment; filename=invoice-${order.orderNumber}.pdf`
+        );
+        res.send(pdf);
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/user/orders");
+    }
+})

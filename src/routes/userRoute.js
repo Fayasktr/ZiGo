@@ -48,7 +48,9 @@ router.get("/user/order/:id",userProfile.orderDetailse);
 router.patch("/user/order/:id/cancel",userProfile.ordercancel);
 router.patch("/user/order/:orderId/item/:itemId/cancel",userProfile.itemCancel);
 router.patch("/user/order/:orderId/item/:itemId/return",userProfile.itemReturn);
+router.get("/user/order/:orderId/invoice",userProfile.downloadInvoice);
 
 router.get("/user/wallet",userProfile.walletPage);
+
 
 export default router;
