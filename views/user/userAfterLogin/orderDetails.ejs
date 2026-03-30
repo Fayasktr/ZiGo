@@ -403,24 +403,27 @@
                                     class="text-[10px] font-bold text-red-500 hover:underline mt-2 block w-full text-right">
                                     Cancel Item
                                 </button>
-                            <% } else if (item.itemStatus === 'delivered' || order.orderStatus.toLowerCase() === 'delivered') { %>
-                                <% if (!item.returnStatus || item.returnStatus === 'none') { %>
-                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', '<%=item.quantity%>', true)" 
-                                        class="text-[10px] font-bold text-blue-500 hover:underline mt-2 block w-full text-right">
-                                        Request Return
-                                    </button>
-                                <% } else if (item.returnStatus === 'requested') { %>
+                            <% } else { %>
+                                <% 
+                                    const remainingReturnQty = item.quantity - (item.returnQuantity || 0); 
+                                %>
+                                <% if (item.returnStatus === 'requested') { %>
                                     <span class="text-[10px] font-black text-yellow-500 uppercase tracking-wider block w-full text-right mt-2">
                                         ⏳ Return Pending
                                     </span>
-                                <% } else if (item.returnStatus === 'approved') { %>
-                                    <span class="text-[10px] font-black text-green-500 uppercase tracking-wider block w-full text-right mt-2">
-                                        ✓ Return Approved
+                                <% } else if (remainingReturnQty <= 0 || item.itemStatus === 'returned') { %>
+                                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-wider block w-full text-right mt-2">
+                                        ✓ Returned
                                     </span>
                                 <% } else if (item.returnStatus === 'rejected') { %>
                                     <span class="text-[10px] font-black text-red-500 uppercase tracking-wider block w-full text-right mt-2">
                                         ✗ Return Rejected
                                     </span>
+                                <% } else if (item.itemStatus === 'delivered' && order.orderStatus.toLowerCase() !== 'returned') { %>
+                                    <button onclick="initiateItemAction('<%= order._id %>', '<%= item._id %>', '<%= remainingReturnQty %>', true)" 
+                                        class="text-[10px] font-bold text-blue-500 hover:underline mt-2 block w-full text-right">
+                                        Request Return (<%= remainingReturnQty %>)
+                                    </button>
                                 <% } %>
                             <% } %>
                         </div>
@@ -795,8 +798,10 @@
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: `Request Submitted`,
-                            text: `Your ${actionVerb} request for ${formValues.quantity} item(s) has been submitted.`,
+                            title: isReturn ? `Request Submitted` : `Item Cancelled`,
+                            text: isReturn 
+                                ? `Your return request for ${formValues.quantity} item(s) has been submitted.`
+                                : `Your ${formValues.quantity} item(s) have been successfully cancelled.`,
                             confirmButtonColor: isReturn ? '#3395FF' : '#FF5A1F'
                         }).then(() => {
                             window.location.reload();

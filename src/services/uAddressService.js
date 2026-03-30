@@ -379,11 +379,36 @@ export const changeCartQuantity = async (userId, change, productId, variantId,cu
 }
 
 
-export const orderHistory=async(userId)=>{
-    if(!userId){
+export const orderHistory = async (userId,query) => {
+    if (!userId) {
         throw new Error("need to login");
     }
-    return await orderModel.find({userId:userId}).sort({createdAt:-1});
+    let { page = 1, search =""}=query;
+    let limit = 5;
+    let skip = (page-1)*limit;
+
+    let filter = {userId:userId};
+    if (search) {
+        filter.$or = [
+            { orderNumber: { $regex: search, $options: "i" } },
+            { "items.productName": { $regex: search, $options: "i" } }
+        ];
+    }
+    const [orders, totalCount] = await Promise.all([
+        orderModel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        orderModel.countDocuments(filter)
+    ]);
+
+    return {
+        orders,
+        totalCount,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limit),
+        search
+    };
 }
 
 export const orderDetailse=async(userId,orderId)=>{
@@ -466,7 +491,7 @@ export const itemReturn=async(userId,orderId,itemId,reason,quantity,comments)=>{
     if(!item){
         throw new Error("item not found");
     }
-    if(!item.itemStatus=="delivered"){
+    if(item.itemStatus !=="delivered"){
         throw new Error("only relivered item can return");
     }
     if(item.returnStatus=="requested"){

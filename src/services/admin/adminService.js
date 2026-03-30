@@ -78,9 +78,9 @@ export const orderDetailsePage=async(orderId)=>{
 
 export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     const allowed = {
-        "pending":    ["processing","shipped","delivered", "cancelled"],
-        "processing": ["shipped","delivered", "cancelled"],
-        "shipped":    ["delivered", "cancelled"],
+        "pending":    ["pending","processing","shipped","delivered", "cancelled"],
+        "processing": ["processing","shipped","delivered", "cancelled"],
+        "shipped":    ["shipped","delivered", "cancelled"],
         "cancelled":  ["cancelled"],
         "delivered":  ["delivered","returned"],
         "returned":   ["returned"]
@@ -149,27 +149,29 @@ export const handleReturnRequest=async(orderId,itemId,action)=>{
             { $inc: { "variants.$.stock": item.quantity } }
         );
 
-        const refundAmount = item.itemTotal;
-        await walletModel.findOneAndUpdate(
-            { userId: order.userId },
-            { $inc: { balance: refundAmount },
-                $push: {
-                    transactions: {
-                        type: "credit",
-                        amount: refundAmount,
-                        description: `Refund for returned item: ${item.productName}`,
-                        orderId: order._id
+        if(order.paymentStatus=="paid"){
+            const refundAmount = item.itemTotal-order.pricing.shipping;
+            await walletModel.findOneAndUpdate(
+                { userId: order.userId },
+                { $inc: { balance: refundAmount },
+                    $push: {
+                        transactions: {
+                            type: "credit",
+                            amount: refundAmount,
+                            description: `Refund for returned item: ${item.productName}`,
+                            orderId: order._id
+                        }
                     }
-                }
-            },
-            { upsert: true, new: true }
-        );
+                },
+                { upsert: true, new: true }
+            );
+        }
 
         item.itemStatus="returned";
         item.returnStatus="approved";
         
         const allDone=order.items.every(i=>i.itemStatus=="returned"||i.itemStatus=="cancelled");
-        if(allDone)order.orderStatus="returned";
+        if(allDone)order.orderStatus="returned"
 
     }else{
         item.returnStatus="rejected";

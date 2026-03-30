@@ -206,39 +206,70 @@
         .status-returned { background: #F3E8FF; color: #A855F7; }
         .status-pending { background: #F1F5F9; color: #64748B; }
 
-        /* Pagination Styles */
-        .pagination-container {
+        /* Pagination Bar Overrides for Light Theme */
+        .pagination-bar {
+            background: white !important;
+            border: 1px solid var(--gray-light) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+            border-radius: 20px;
+            padding: 1.25rem 2rem;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
-            margin-top: 3rem;
+            margin-top: 2rem;
         }
 
-        .pagination-btn {
-            width: 40px;
-            height: 40px;
+        .pagination-info {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94A3B8 !important; /* Muted Slate */
+        }
+
+        .pagination-info span {
+            color: var(--dark-navy) !important;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: var(--transition);
-            font-weight: 600;
-            border: 1px solid var(--gray-light);
-            background: white;
-            color: var(--dark-navy);
+            background: var(--off-white) !important;
+            color: var(--dark-navy) !important;
+            font-size: 0.85rem;
+            font-weight: 800;
             text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid var(--gray-light);
         }
 
-        .pagination-btn:hover {
+        .page-btn:hover {
             border-color: var(--primary-orange);
-            color: var(--primary-orange);
+            color: var(--primary-orange) !important;
+            background: white !important;
         }
 
-        .pagination-btn.active {
-            background: var(--primary-orange);
+        .page-btn.active {
+            background: var(--primary-orange) !important;
+            color: white !important;
             border-color: var(--primary-orange);
-            color: white;
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2);
+        }
+
+        .page-btn.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            background: #F1F5F9 !important;
         }
 
         .order-mrp {
@@ -303,8 +334,18 @@
             <!-- Main Content Area -->
             <div class="profile-content">
                 <div id="orders-panel">
-                    <div class="panel-header">
+                    <div class="panel-header flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h1 class="panel-title">Order <span class="text-orange-500">History</span></h1>
+                        <div class="relative max-w-sm w-full">
+                            <form action="/user/orders" method="GET" class="flex gap-2">
+                                <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" 
+                                    placeholder="Order ID / Product Name..." 
+                                    class="w-full px-5 py-3 rounded-2xl bg-white border border-gray-200 focus:border-orange-500 outline-none transition-all text-sm font-medium">
+                                <button type="submit" class="bg-orange-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/10">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     
                     <div class="space-y-4">
@@ -363,25 +404,9 @@
                     </div>
 
                     <!-- Pagination -->
-                    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                        <div class="pagination-container">
-                            <% if (currentPage > 1) { %>
-                                <a href="/user/orders?page=<%= currentPage - 1 %>" class="pagination-btn"><i class="fas fa-chevron-left"></i></a>
-                            <% } %>
-                            
-                            <% for(let i = 1; i <= totalPages; i++) { %>
-                                <% if (i === currentPage) { %>
-                                    <a href="#" class="pagination-btn active"><%= i %></a>
-                                <% } else { %>
-                                    <a href="/user/orders?page=<%= i %>" class="pagination-btn"><%= i %></a>
-                                <% } %>
-                            <% } %>
-
-                            <% if (currentPage < totalPages) { %>
-                                <a href="/user/orders?page=<%= currentPage + 1 %>" class="pagination-btn"><i class="fas fa-chevron-right"></i></a>
-                            <% } %>
-                        </div>
-                    <% } %>
+                    <div class="mt-8">
+                        <%- include('../../partials/admin/pagination', { compact: true }) %>
+                    </div>
                 </div>
             </div>
         </div>

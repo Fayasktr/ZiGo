@@ -294,9 +294,18 @@ export const changeCartQty=asynchandler(async(req,res)=>{
 
 export const orderHistory=asynchandler(async(req,res)=>{
     try {
-        const userId=req.session?.user.id||req?.user.id;
-        const orders=await addressService.orderHistory(userId);
-        res.render("user/userAfterLogin/orderHistory",{orders});
+        const userId = req.session?.user.id || req?.user.id;
+        const result = await addressService.orderHistory(userId, req.query);
+        const user = req.session?.user || req?.user;
+        res.render("user/userAfterLogin/orderHistory", { 
+            orders: result.orders,
+            totalPages: result.totalPages,
+            currentPage: result.currentPage,
+            totalCount: result.totalCount,
+            limit: 5,
+            search: result.search,
+            user 
+        });
     } catch (error) {
         req.flash("error",error.message);
         res.redirect("/user/profile");

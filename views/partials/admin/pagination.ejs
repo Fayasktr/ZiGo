@@ -61,6 +61,7 @@
 </style>
 
 <% 
+    const isCompact = locals.compact || false;
     const currentPage = locals.currentPage || 1; 
     const limit = locals.limit || 10; 
     const search = locals.search || ""; 
@@ -74,23 +75,27 @@
     if (status && status.toLowerCase() !== 'all') queryStr += `&status=${status.toLowerCase()}`;
 %>
 
-    <div class="pagination-bar">
-        <div class="pagination-info">
-            SHOWING <span>
-                <%= totalItems > 0 ? (currentPage - 1) * limit + 1 : 0 %>-<%= Math.min(currentPage * limit, totalItems) %>
-            </span> OF <span>
-                <%= totalItems %>
-            </span> RESULTS
-        </div>
-
-        <div class="pagination-buttons">
+    <div class="pagination-bar <%= isCompact ? 'justify-center' : '' %>">
+        <% if (!isCompact) { %>
             <div class="pagination-info">
                 SHOWING <span>
-                    <%= currentPage %>
+                    <%= totalItems > 0 ? (currentPage - 1) * limit + 1 : 0 %>-<%= Math.min(currentPage * limit, totalItems) %>
                 </span> OF <span>
-                    <%= totalPages %>
-                </span> PAGES
+                    <%= totalItems %>
+                </span> RESULTS
             </div>
+        <% } %>
+
+        <div class="pagination-buttons">
+            <% if (!isCompact) { %>
+                <div class="pagination-info">
+                    SHOWING <span>
+                        <%= currentPage %>
+                    </span> OF <span>
+                        <%= totalPages %>
+                    </span> PAGES
+                </div>
+            <% } %>
 
             <!-- Previous Page -->
             <% if (currentPage > 1) { %>
@@ -103,9 +108,15 @@
 
             <!-- Page Numbers -->
             <% 
-               let startPage = Math.max(1, currentPage - 2);
-               let endPage = Math.min(totalPages, startPage + 4);
-               if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+               let startPage, endPage;
+               if (isCompact) {
+                   startPage = currentPage;
+                   endPage = currentPage;
+               } else {
+                   startPage = Math.max(1, currentPage - 2);
+                   endPage = Math.min(totalPages, startPage + 4);
+                   if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+               }
             %>
 
             <% for(let i = startPage; i <= endPage; i++) { %>

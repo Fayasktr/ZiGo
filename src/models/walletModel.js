@@ -7,12 +7,15 @@ const transactionSchema=mongoose.Schema({
         required:true
     },
     amount:{
-        type:String,
+        type:Number,
         required:true
     },
     orderId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"order"
+    },
+    description:{
+        type:String
     },
     createdAt:{
         type:Date,

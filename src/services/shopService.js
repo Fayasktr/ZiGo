@@ -303,7 +303,7 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
     }
     const tax = parseFloat((subTotal * 0.18).toFixed(2));
     const shipingCharge=subTotal<1000?40:0;
-    const total = parseFloat((subTotal + tax).toFixed(2));
+    const total = parseFloat((subTotal + tax +shipingCharge).toFixed(2));
     
     let orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
 
