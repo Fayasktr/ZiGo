@@ -36,8 +36,13 @@ export const wishlistUpdate = asyncHandler(async (req, res) => {
         const userId = req.session.user.id || req.user.id
         const variantId=req.query.variantId;
         console.log(`wishlist =product id:${productId}, and variant id:${variantId}, userId:${userId}`)
-        const update = await shopService.wishlistUpdate(productId, userId,variantId);
-        res.status(200).json({ success: true, message: "wishlist updated", action: update.action });
+        const update = await shopService.wishlistUpdate(productId, userId, variantId);
+        res.status(200).json({ 
+            success: true, 
+            message: "wishlist updated", 
+            action: update.action,
+            wishlistCount: update.wishlistCount 
+        });
     } catch (error) {
         res.status(400).json({ success: false, message: "action failed" });
     }

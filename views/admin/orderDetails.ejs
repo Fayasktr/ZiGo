@@ -392,10 +392,38 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="text-right flex flex-col justify-between items-end min-w-[120px]">
-                                <div>
-                                    <p class="font-black">₹<%= item.price.toLocaleString() %></p>
-                                    <p class="text-xs opacity-40">Qty: <%= item.quantity %></p>
+                            <div class="text-right flex flex-col justify-between items-end min-w-[140px]">
+                                <div class="w-full">
+                                    <% const activeQtyForTotalAdmin = item.quantity - (item.cancelledQuantity || 0) - (item.returnedQuantity || 0); %>
+                                    <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
+                                    <p class="text-[10px] opacity-40 font-bold mt-1">Active Total: ₹<%= (item.price * activeQtyForTotalAdmin).toLocaleString() %></p>
+                                    <div class="mt-2 text-right">
+                                        <p class="text-[9px] opacity-40 font-bold uppercase mb-1">Quantity Breakdown</p>
+                                        <div class="flex flex-col gap-1 text-[10px]">
+                                            <div class="flex justify-between gap-4">
+                                                <span class="opacity-50">Ordered:</span>
+                                                <span class="font-bold"><%= item.quantity %></span>
+                                            </div>
+                                            <% if (item.cancelledQuantity > 0) { %>
+                                                <div class="flex justify-between gap-4 text-red-400">
+                                                    <span class="opacity-80">Cancelled:</span>
+                                                    <span class="font-bold"><%= item.cancelledQuantity %></span>
+                                                </div>
+                                            <% } %>
+                                            <% if (item.returnedQuantity > 0) { %>
+                                                <div class="flex justify-between gap-4 text-purple-400">
+                                                    <span class="opacity-80">Returned:</span>
+                                                    <span class="font-bold"><%= item.returnedQuantity %></span>
+                                                </div>
+                                            <% } %>
+                                            <% if (item.pendingReturnQuantity > 0) { %>
+                                                <div class="flex justify-between gap-4 text-yellow-400">
+                                                    <span class="opacity-80">Pending:</span>
+                                                    <span class="font-bold"><%= item.pendingReturnQuantity %></span>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <% if (item.returnStatus === 'requested') { %>
@@ -405,11 +433,11 @@
                                         </span>
                                         <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'approved')"
                                             class="text-[10px] font-bold bg-green-500/10 text-green-500 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-all">
-                                            ✓ Approve
+                                            ✓ Approve Return (<%= item.pendingReturnQuantity %>)
                                         </button>
                                         <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'rejected')"
                                             class="text-[10px] font-bold bg-red-500/10 text-red-500 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all">
-                                            ✗ Reject
+                                            ✗ Reject Return
                                         </button>
                                     </div>
                                 <% } else if (item.returnStatus === 'approved') { %>

@@ -37,16 +37,23 @@ const itemsSchema = mongoose.Schema({
         enum: ["active", "cancelled","delivered", "returned"],
         default: "active"
     },
+    returnedQuantity: { 
+        type: Number, 
+        default: 0 
+    },
+    cancelledQuantity: { type: Number, default: 0 },
+    returnedQuantity:  { type: Number, default: 0 },
+    pendingReturnQuantity: { type: Number, default: 0 },
     returnStatus: {
         type: String,
         enum: ["none", "requested", "approved", "rejected"],
         default: "none"
     },
-    returnQuantity: { type: Number, default: 0 },
+    returnReason: { type: String },
     returnComments: { type: String }, 
     returnRequestedAt: { type: Date },
+    
     cancelReason: { type: String },
-    returnReason: { type: String },
     comments:{type:String}
 })
 

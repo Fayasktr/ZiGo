@@ -86,7 +86,6 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
         "returned":   ["returned"]
     };
     const validPaymentStatuses = ["pending", "paid", "failed", "refunded"];
-
     const order = await orderModel.findById(orderId);
     if (!order) throw new Error("Order not found");
     
@@ -97,6 +96,20 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) {
         throw new Error(`Invalid payment status: ${paymentStatus}`);
     }
+    
+    if (newStatus === "returned") {
+    order.returnRequested = false;
+
+    order.items.forEach(item => {
+        if (item.itemStatus !== 'cancelled') {
+            item.itemStatus = 'returned';
+            item.returnStatus = 'approved';
+            item.returnedQuantity = item.quantity; 
+            item.pendingReturnQuantity = 0;
+        }
+    });
+}
+
 
     if (newStatus === "cancelled") {
         for (const item of order.items) {
@@ -128,53 +141,67 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     return order;
 }
 
-export const handleReturnRequest=async(orderId,itemId,action)=>{
+export const handleReturnRequest = async (orderId, itemId, action) => {
     if (!["approved", "rejected"].includes(action)) {
         throw new Error("Action must be approved or rejected");
     }
 
-    const order=await orderModel.findById(orderId);
-    if(!order)throw new Error("Order not found");
-    
-    const item=order.items.id(itemId);
-    if(!item)throw new Error("Item not found");
+    const order = await orderModel.findById(orderId);
+    if (!order) throw new Error("Order not found");
 
-    if(item.returnStatus!="requested"){
-        throw new Error("No pending return reqest for this item");
+    const item = order.items.id(itemId);
+    if (!item) throw new Error("Item not found");
+    if (item.returnStatus !== "requested") {
+        throw new Error("No pending return request for this item");
     }
 
-    if(action =="approved"){
+    const pendingQty = item.pendingReturnQuantity || 0;
+
+    if (action === "approved") {
         await productModel.updateOne(
             { _id: item.productId, "variants._id": item.variantId },
-            { $inc: { "variants.$.stock": item.quantity } }
+            { $inc: { "variants.$.stock": pendingQty } }
         );
 
-        if(order.paymentStatus=="paid"){
-            const refundAmount = item.itemTotal-order.pricing.shipping;
-            await walletModel.findOneAndUpdate(
-                { userId: order.userId },
-                { $inc: { balance: refundAmount },
-                    $push: {
-                        transactions: {
-                            type: "credit",
-                            amount: refundAmount,
-                            description: `Refund for returned item: ${item.productName}`,
-                            orderId: order._id
-                        }
+        const refundAmount = item.price * pendingQty;
+
+        await walletModel.findOneAndUpdate(
+            { userId: order.userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        type: "credit",
+                        amount: refundAmount,
+                        description: `Refund: ${pendingQty} unit(s) of ${item.productName} returned`,
+                        orderId: order._id
                     }
-                },
-                { upsert: true, new: true }
-            );
+                }
+            },
+            { upsert: true, new: true }
+        );
+
+        item.returnedQuantity = (item.returnedQuantity || 0) + pendingQty;
+        item.pendingReturnQuantity = 0;
+
+        const totalAccountedFor = item.returnedQuantity + (item.cancelledQuantity || 0);
+
+        if (totalAccountedFor >= item.quantity) {
+            item.itemStatus = "returned";
+            item.returnStatus = "approved";
+        } else {
+            item.returnStatus = "none";  
         }
 
-        item.itemStatus="returned";
-        item.returnStatus="approved";
-        
-        const allDone=order.items.every(i=>i.itemStatus=="returned"||i.itemStatus=="cancelled");
-        if(allDone)order.orderStatus="returned"
+        const allDone = order.items.every(i => {
+            const accounted = (i.returnedQuantity || 0) + (i.cancelledQuantity || 0);
+            return accounted >= i.quantity;
+        });
+        if (allDone) order.orderStatus = "returned";
 
-    }else{
-        item.returnStatus="rejected";
+    } else {
+        item.returnStatus = "rejected";
+        item.pendingReturnQuantity = 0;
     }
 
     const anyPending = order.items.some(i => i.returnStatus === "requested");
@@ -182,4 +209,4 @@ export const handleReturnRequest=async(orderId,itemId,action)=>{
 
     await order.save();
     return order;
-}
+};

@@ -445,70 +445,117 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
 
 }
 
-export const itemCancel=async(userId,orderId,itemId,reason,comments)=>{
+export const itemCancel = async (userId, orderId, itemId, reason, comments, quantity) => {
+    const qty = parseInt(quantity) || 1;
+
     const order = await orderModel.findOne({ _id: orderId, userId });
     if (!order) throw new Error("Order not found");
 
     if (!["pending", "processing"].includes(order.orderStatus)) {
-        throw new Error("This order cannot be cancelled");
+        throw new Error("This order cannot be cancelled at this stage");
     }
 
-    const item=order.items.id(itemId);
-    if(!item)throw new Error("item not found on the order");
-    if(item.itemStatus != "active")throw new Error("item alredy returned or cancelled");
+    const item = order.items.id(itemId);
+    if (!item) throw new Error("Item not found in order");
+
+    if (item.itemStatus === "cancelled" || item.itemStatus === "returned") {
+        throw new Error("This item is already cancelled or returned");
+    }
+
+    const alreadyCancelled = item.cancelledQuantity || 0;
+    const alreadyReturned  = item.returnedQuantity  || 0;
+    const cancellable = item.quantity - alreadyCancelled - alreadyReturned;
+
+    if (cancellable <= 0) {
+        throw new Error("All units of this item have already been cancelled or returned");
+    }
+    if (qty > cancellable) {
+        throw new Error(`You can only cancel ${cancellable} unit(s). ${alreadyCancelled} already cancelled`);
+    }
 
     await productModel.updateOne(
         { _id: item.productId, "variants._id": item.variantId },
-        { $inc: { "variants.$.stock": item.quantity } }
+        { $inc: { "variants.$.stock": qty } }
     );
-    item.itemStatus = "cancelled";
-    item.cancelReason = reason;
-    item.comments = comments; 
-    
-    console.log(`order detailse: ${order}`);
 
-    order.pricing.subTotal = order.items
-        .filter(i => i.itemStatus === 'active')
-        .reduce((sum, i) => sum + i.itemTotal, 0);
+    item.cancelledQuantity = alreadyCancelled + qty;
+    item.cancelReason = reason;
+    item.comments = comments;
+
+    const totalAccountedFor = item.cancelledQuantity + alreadyReturned;
+    if (totalAccountedFor >= item.quantity) {
+        item.itemStatus = "cancelled"; 
+    }
+
+    order.pricing.subTotal = order.items.reduce((sum, i) => {
+        const activQty = i.quantity - (i.cancelledQuantity || 0) - (i.returnedQuantity || 0);
+        return sum + (i.price * Math.max(activQty, 0));
+    }, 0);
 
     order.pricing.tax = parseFloat((order.pricing.subTotal * 0.18).toFixed(2));
-    order.pricing.total = order.pricing.subTotal + order.pricing.tax + order.pricing.shipping;
+    order.pricing.total = parseFloat(
+        (order.pricing.subTotal + order.pricing.tax + (order.pricing.shipping || 0)).toFixed(2)
+    );
 
-    const allCancelled=order.items.every(item=>item.itemStatus =="cancelled");
-    if(allCancelled)order.orderStatus="cancelled";
-
-    await order.save();
-    return order;
-}
-
-export const itemReturn=async(userId,orderId,itemId,reason,quantity,comments)=>{
-    if(!userId)throw new Error("need login");
-    const order=await orderModel.findById(orderId);
-    if(!order){
-        throw new Error("order not found");
-    }
-    const item=order.items.id(itemId);
-    if(!item){
-        throw new Error("item not found");
-    }
-    if(item.itemStatus !=="delivered"){
-        throw new Error("only relivered item can return");
-    }
-    if(item.returnStatus=="requested"){
-        throw new Error("this item already return requested");
-    }
-    
-    item.returnStatus="requested";
-    item.returnReason=reason;
-    item.returnRequestedAt=new Date();
-    item.returnQuantity=quantity;
-    item.returnComments=comments;
-
-    order.returnRequested=true;
+    const allCancelled = order.items.every(i => {
+        const accounted = (i.cancelledQuantity || 0) + (i.returnedQuantity || 0);
+        return accounted >= i.quantity;
+    });
+    if (allCancelled) order.orderStatus = "cancelled";
 
     await order.save();
     return order;
-}
+};
+
+export const itemReturn = async (userId, orderId, itemId, reason, quantity, comments) => {
+    if (!userId) throw new Error("Login required");
+    if (!reason || !reason.trim()) throw new Error("Return reason is required");
+
+    const qty = parseInt(quantity) || 1; 
+
+    const order = await orderModel.findOne({ _id: orderId, userId });
+    if (!order) throw new Error("Order not found");
+
+    if (order.userId.toString() !== userId.toString()) {
+        throw new Error("Unauthorized");
+    }
+    if (order.orderStatus !== "delivered") {
+        throw new Error("Can only return delivered orders");
+    }
+
+    const item = order.items.id(itemId);
+    if (!item) throw new Error("Item not found");
+
+    if (item.itemStatus !== "delivered") {
+        throw new Error("Only delivered items can be returned");
+    }
+
+    if (item.returnStatus === "requested") {
+        throw new Error("A return is already pending for this item. Wait for admin to process it first");
+    }
+
+    const alreadyReturned = item.returnedQuantity || 0;
+    const cancellable = item.cancelledQuantity || 0;
+    const returnable = item.quantity - alreadyReturned - cancellable;
+
+    if (returnable <= 0) {
+        throw new Error("All units of this item have already been returned or cancelled");
+    }
+    if (qty > returnable) {
+        throw new Error(`You can only return ${returnable} unit(s). You already returned ${alreadyReturned}`);
+    }
+
+    item.returnStatus = "requested";
+    item.returnReason = reason;
+    item.returnRequestedAt = new Date();
+    item.pendingReturnQuantity = qty;  
+    item.returnComments = comments;
+
+    order.returnRequested = true;
+
+    await order.save();
+    return order;
+};
 
 export const getWalletData = async (userId) => {
     let wallet = await walletModel.findOne({ userId });

@@ -105,14 +105,16 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
     const existWislist = await wishlistModel.findOne({ userId, productId, variantId });
     if (existWislist) {
         await wishlistModel.deleteOne({ userId, productId, variantId });
-        return { action: "removed" }
+        const wishlistCount = await wishlistModel.countDocuments({ userId });
+        return { action: "removed", wishlistCount };
     } else {
         await wishlistModel.create({
             userId: userId,
             productId: productId,
-            variantId:variantId
-        })
-        return { action: "added" }
+            variantId: variantId
+        });
+        const wishlistCount = await wishlistModel.countDocuments({ userId });
+        return { action: "added", wishlistCount };
     }
 }
 

@@ -344,7 +344,8 @@ export const itemCancel=asynchandler(async(req,res)=>{
         const itemId=req.params.itemId;
         const reason= req.body.reason;
         const comments=req.body.comments;
-        await addressService.itemCancel(userId,orderId,itemId,reason,comments);
+        const quantity = req.body.quantity || 1; 
+        await addressService.itemCancel(userId,orderId,itemId,reason,comments,quantity);
         res.status(200).json({success:true,message:"item canselled"});
     } catch (error) {
         res.status(400).json({success:false,message:error.message ||"can't change item status"});

@@ -1,5 +1,6 @@
 import cartModel from "../models/cartModel.js";
 import categoryModle from "../models/categoryModel.js";
+import wishlistModel from "../models/wishlistModel.js";
 
 export const checkCategoryListed = async(req,res,next)=>{
     try {
@@ -22,10 +23,14 @@ export const cartCount = async(req, res, next) => {
         const userId = req.session?.user?.id || req?.user?.id || "";
         if (userId) {
             const carts = await cartModel.find({ userId: userId });
-            let count = carts.reduce((acc, cart) => acc += cart?.quantity, 0);
-            res.locals.cartCount = count || 0;
+            const wishlists = await wishlistModel.find({ userId });
+            
+            let cartCount = carts.reduce((acc, cart) => acc += (cart?.quantity || 0), 0);
+            res.locals.cartCount = cartCount;
+            res.locals.wishlistCount = wishlists.length;
         } else {
             res.locals.cartCount = 0; 
+            res.locals.wishlistCount = 0;
         }
     } catch (error) {
         console.error("cartCount middleware error:", error.message);

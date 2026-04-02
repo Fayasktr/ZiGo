@@ -85,30 +85,36 @@
         }
 
         .wishlist-btn {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
-            width: 50px;
-            height: 50px;
+            position: absolute !important;
+            top: 2rem !important;
+            right: 2rem !important;
+            z-index: 50;
+            background: #000;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: var(--transition);
-            color: var(--dark-navy);
-            border: none;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+            left: auto; /* Reset left if it was being set */
+            bottom: auto; /* Reset bottom */
         }
 
         .wishlist-btn.active {
             color: #ff4757 !important;
-            background: white;
         }
 
         .wishlist-btn:hover {
             transform: scale(1.1);
+            background: #111;
+            color: #fff; /* Ensure it stays white on hover */
         }
 
         .thumbnail-grid {
@@ -1072,6 +1078,9 @@
                                                 if (btnElement) {
                                                     if (result.action === 'added') btnElement.classList.add('active');
                                                     else btnElement.classList.remove('active');
+                                                }
+                                                if (result.wishlistCount !== undefined) {
+                                                    window.updateWishlistCount(result.wishlistCount);
                                                 }
                                                 Swal.fire({
                                                     icon: "success",

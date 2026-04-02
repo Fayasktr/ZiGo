@@ -640,6 +640,9 @@
                                             if (btnElement) {
                                                 btnElement.classList.toggle('active');
                                             }
+                                            if (result.wishlistCount !== undefined) {
+                                                window.updateWishlistCount(result.wishlistCount);
+                                            }
                                             Swal.fire({
                                                 icon: "success",
                                                 title: result.message,
