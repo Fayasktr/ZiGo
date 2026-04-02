@@ -1,9 +1,7 @@
 import asyncHandler from "express-async-handler";
 import * as shopService from "../services/shopService.js";
 import cartModel from "../models/cartModel.js";
-import { populate } from "dotenv";
 import mongoose from "mongoose";
-import { orderCancel } from "../services/uAddressService.js";
 
 export const loadShop = asyncHandler(async (req, res) => {
     try {
