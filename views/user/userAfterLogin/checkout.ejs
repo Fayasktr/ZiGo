@@ -573,8 +573,13 @@
                             <input type="hidden" name="paymentMethod" id="selectedPaymentMethod" value="cash">
                             
                             <!-- Support for Buy Now -->
-                            <input type="hidden" name="productId" id="buyNowProductId" value="">
-                            <input type="hidden" name="variantId" id="buyNowVariantId" value="">
+                            <% if (typeof isBuyNow !== 'undefined' && isBuyNow && checkout.checkoutData.length > 0) { %>
+                                <input type="hidden" name="productId" id="buyNowProductId" value="<%= checkout.checkoutData[0].productId %>">
+                                <input type="hidden" name="variantId" id="buyNowVariantId" value="<%= checkout.checkoutData[0].variantId %>">
+                            <% } else { %>
+                                <input type="hidden" name="productId" id="buyNowProductId" value="">
+                                <input type="hidden" name="variantId" id="buyNowVariantId" value="">
+                            <% } %>
 
                             <div class="input-group">
                                 <label>USERNAME</label>

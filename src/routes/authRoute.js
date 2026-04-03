@@ -27,7 +27,7 @@ router.get("/auth/google/callback", passport.authenticate("google", {
 );
 
 
-router.get("/", userCntrl.landingBeforeLogin)
+router.get("/", userAuth.isLogin, userCntrl.landingBeforeLogin)
 router.get("/login", userAuth.preventCache, userAuth.isLogin, userCntrl.loginPage);
 router.post("/login", userAuth.isLogin, userCntrl.login);
 router.get("/logout", userAuth.isLogout, userCntrl.logOut)

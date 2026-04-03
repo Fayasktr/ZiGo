@@ -124,6 +124,9 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     }
 
     if(newStatus =="delivered"){
+        if(order.paymentStatus!="paid"&&paymentStatus!="paid"){
+            throw new Error("only paid product go to delivered status")
+        }
         order.items.forEach((item=>{
             if(item.itemStatus=="active"){
                 item.itemStatus="delivered";

@@ -69,13 +69,16 @@ export const proceedToCheckout=asyncHandler(async(req,res)=>{
         let checkout;
 
         if(isBuyNow && req.session.buyNowItem){
-            console.log(3)
-            checkout= await shopService.checkoutBuyNowOrder(userId,req.session.buyNowItem);
+            const quantity=req.query.quantity||1;
+            checkout= await shopService.checkoutBuyNowOrder(userId,req.session.buyNowItem,quantity);
         }else{
             checkout=await shopService.checkoutPage(userId);
         }
 
-        res.render("user/userAfterLogin/checkout",{checkout});
+        res.render("user/userAfterLogin/checkout", { 
+            checkout, 
+            isBuyNow: isBuyNow && !!req.session.buyNowItem 
+        });
     } catch (error) {
         req.flash("error",error.message)
         res.redirect("/user/cart");

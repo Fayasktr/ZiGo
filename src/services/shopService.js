@@ -216,23 +216,27 @@ export const checkoutPage = async (userId) => {
 }
 
 
-export const checkoutBuyNowOrder = async (userId,buyNowItem) => {
+export const checkoutBuyNowOrder = async (userId,buyNowItem,quantity=1) => {
     const product = await productModel.findById(buyNowItem.productId);
-    console.log(buyNowItem);
-    console.log("variants ",product)
-    const variant = product.variants.find(v => v._id.toString() === buyNowItem.variantId.toString());
     if(!product){
         throw new Error("product not available");
     }
-    if(product && product.variants.stock<buyNowItem.quantity){
-        throw new Error(`limited stock availbale, (only ${product.variants.stock} available`);
+    const variant = product.variants.find(v => v._id.toString() === buyNowItem.variantId.toString());
+    if(!variant){
+        throw new Error("variant not available");
+    }
+    if(variant.stock < buyNowItem.quantity){
+        throw new Error(`limited stock available, (only ${variant.stock} available)`);
     }
     const itemData = {
+        productId: product._id,
+        variantId: variant._id,
         productName: product.productName,
         price: variant.price,
         quantity: buyNowItem.quantity,
         totalPrice: variant.price * buyNowItem.quantity,
         images: variant.images,
+        attributes: variant.attributes || {},
         isAvailable: true 
     };
 
@@ -342,15 +346,17 @@ export const successPage=async(userId,orderNumber)=>{
 
 export const buynow=async(productId,variantId,quantity)=>{
     
-    const product=await productModel.findOne({_id:productId,"variants._id":variantId});
-    console.log(`the product to buy: ${product}`);
+    const product = await productModel.findOne({_id:productId,"variants._id":variantId});
     if(!product){
         throw new Error("product not available");
     }
-    if(product && product.variants.stock<quantity){
-        throw new Error(`limited stock availbale, (only ${product.variants.stock} available`);
+    const variant = product.variants.find(v => v._id.toString() === variantId.toString());
+    if(!variant){
+        throw new Error("variant not available");
     }
-    console.log(2)
+    if(variant.stock < quantity){
+        throw new Error(`limited stock available, (only ${variant.stock} available)`);
+    }
     return product
 }
 

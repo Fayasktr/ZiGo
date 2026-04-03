@@ -33,7 +33,7 @@ const checkBlocked = async (req, res, next) => {
             const msg = "Your account has been blocked by Admin.";
 
             if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-                req.session.user = null;
+                delete req.session.user;
                 return res.status(403).json({
                     success: false,
                     message: msg,
