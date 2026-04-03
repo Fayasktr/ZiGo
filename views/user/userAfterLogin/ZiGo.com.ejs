@@ -30,11 +30,17 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* --- HORIZONTAL SCROLL FIXES APPLIED HERE --- */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             background-color: var(--off-white);
             color: var(--dark-navy);
-            overflow-x: hidden;
         }
+        /* ------------------------------------------ */
 
         /* --- Hero Section --- */
         .hero {
@@ -170,6 +176,8 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            /* Added to prevent flex overflow on tiny screens */
+            min-width: 0; 
         }
 
         .trust-icon {
@@ -183,12 +191,19 @@
             color: var(--primary-orange);
             font-size: 1.5rem;
             transition: var(--transition);
+            flex-shrink: 0; /* Keeps icon from squishing */
         }
 
         .trust-item:hover .trust-icon {
             background-color: var(--primary-orange);
             color: white;
             transform: scale(1.1);
+        }
+
+        /* Added word-break to prevent text from stretching columns */
+        .trust-text {
+            min-width: 0;
+            word-break: break-word; 
         }
 
         .trust-text h4 {
