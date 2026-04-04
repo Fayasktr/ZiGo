@@ -258,60 +258,91 @@ export const checkoutBuyNowOrder = async (userId,buyNowItem,quantity=1) => {
 
 let ordNumSelect=124281;
 
-export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
-    const user=await userModel.findById(userId);
-    if(!user||user.isBlocked){
-        throw new Error("Account not autherized");
-    }
-    if(!cartItems.length){
-        throw new Error("cart is empty");
-    };
-    const address=await addressModel.findOne({userId:userId,_id:addressId});
-    if(!address){
-        throw new Error("Invalid shiping address.");
+export const placeOrder = async (userId, addressId, paymentMethod, cartItems) => {
+
+    const user = await userModel.findById(userId);
+    if (!user || user.isBlocked) {
+        throw new Error("Account not authorized");
     }
 
-    let orderItems=[];
-    let subTotal=0;
-    for(let item of cartItems){
+    if (!cartItems.length) {
+        throw new Error("Cart is empty");
+    }
 
-        if(item.category?.isListed==false){
-            throw new Error("category not available");
+    const address = await addressModel.findOne({
+        userId,
+        _id: addressId
+    });
+
+    if (!address) {
+        throw new Error("Invalid shipping address");
+    }
+
+    let orderItems = [];
+    let subTotal = 0;
+
+    for (let item of cartItems) {
+
+        const productId = new mongoose.Types.ObjectId(item.productId);
+        const variantId = new mongoose.Types.ObjectId(item.variantId);
+
+        const product = await productModel.findOne({
+            _id: productId,
+            "variants._id": variantId
+        });
+
+        if (!product) {
+            throw new Error("Product or variant not found");
         }
-        if(item.variant?.isListed==false){
-            throw new Error("item variant not available");
-        };  
-        let stockUpdate = await productModel.updateOne(
-            {_id: item.productId,
-                "variants._id": new mongoose.Types.ObjectId(item.variant._id),
-                "variants.stock": { $gte: item.quantity }
+
+        const variant = product.variants.find(v =>
+            v._id.toString() === variantId.toString()
+        );
+
+        if (!variant) {
+            throw new Error("Variant not found");
+        }
+
+        if (!variant.isListed) {
+            throw new Error("Variant not available");
+        }
+
+        const result = await productModel.updateOne(
+            {
+                _id: productId,
+                "variants._id": variantId,
+                "variants.stock": { $gte: item.quantity } // ✅ prevent oversell
             },
-            { $inc: { "variants.$.stock": -item.quantity }});
+            {
+                $inc: { "variants.$.stock": -item.quantity }
+            }
+        );
 
-        if (stockUpdate.modifiedCount === 0) {
-            throw new Error(`"${item.productName}" just ran out of stock. Please update your cart.`);
+        if (result.modifiedCount === 0) {
+            throw new Error(`${product.productName} out of stock`);
         }
-        
-        let itemTotal=item.variant.price*item.quantity;
-        subTotal+=itemTotal;
-        
+
+        const itemTotal = variant.price * item.quantity;
+        subTotal += itemTotal;
+
         orderItems.push({
-            productId: item.productId,
-            variantId: item.variant._id,
-            productName: item.productName,
-            variantAttributes: item.variant.attributes || {},
-            price: item.variant.price,
+            productId,
+            variantId,
+            productName: product.productName,
+            variantAttributes: variant.attributes || {},
+            price: variant.price,
             quantity: item.quantity,
             itemTotal,
-            image: item.variant.images?.[0] || "../../public/public/no-image.jpg",
+            image: variant.images?.[0] || "/public/no-image.jpg",
             itemStatus: "active"
         });
     }
+
     const tax = parseFloat((subTotal * 0.18).toFixed(2));
-    const shipingCharge=subTotal<1000?40:0;
-    const total = parseFloat((subTotal + tax +shipingCharge).toFixed(2));
-    
-    let orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
+    const shippingCharge = subTotal < 1000 ? 40 : 0;
+    const total = parseFloat((subTotal + tax + shippingCharge).toFixed(2));
+
+    const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const order = await orderModel.create({
         orderNumber,
@@ -326,15 +357,23 @@ export const placeOrder=async(userId,addressId,paymentMethod,cartItems)=>{
             country: address.country || "India"
         },
         items: orderItems,
-        pricing: { subTotal, tax, shipping: shipingCharge, discount: 0, total },
+        pricing: {
+            subTotal,
+            tax,
+            shipping: shippingCharge,
+            discount: 0,
+            total
+        },
         paymentMethod,
         paymentStatus: "pending",
         orderStatus: "pending"
     });
-    
-    await cartModel.deleteMany({userId:userId});
+
+    await cartModel.deleteMany({ userId });
+
     return order;
-}
+};
+
 
 export const successPage=async(userId,orderNumber)=>{
     const order=await orderModel.findOne({userId,orderNumber});
@@ -386,7 +425,7 @@ export const placeBuyNowOrder=async(userId,addressId,paymentMethod,buyNowItem)=>
         {
         _id: buyNowItem.productId,
         "variants._id": new mongoose.Types.ObjectId(buyNowItem.variantId),
-        "variants.stock": { $gte: buyNowItem.quantity },
+        // "variants.stock": { $gte: buyNowItem.quantity },
         },
         { $inc: { "variants.$.stock": -buyNowItem.quantity } }
     );

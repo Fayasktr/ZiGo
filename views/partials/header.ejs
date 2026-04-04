@@ -206,4 +206,24 @@
             mobileMenu.classList.add('hidden');
         });
     });
+
+    // --- CART & WISHLIST COUNT UPDATERS ---
+    window.updateCartCount = function(count) {
+        const badge = document.getElementById('cart-count-badge');
+        if (badge) {
+            badge.innerText = count;
+            // Optional: Add a small animation on change
+            badge.style.transform = 'scale(1.2)';
+            setTimeout(() => badge.style.transform = 'scale(1)', 200);
+        }
+    };
+
+    window.updateWishlistCount = function(count) {
+        const badge = document.getElementById('wishlist-count-badge');
+        if (badge) {
+            badge.innerText = count;
+            badge.style.transform = 'scale(1.2)';
+            setTimeout(() => badge.style.transform = 'scale(1)', 200);
+        }
+    };
 </script>
