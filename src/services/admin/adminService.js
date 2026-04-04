@@ -43,7 +43,7 @@ export const blockOrUnblock = async (userId, action) => {
 }
 
 export const adminOrderList=async(page,limit,search,status)=>{
-    let skip=(page-1)*limit;
+    const skip=(page-1)*limit;
     let filter={};
     if (search) {
         filter.$or = [
@@ -99,7 +99,7 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     
     if (newStatus === "returned") {
     order.returnRequested = false;
-
+    order.paymentStatus="refunded"
     order.items.forEach(item => {
         if (item.itemStatus !== 'cancelled') {
             item.itemStatus = 'returned';
@@ -124,12 +124,11 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     }
 
     if(newStatus =="delivered"){
-        if(order.paymentStatus!="paid"&&paymentStatus!="paid"){
-            throw new Error("only paid product go to delivered status")
-        }
+        order.paymentStatus="paid";
         order.items.forEach((item=>{
             if(item.itemStatus=="active"){
                 item.itemStatus="delivered";
+                item.deliveredDate=new Date();
             }
         }));
         if(!paymentStatus){
@@ -163,9 +162,9 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
     if (action === "approved") {
         await productModel.updateOne(
             { _id: item.productId, "variants._id": item.variantId },
-            { $inc: { "variants.$.stock": pendingQty } }
+            { $inc: { "variants.$.stock": pendingQty }}
         );
-
+        
         const refundAmount = item.price * pendingQty;
 
         await walletModel.findOneAndUpdate(
@@ -200,7 +199,10 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
             const accounted = (i.returnedQuantity || 0) + (i.cancelledQuantity || 0);
             return accounted >= i.quantity;
         });
-        if (allDone) order.orderStatus = "returned";
+        if (allDone){
+            order.orderStatus = "returned";
+            order.paymentStatus="refunded"
+        }
 
     } else {
         item.returnStatus = "rejected";

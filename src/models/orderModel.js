@@ -52,7 +52,7 @@ const itemsSchema = mongoose.Schema({
     returnReason: { type: String },
     returnComments: { type: String }, 
     returnRequestedAt: { type: Date },
-    
+    deliveredDate:{type:Date},
     cancelReason: { type: String },
     comments:{type:String}
 })

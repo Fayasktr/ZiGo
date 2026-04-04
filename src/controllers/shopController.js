@@ -127,6 +127,7 @@ export const placeOrder=asyncHandler(async(req,res)=>{
         }
 
     } catch (error) {
+        console.log(error);
         req.flash("error",error.message);
         res.redirect("/user/checkout");
     }

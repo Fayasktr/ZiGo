@@ -519,24 +519,6 @@
                             <% }) %>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Payment Status</label>
-                        <select id="paymentStatus" class="form-input status-select">
-                            <% 
-                               const paymentAllowed = {
-                                   "pending":  ["pending", "paid", "failed", "refunded"],
-                                   "paid":     ["paid", "refunded"],
-                                   "failed":   ["paid", "failed", "refunded"],
-                                   "refunded": ["refunded"]
-                               };
-                               const curPayment = order.paymentStatus.toLowerCase();
-                               const pOptions = paymentAllowed[curPayment] || [curPayment];
-                               pOptions.forEach(ps => { 
-                            %>
-                                <option value="<%= ps %>" <%= curPayment === ps ? 'selected' : '' %>><%= ps %></option>
-                            <% }) %>
-                        </select>
-                    </div>
                     <button class="btn-update" onclick="updateOrder()">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
@@ -568,11 +550,27 @@
                         <span class="font-bold">Total</span>
                         <span class="font-black text-orange-500">₹<%= order.pricing.total.toLocaleString() %></span>
                     </div>
-                    <div class="mt-6 p-4 bg-white/5 rounded-2xl">
-                        <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-wallet text-xl text-orange-400"></i>
-                            <p class="font-bold text-sm"><%= order.paymentMethod %></p>
+                    <div class="mt-6 space-y-3">
+                        <div class="p-4 bg-white/5 rounded-2xl">
+                            <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-wallet text-xl text-orange-400"></i>
+                                <p class="font-bold text-sm"><%= order.paymentMethod %></p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-white/5 rounded-2xl">
+                            <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Status</p>
+                            <div class="flex items-center gap-3">
+                                <% 
+                                   let pStatusClass = 'text-orange-400';
+                                   const pStatus = order.paymentStatus.toLowerCase();
+                                   if (pStatus === 'paid') pStatusClass = 'text-green-400';
+                                   else if (pStatus === 'failed' || pStatus === 'refunded') pStatusClass = 'text-red-400';
+                                %>
+                                <i class="fas fa-receipt text-xl <%= pStatusClass %>"></i>
+                                <p class="font-bold text-sm uppercase tracking-wider <%= pStatusClass %>"><%= order.paymentStatus %></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -583,15 +581,12 @@
     <script>
         async function updateOrder() {
             const status = document.getElementById('orderStatus').value;
-            const paymentStatus = document.getElementById('paymentStatus').value;
-            // const carrier = document.getElementById('carrier').value;
-            // const trackingId = document.getElementById('trackingId').value;
 
             try {
                 const response = await fetch(`/admin/orderDetails/<%= order._id %>/update`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status, paymentStatus  })
+                    body: JSON.stringify({ status })
                 });
 
                 const result = await response.json();
@@ -604,9 +599,7 @@
                         position: 'top-end',
                         showConfirmButton: false,
                         timer: 3000
-                    }).then(() => {
-                        window.location.reload();
-                    });
+                    }).then(() => window.location.reload());
                 } else {
                     Swal.fire('Error', result.message || 'Failed to update order', 'error');
                 }

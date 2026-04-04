@@ -332,7 +332,7 @@
 
         <div class="orders-container">
             <% 
-               const statuses = ['all', 'processing', 'shipped', 'delivered', 'cancelled'];
+               const statuses = ['all','pending', 'processing', 'shipped', 'delivered', 'cancelled'];
                const currentStatus = (typeof status !== 'undefined' && status) ? status.toLowerCase() : 'all';
             %>
             <div class="filter-tabs">
