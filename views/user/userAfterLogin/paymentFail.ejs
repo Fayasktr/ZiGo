@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo | Payment Failed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #EF4444;
+            --primary-light: #F87171;
+            --secondary: #1E293B;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --border-glass: rgba(255, 255, 255, 0.2);
+            --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #FFF1F1 0%, #FFE4E4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            box-shadow: var(--shadow-premium);
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .fail-icon-outer {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 2.5rem;
+            background: #FEE2E2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .fail-icon-inner {
+            width: 60px;
+            height: 60px;
+            background: #EF4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            animation: pulseIn 0.4s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: scale(0.5);
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
+        }
+
+        @keyframes pulseIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn-retry {
+            background: #EF4444;
+            color: white;
+            padding: 1.25rem;
+            border-radius: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-retry:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
+            padding: 1.25rem;
+            border-radius: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            border: 2px solid #E2E8F0;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            border-color: #CBD5E1;
+            color: #475569;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-card">
+        <div class="fail-icon-outer">
+            <div class="fail-icon-inner">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <h1 class="text-3xl font-black text-slate-900 mb-2">Transaction Failed</h1>
+        <p class="text-slate-500 mb-10 px-4">We couldn't process your payment. But don't worry, your order was saved and is currently <b>pending</b>. You can try paying for it again in your order history.</p>
+
+        <div class="space-y-4">
+            <a href="/user/checkout" class="btn-retry w-full">
+                <i class="fas fa-redo"></i> Try Checkout Again
+            </a>
+            <a href="/order/history" class="btn-outline w-full">
+                <i class="fas fa-list-ul"></i> Go to Order History
+            </a>
+        </div>
+
+        <div class="mt-10 pt-8 border-t border-slate-100">
+            <p class="text-xs text-slate-400 font-medium italic">
+                Reason: The payment window was closed or the bank rejected the transaction.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
