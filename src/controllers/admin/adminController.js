@@ -1,5 +1,5 @@
 import asynchandler from "express-async-handler"
-import * as adminService from "../services/admin/adminService.js"
+import * as adminService from "../../services/admin/adminService.js"
 
 export const adminLoginPage = asynchandler(async (req, res) => {
     res.render("admin/adminLogin");

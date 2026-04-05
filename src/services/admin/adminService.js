@@ -4,6 +4,7 @@ import userModel from "../../models/userModel.js"
 import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
 import walletModel from "../../models/walletModel.js"
+import * as paymentService from '../admin/paymentService.js';
 
 export const accessToAdmin = async (adminMail, password) => {
     const adminData = await admin.findOne({ email: adminMail });
@@ -99,7 +100,7 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     
     if (newStatus === "returned") {
     order.returnRequested = false;
-    order.paymentStatus="refunded"
+    order.paymentStatus=""
     order.items.forEach(item => {
         if (item.itemStatus !== 'cancelled') {
             item.itemStatus = 'returned';
