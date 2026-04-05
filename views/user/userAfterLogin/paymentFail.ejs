@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-orange: #FF5A1F;
-            --primary-red: #FE4A49;
+            --primary: #EF4444;
+            --primary-light: #F87171;
             --secondary: #1E293B;
             --bg-glass: rgba(255, 255, 255, 0.9);
             --border-glass: rgba(255, 255, 255, 0.2);
@@ -22,7 +22,7 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+            background: linear-gradient(135deg, #FFF1F1 0%, #FFE4E4 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -37,66 +37,52 @@
             box-shadow: var(--shadow-premium);
             border-radius: 2.5rem;
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             padding: 3.5rem 2rem;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            animation: cardScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes cardScale {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes cardIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        .fail-icon-container {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 2rem;
-            background: #FFE5E5;
+        .fail-icon-outer {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 2.5rem;
+            background: #FEE2E2;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary-red);
-            font-size: 2.5rem;
-            box-shadow: 0 10px 20px rgba(254, 74, 73, 0.1);
             position: relative;
         }
 
-        .fail-icon {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
+        .fail-icon-inner {
+            width: 60px;
+            height: 60px;
+            background: #EF4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            animation: pulseIn 0.4s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: scale(0.5);
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
         }
 
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-
-        .info-pill {
-            background: white;
-            border: 1px solid #F1F5F9;
-            border-radius: 1.25rem;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            text-align: left;
-            transition: all 0.3s ease;
-        }
-
-        .info-pill:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-            border-color: var(--primary-orange);
+        @keyframes pulseIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .btn-retry {
-            background: var(--primary-orange);
+            background: #EF4444;
             color: white;
             padding: 1.25rem;
             border-radius: 1.25rem;
@@ -106,20 +92,18 @@
             justify-content: center;
             gap: 0.75rem;
             transition: all 0.3s ease;
-            margin-bottom: 1rem;
-            text-decoration: none;
-            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
         }
 
         .btn-retry:hover {
-            background: #E44D18;
+            background: #DC2626;
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(255, 90, 31, 0.3);
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3);
         }
 
-        .btn-secondary {
-            background: #F8FAFC;
-            color: var(--secondary);
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
             padding: 1.25rem;
             border-radius: 1.25rem;
             font-weight: 700;
@@ -128,66 +112,41 @@
             justify-content: center;
             gap: 0.75rem;
             transition: all 0.3s ease;
-            text-decoration: none;
-            border: 1px solid #E2E8F0;
+            border: 2px solid #E2E8F0;
         }
 
-        .btn-secondary:hover {
+        .btn-outline:hover {
             background: white;
-            transform: translateY(-2px);
-        }
-
-        .error-details {
-            font-size: 0.85rem;
-            color: #94A3B8;
-            margin-top: 1.5rem;
-            font-style: italic;
+            border-color: #CBD5E1;
+            color: #475569;
         }
     </style>
 </head>
 
 <body>
     <div class="glass-card">
-        <div class="fail-icon-container">
-            <i class="fas fa-times fail-icon"></i>
-        </div>
-
-        <h1 class="text-3xl font-black text-slate-900 mb-2">Payment Failed</h1>
-        <p class="text-slate-500 mb-8 px-4">Don't worry! Your money is safe. There was an issue processing your payment, but you can try again below.</p>
-
-        <div class="space-y-3 mb-10 px-2">
-            <div class="info-pill flex justify-between items-center">
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Order #</span>
-                    <span class="text-lg font-bold text-slate-800"><%= order.orderNumber %></span>
-                </div>
-                <div class="text-right">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Amount Due</span>
-                    <span class="text-lg font-black text-orange-500">₹<%= order.pricing.total.toLocaleString() %></span>
-                </div>
-            </div>
-
-            <div class="info-pill">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Payment Method Used</span>
-                <span class="text-sm font-bold text-slate-800 uppercase italic">
-                    <%= order.paymentMethod === 'rozorpay' ? 'razorpay' : order.paymentMethod %>
-                </span>
+        <div class="fail-icon-outer">
+            <div class="fail-icon-inner">
+                <i class="fas fa-times"></i>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-4">
-            <a href="/user/order/<%= order._id %>" class="btn-retry">
-                <i class="fas fa-redo-alt"></i> Retry Payment
+        <h1 class="text-3xl font-black text-slate-900 mb-2">Transaction Failed</h1>
+        <p class="text-slate-500 mb-10 px-4">We couldn't process your payment. But don't worry, your order was saved and is currently <b>pending</b>. You can try paying for it again in your order history.</p>
+
+        <div class="space-y-4">
+            <a href="/user/checkout" class="btn-retry w-full">
+                <i class="fas fa-redo"></i> Try Checkout Again
             </a>
-            <a href="/shop" class="btn-secondary">
-                <i class="fas fa-shopping-bag"></i> Continue Shopping
+            <a href="/order/history" class="btn-outline w-full">
+                <i class="fas fa-list-ul"></i> Go to Order History
             </a>
         </div>
 
-        <p class="error-details">If the amount was deducted, it will be refunded within 3-5 business days.</p>
-        
-        <div class="mt-8 pt-8 border-t border-slate-100">
-            <p class="text-xs text-slate-400 font-medium tracking-tight">Need help? <a href="/contact" class="text-primary-orange hover:underline">Contact Support</a></p>
+        <div class="mt-10 pt-8 border-t border-slate-100">
+            <p class="text-xs text-slate-400 font-medium italic">
+                Reason: The payment window was closed or the bank rejected the transaction.
+            </p>
         </div>
     </div>
 </body>

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --primary-orange: #FF5A1F;
@@ -623,16 +624,23 @@
                             <i class="fas fa-check-circle text-orange-500 check-icon"></i>
                         </div>
 
-                        <div class="payment-method" onclick="selectPayment(this, 'Wallet')">
+                        <% 
+                            const walletBalance = (locals.wallet && wallet.balance) || 0;
+                            const totalAmount = checkout.totals.total || 0;
+                            const isWalletDisabled = walletBalance < totalAmount;
+                            const onWalletSelect = isWalletDisabled ? '' : "selectPayment(this, 'wallet')";
+                        %>
+                        <div class="payment-method <%= isWalletDisabled ? 'opacity-50 cursor-not-allowed grayscale pointer-events-none' : '' %>" 
+                             onclick="<%= onWalletSelect %>">
                             <div class="method-icon"><i class="fas fa-wallet"></i></div>
                             <div class="flex-1">
-                                <p class="font-bold">My Wallet</p>
-                                <p class="text-xs opacity-50">Secure and fast checkout</p>
+                                <p class="font-bold">My Wallet (Balance: ₹<%= walletBalance.toLocaleString('en-IN') %>)</p>
+                                <p class="text-xs opacity-50"><%= isWalletDisabled ? 'Insufficient Balance' : 'Secure and fast checkout' %></p>
                             </div>
                             <i class="fas fa-check-circle text-orange-500 check-icon hidden"></i>
                         </div>
 
-                        <div class="payment-method" onclick="selectPayment(this, 'Razorpay')">
+                        <div class="payment-method" onclick="selectPayment(this, 'razorpay')">
                             <div class="method-icon"><i class="fas fa-bolt"></i></div>
                             <div class="flex-1">
                                 <p class="font-bold">Razorpay</p>
@@ -1055,7 +1063,7 @@
                 document.getElementById('selectedPaymentMethod').value = method;
             }
 
-            document.getElementById('placeOrderBtn').addEventListener('click', (e) => {
+            document.getElementById('placeOrderBtn').addEventListener('click', async (e) => {
                 const addressId = document.getElementById('selectedAddressId').value;
                 const paymentMethod = document.getElementById('selectedPaymentMethod').value;
                 const checkoutForm = document.getElementById('checkoutForm');
@@ -1069,29 +1077,106 @@
                     });
                 }
 
-                // Show spinner visually before the browser reloads
+                // Show loading state
                 const placeOrderBtn = document.getElementById('placeOrderBtn');
                 const btnText = placeOrderBtn.querySelector('.btn-text');
                 placeOrderBtn.disabled = true;
                 placeOrderBtn.classList.add('loading');
                 btnText.textContent = 'Processing...';
 
-                // Submit the form normally (Full page reload)
-                checkoutForm.submit();
+                if (paymentMethod.toLowerCase() === 'razorpay') {
+                    // RAZORPAY FLOW: Needs AJAX to get the Order ID first
+                    try {
+                        const response = await fetch('/user/checkout/place', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                addressId, 
+                                paymentMethod: 'razorpay',
+                                productId: document.getElementById('buyNowProductId').value,
+                                variantId: document.getElementById('buyNowVariantId').value
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (!data.success) throw new Error(data.message || 'Payment setup failed');
+
+                        handleRazorpayModal(data, addressId);
+                    } catch (error) {
+                        resetBtn();
+                        Swal.fire({ icon: 'error', title: 'Payment Error', text: error.message });
+                    }
+                } else {
+                    // COD / WALLET FLOW: Uses standard form submission because the backend redirects
+                    checkoutForm.submit();
+                }
+
+                function resetBtn() {
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.classList.remove('loading');
+                    btnText.textContent = 'Place Order Now';
+                }
             });
+
+            function handleRazorpayModal(orderData, addressId, productId, variantId) {
+                const options = {
+                    key: orderData.key,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: "ZiGo",
+                    description: "Secure Order Payment",
+                    order_id: orderData.orderId,
+                    handler: async function (response) {
+                        try {
+                            const verifyRes = await fetch('/user/checkout/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    addressId,
+                                    productId,
+                                    variantId
+                                })
+                            });
+
+                            const verifyResult = await verifyRes.json();
+                            if (verifyResult.success) {
+                                window.location.href = verifyResult.redirectUrl;
+                            } else {
+                                throw new Error(verifyResult.message || "Verification failed");
+                            }
+                        } catch (err) {
+                            window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                        }
+                    },
+                    prefill: {
+                        name: document.getElementById('current_addr_name').textContent.trim(),
+                        contact: document.getElementById('display_phone').value
+                    },
+                    theme: { color: "#FF5A1F" }
+                };
+
+                const rzp = new Razorpay(options);
+                
+                rzp.on('payment.failed', function (response) {
+                    window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                });
+
+                rzp.open();
+            }
 
             // Initialize Buy Now data if applicable
             window.addEventListener('DOMContentLoaded', () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('type') === 'buynow') {
-                    document.getElementById('buyNowProductId').value = urlParams.get('productId') || '';
-                    document.getElementById('buyNowVariantId').value = urlParams.get('variantId') || '';
-                    
-                    // Change form action if needed, or point to the same endpoint if the user's backend handles both
-                    // Based on the user's snippet, they might want to point to /productDetailse/buyNow
-                    // for the final placement too, or just use the standard one but with extra fields.
-                    // Given the snippet: action="/user/checkout/place"
-                    // If the user's backend is ready to handle productId in body on /user/checkout/place:
+                if (urlParams.get('type') === 'buyNow') {
+                    // Fields already populated by EJS if isBuyNow was true
                 }
             });
 

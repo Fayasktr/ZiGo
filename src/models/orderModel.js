@@ -1,32 +1,32 @@
 import mongoose from "mongoose"
 
 const itemsSchema = mongoose.Schema({
-    productId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Product"
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product"
     },
-    variantId:{
-        type:mongoose.Schema.Types.ObjectId
+    variantId: {
+        type: mongoose.Schema.Types.ObjectId
     },
-    productName:{
-        type:String,
-        required:true
+    productName: {
+        type: String,
+        required: true
     },
-    price:{
-        type:Number,
-        required:true,
+    price: {
+        type: Number,
+        required: true,
     },
-    quantity:{
-        type:Number,
-        default:1
+    quantity: {
+        type: Number,
+        default: 1
     },
-    itemTotal:{
-        type:Number,
-        required:true
+    itemTotal: {
+        type: Number,
+        required: true
     },
-    image:{
-        type:String,
-        required:true
+    image: {
+        type: String,
+        required: true
     },
     variantAttributes: {
         type: Map,
@@ -34,15 +34,15 @@ const itemsSchema = mongoose.Schema({
     },
     itemStatus: {
         type: String,
-        enum: ["active", "cancelled","delivered", "returned"],
+        enum: ["active", "cancelled", "delivered", "returned"],
         default: "active"
     },
-    returnedQuantity: { 
-        type: Number, 
-        default: 0 
+    returnedQuantity: {
+        type: Number,
+        default: 0
     },
     cancelledQuantity: { type: Number, default: 0 },
-    returnedQuantity:  { type: Number, default: 0 },
+    returnedQuantity: { type: Number, default: 0 },
     pendingReturnQuantity: { type: Number, default: 0 },
     returnStatus: {
         type: String,
@@ -50,22 +50,22 @@ const itemsSchema = mongoose.Schema({
         default: "none"
     },
     returnReason: { type: String },
-    returnComments: { type: String }, 
+    returnComments: { type: String },
     returnRequestedAt: { type: Date },
-    deliveredDate:{type:Date},
+    deliveredDate: { type: Date },
     cancelReason: { type: String },
-    comments:{type:String}
+    comments: { type: String }
 })
 
 
-const orderSchema=mongoose.Schema({
-    orderNumber:{
-        type:String,
-        required:true
+const orderSchema = mongoose.Schema({
+    orderNumber: {
+        type: String,
+        required: true
     },
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
     shippingAddress: {
         fullName: { type: String, required: true },
@@ -76,46 +76,49 @@ const orderSchema=mongoose.Schema({
         pincode: { type: String, required: true },
         country: { type: String, default: "India" }
     },
-    pricing:{
-        subTotal:{type:Number,required:true},
-        tax:{type:Number,default:0},
-        shipping:{type:Number,default:0},
-        discound:{type:Number,default:0},
-        total:{type:Number,required:true}
+    pricing: {
+        subTotal: { type: Number, required: true },
+        tax: { type: Number, default: 0 },
+        shipping: { type: Number, default: 0 },
+        discound: { type: Number, default: 0 },
+        total: { type: Number, required: true }
 
     },
-    orderStatus:{
-        type:String,
-        enum:["pending","processing","shipped","delivered","cancelled","returned"],
-        default:"pending"
+    orderStatus: {
+        type: String,
+        enum: ["pending", "processing", "shipped", "delivered", "cancelled", "returned"],
+        default: "pending"
     },
-    cancelReason:{
-        type:String,
-        default:""
+    cancelReason: {
+        type: String,
+        default: ""
     },
-    paymentMethod:{
-        type:String,
-        enum:["cash","rozorpay","wallet"]
+    paymentMethod: {
+        type: String,
+        enum: ["cash", "razorpay", "wallet"]
     },
-    paymentStatus:{
-        type:String,
+    paymentStatus: {
+        type: String,
         enum: ["pending", "paid", "failed", "refunded"],
         default: "pending"
+    },
+    paymentId: {
+        type: String
     },
     returnRequested: {
         type: Boolean,
         default: false
     },
-    items:[itemsSchema],
-    couponId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"coupon",
-        default:null
+    items: [itemsSchema],
+    couponId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "coupon",
+        default: null
     }
 },
-{
-    timestamps:true
-}
+    {
+        timestamps: true
+    }
 )
 
-export default mongoose.model("order",orderSchema);
+export default mongoose.model("order", orderSchema);

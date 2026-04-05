@@ -243,13 +243,14 @@ export const checkoutBuyNowOrder = async (userId,buyNowItem,quantity=1) => {
     const addresses = await addressModel.find({ userId }).sort({ isDefault: -1 });
     const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0] || null;
 
-    const subTotal = itemData.totalPrice;
+    const subTotal = Number(itemData.totalPrice);
     const shipping = subTotal > 1000 ? 0 : 40;
-    const tax = subTotal * 0.18;
-    console.log(4)
+    const tax = Math.round(subTotal * 0.18);
+    const total = Number(subTotal) + Number(shipping) + Number(tax);
+
     return {
         checkoutData: [itemData], 
-        totals: { subTotal, shipping, tax, total: subTotal + shipping + tax },
+        totals: { subTotal, shipping, tax, total },
         addresses,
         defaultAddress
     };
@@ -394,11 +395,11 @@ export const placeBuyNowOrder=async(userId,addressId,paymentMethod,buyNowItem)=>
     if (stockUpdate.modifiedCount === 0) {
         throw new Error("Item just went out of stock. Please try again.");
     }
-    const itemTotal=variant.price*buyNowItem.quantity;
-    const subTotal=itemTotal;
-    const shipping=subTotal<1000?40:0;
-    const tax = parseFloat((subTotal * 0.18).toFixed(2));
-    const total = parseFloat((subTotal + shipping + tax).toFixed(2));
+    const itemTotal = Number(variant.price) * buyNowItem.quantity;
+    const subTotal = itemTotal;
+    const shipping = subTotal < 1000 ? 40 : 0;
+    const tax = Math.round(subTotal * 0.18);
+    const total = Number(subTotal) + Number(shipping) + Number(tax);
     const orderNumber=`ORD-${new Date()-Math.floor(Math.random()* 9000 + 1000)}-${ordNumSelect++}`;
 
     const order = await orderModel.create({
