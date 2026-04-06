@@ -218,6 +218,16 @@
             opacity: 0.5;
             cursor: pointer;
         }
+
+        .error-message {
+            color: #FF4757;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 
@@ -274,38 +284,60 @@
             </h1>
         </header>
 
-        <form class="form-card" id="couponForm" action="<%= locals.coupon ? '/admin/coupons/edit/' + coupon._id + '?_method=PUT' : '/admin/coupons/add' %>" method="POST">
+        <form class="form-card" id="couponForm" action="<%= locals.coupon ? '/admin/editCoupon/' + coupon._id + '?_method=PUT' : '/admin/coupon/add' %>" method="POST">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Left Column -->
                 <div class="space-y-6">
                     <div class="form-group">
                         <label class="form-label">Coupon Code</label>
-                        <input type="text" name="code" class="form-input" required 
+                        <input type="text" name="code" id="couponCode" class="form-input" 
                              style="text-transform: uppercase; letter-spacing: 2px;" 
                              placeholder="e.g. SUMMER20" 
                              value="<%= locals.coupon ? coupon.code : '' %>">
+                        <p id="error-code" class="error-message">Please enter a valid coupon code</p>
                         <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Unique identifier for checkout entry</p>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Discount Structure</label>
                         <div class="flex gap-4">
-                            <input type="hidden" name="type" id="discountType" value="<%= (locals.coupon && coupon.type) ? coupon.type : 'percentage' %>">
-                            <div class="discount-type-btn <%= (!locals.coupon || coupon.type === 'percentage') ? 'active' : '' %>" 
+                            <input type="hidden" name="discountType" id="discountType" value="<%= (locals.coupon && coupon.discountType) ? coupon.discountType : 'percentage' %>">
+                            <div class="discount-type-btn <%= (!locals.coupon || coupon.discountType === 'percentage') ? 'active' : '' %>" 
                                  onclick="setType(this, 'percentage')">Percentage (%)</div>
-                            <div class="discount-type-btn <%= (locals.coupon && coupon.type === 'fixed') ? 'active' : '' %>" 
+                            <div class="discount-type-btn <%= (locals.coupon && coupon.discountType === 'fixed') ? 'active' : '' %>" 
                                  onclick="setType(this, 'fixed')">Flat Amount (₹)</div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Reward Value</label>
-                        <input type="number" name="discountValue" id="rewardValue" class="form-input" required 
-                             placeholder="e.g. 15 or 500" 
-                             value="<%= locals.coupon ? coupon.discountValue : '' %>">
-                        <p id="valueNote" class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">
-                            <%= (!locals.coupon || coupon.type === 'percentage') ? 'Maximum allowable reduction (0-100)' : 'Deduction in local currency' %>
-                        </p>
+                    <div class="form-group" id="percentageGroup" style="<%= (!locals.coupon || coupon.discountType === 'percentage') ? '' : 'display: none;' %>">
+                        <label class="form-label">Discount Percentage (%)</label>
+                        <input type="number" id="percentageInput" 
+                             name="<%= (!locals.coupon || coupon.discountType === 'percentage') ? 'discountValue' : '' %>"
+                             class="form-input" 
+                             placeholder="write a number from 1 to 100 as %" 
+                             min="1" max="100"
+                             value="<%= (locals.coupon && coupon.discountType === 'percentage') ? coupon.discountValue : '' %>">
+                        <p id="error-percentage" class="error-message">Value must be between 1 and 100</p>
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Enter a value between 1 and 100</p>
+                    </div>
+
+                    <div class="form-group" id="fixedGroup" style="<%= (locals.coupon && coupon.discountType === 'fixed') ? '' : 'display: none;' %>">
+                        <label class="form-label">Reward Amount (₹)</label>
+                        <input type="number" id="fixedInput" 
+                             name="<%= (locals.coupon && coupon.discountType === 'fixed') ? 'discountValue' : '' %>"
+                             class="form-input" 
+                             placeholder="e.g. 500" 
+                             value="<%= (locals.coupon && coupon.discountType === 'fixed') ? coupon.discountValue : '' %>">
+                        <p id="error-fixed" class="error-message">Please enter a valid reward amount</p>
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Flat deduction in local currency</p>
+                    </div>
+
+                    <div class="form-group" id="maxDiscountGroup" style="<%= (locals.coupon && coupon.discountType === 'fixed') ? 'display: none;' : '' %>">
+                        <label class="form-label">Max Discount Amount (₹)</label>
+                        <input type="number" name="maxDiscount" class="form-input" 
+                             placeholder="Maximum ₹ savings " 
+                             value="<%= locals.coupon ? coupon.maxDiscount : '' %>">
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Cap the savings for high-value orders</p>
                     </div>
                 </div>
 
@@ -313,30 +345,34 @@
                 <div class="space-y-6">
                     <div class="form-group">
                         <label class="form-label">Expiration Timeline</label>
-                        <input type="date" name="expiryDate" class="form-input" required
-                             value="<%= (locals.coupon && coupon.expiryDate) ? new Date(coupon.expiryDate).toISOString().split('T')[0] : '' %>">
+                        <input type="date" name="expiresAt" id="expiresAt" class="form-input"
+                             value="<%= (locals.coupon && coupon.expiresAt) ? new Date(coupon.expiresAt).toISOString().split('T')[0] : '' %>">
+                        <p id="error-expiresAt" class="error-message">Please select an expiration date</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Global Redemption Cap</label>
+                        <label class="form-label">Global usage limit</label>
                         <input type="number" name="usageLimit" class="form-input" 
-                             placeholder="e.g. 500 (Optional)" 
+                             placeholder="default: 100" 
                              value="<%= locals.coupon ? coupon.usageLimit : '' %>">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Min. Transaction Requirement (₹)</label>
-                        <input type="number" name="minPurchaseAmount" class="form-input" 
-                             placeholder="e.g. 1499 (Optional)" 
-                             value="<%= locals.coupon ? coupon.minPurchaseAmount : '' %>">
+                        <label class="form-label">Minimum Transaction Requirement (₹)</label>
+                        <input type="number" name="minOrderAmount" class="form-input" 
+                             placeholder="default: 1500" 
+                             value="<%= locals.coupon ? coupon.minOrderAmount : '' %>">
                     </div>
+
+
                 </div>
             </div>
 
             <div class="form-group mt-6">
                 <label class="form-label">Strategic Description</label>
-                <textarea name="description" class="form-input h-24" style="resize: none;" 
-                    placeholder="Describe the offer for your analytics..." required><%= locals.coupon ? coupon.description : '' %></textarea>
+                <textarea name="description" id="description" class="form-input h-24" style="resize: none;" 
+                    placeholder="Describe the offer for your analytics..."><%= locals.coupon ? coupon.description : '' %></textarea>
+                <p id="error-description" class="error-message">Please provide a campaign description</p>
             </div>
 
             <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 mb-8 mt-8">
@@ -364,39 +400,108 @@
             el.classList.add('active');
             document.getElementById('discountType').value = type;
             
-            const note = document.getElementById('valueNote');
+            const percGroup = document.getElementById('percentageGroup');
+            const fixedGroup = document.getElementById('fixedGroup');
+            const maxGroup = document.getElementById('maxDiscountGroup');
+            const percInput = document.getElementById('percentageInput');
+            const fixedInput = document.getElementById('fixedInput');
+            
             if(type === 'percentage'){
-                note.textContent = 'Maximum allowable reduction (0-100)';
+                percGroup.style.display = 'block';
+                fixedGroup.style.display = 'none';
+                maxGroup.style.display = 'block';
+                percInput.name = 'discountValue';
+                fixedInput.name = '';
             } else {
-                note.textContent = 'Deduction in local currency';
+                percGroup.style.display = 'none';
+                fixedGroup.style.display = 'block';
+                maxGroup.style.display = 'none';
+                percInput.name = '';
+                fixedInput.name = 'discountValue';
             }
         }
 
-        document.getElementById('couponForm').addEventListener('submit', function(e) {
-            const type = document.getElementById('discountType').value;
-            const value = parseFloat(document.getElementById('rewardValue').value);
+        document.getElementById('couponForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-            if (type === 'percentage' && (value <= 0 || value > 100)) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Percentage',
-                    text: 'Percentage discount must be between 1 and 100.',
-                    confirmButtonColor: '#FF5A1F'
-                });
-                return;
+            let hasError = false;
+            const typeValue = document.getElementById('discountType').value;
+            const codeValue = document.getElementById('couponCode').value.trim();
+            const expiresValue = document.getElementById('expiresAt').value;
+            const descValue = document.getElementById('description').value.trim();
+            
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+
+            if (!codeValue) { showError('error-code'); hasError = true; }
+            
+            if (typeValue === 'percentage') {
+                const val = parseFloat(document.getElementById('percentageInput').value);
+                if (isNaN(val) || val <= 0 || val > 100) { showError('error-percentage'); hasError = true; }
+            } else {
+                const val = parseFloat(document.getElementById('fixedInput').value);
+                if (isNaN(val) || val <= 0) { showError('error-fixed'); hasError = true; }
             }
 
-            if (!value || value <= 0) {
-                e.preventDefault();
+            if (!expiresValue) { showError('error-expiresAt'); hasError = true; }
+            if (!descValue) { showError('error-description'); hasError = true; }
+
+            if (hasError) return;
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                data.isActive = this.querySelector('input[name="isActive"]').checked;
+
+                // Dynamically detect method from the URL (PUT if _method=PUT is present)
+                const method = this.action.includes('_method=PUT') ? 'PUT' : 'POST';
+
+                const response = await fetch(this.action, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // Read as text first to catch any HTML error pages before JSON parsing
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    throw new Error("Server returned an unexpected response (HTML instead of JSON). Check your controller.");
+                }
+
+                if (result.success) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top',
+                        icon: 'success',
+                        title: result.message || 'Updated Successfully',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: '#1A1A1A',
+                        color: '#FFFFFF'
+                    });
+                    setTimeout(() => window.location.href = '/admin/coupons', 2000);
+                } else {
+                    throw new Error(result.message || 'Action failed');
+                }
+            } catch (error) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Value',
-                    text: 'Reward value must be greater than zero.',
-                    confirmButtonColor: '#FF5A1F'
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.message,
+                    confirmButtonColor: '#FF5A1F',
+                    background: '#1A1A1A',
+                    color: '#FFFFFF'
                 });
             }
         });
+
+        function showError(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+        }
     </script>
 </body>
 

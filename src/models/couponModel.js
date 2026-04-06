@@ -9,71 +9,59 @@ const couponSchema = new mongoose.Schema(
       uppercase: true,
       trim: true,
     },
-
     description: {
       type: String,
     },
-
     discountType: {
       type: String,
       enum: ["percentage", "fixed"],
       required: true,
     },
-
     discountValue: {
       type: Number,
       required: true,
     },
-
     maxDiscount: {
       type: Number, 
     },
-
     minOrderAmount: {
       type: Number,
-      default: 0,
+      default: 1500,
     },
-
     expiresAt: {
       type: Date,
       required: true,
     },
-
     usageLimit: {
-      type: Number, 
+      type: Number,
+      default:100,
     },
-
     usedCount: {
       type: Number,
       default: 0,
     },
-
-    userUsageLimit: {
-      type: Number, 
-      default: 1,
-    },
-
+    // userUsageLimit: {
+    //   type: Number, 
+    //   default: 1,
+    // },
     applicableUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
-
     applicableProducts: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
       },
     ],
-
     applicableCategories: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
       },
     ],
-
     isActive: {
       type: Boolean,
       default: true,
@@ -91,23 +79,19 @@ const couponUsageSchema = new mongoose.Schema(
       ref: "Coupon",
       required: true,
     },
-
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
     },
-
     discountedAmount: {
       type: Number,
       required: true,
     },
-
     usedAt: {
       type: Date,
       default: Date.now,

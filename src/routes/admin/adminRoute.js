@@ -24,8 +24,16 @@ router.patch("/admin/orderDetails/:id/update",adminControl.orderStatusUpdate);
 router.patch("/admin/orders/:orderId/item/:itemId/return",adminControl.handleReturnRequest);
 
 router.get("/admin/coupons",adminControl.couponPage);
+router.get("/admin/coupon/addEditPage",adminControl.addEditCouponPage);
 router.post("/admin/coupon/add",adminControl.addCoupon);
 router.put("/admin/editCoupon/:id",adminControl.editCoupon);
+router.delete("/admin/coupon/delete/:id",adminControl.deleteCoupon);
+
+router.get("/admin/offers", adminControl.offersPage);
+router.get("/admin/offer/addEditPage", adminControl.addEditOfferPage);
+router.post("/admin/offer/add", adminControl.addOffer);
+router.put("/admin/offer/edit/:id", adminControl.editOffer);
+router.delete("/admin/offer/delete/:id", adminControl.deleteOffer);
 
 const adminRoute = router;
 

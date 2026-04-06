@@ -3,9 +3,12 @@ import checkPass from "../../utils/checkPassword.js"
 import userModel from "../../models/userModel.js"
 import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
+import categoryModel from "../../models/categoryModel.js";
 import walletModel from "../../models/walletModel.js"
 import * as paymentService from '../admin/paymentService.js';
 import { couponModel,couponUsage } from "../../models/couponModel.js";
+import offerModel from '../../models/offerModel.js';
+
 
 export const accessToAdmin = async (adminMail, password) => {
     const adminData = await admin.findOne({ email: adminMail });
@@ -220,15 +223,200 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
 
 
 export const couponPage=async(search,page)=>{
-    const limit=9;
+    const limit=12;
     const skip=limit*(page-1);
     let filter={};
     if (search) {
         filter.$or = [
-            { couponId: { $regex: search, $options: "i" } }
+            { code: { $regex: search, $options: "i" } }
         ];
     }
-    const couponData=await couponModel.find(filter).skip(skip).limit(limit);
-    return couponData;
-
+    const [couponData,totalCount]=await Promise.all([
+        couponModel.find(filter).skip(skip).limit(limit).sort({createdAt:-1}),
+        couponModel.countDocuments(filter)
+    ])
+    return [couponData,totalCount];
 }
+
+
+export const addCoupon=async(couponData)=>{
+    console.log(`coupon data: ${couponData}`);
+    const existCoupon = await couponModel.findOne({
+        code: { $regex: `^${couponData.code}$`, $options: "i" }
+    });
+    if(existCoupon)throw new Error("this code coupon already exist");
+    const coupon = await couponModel.create({
+        code: couponData.code,
+        description: couponData.description,
+        discountType: couponData.discountType,
+        discountValue: Number(couponData.discountValue),
+        maxDiscount: couponData.maxDiscount ? Number(couponData.maxDiscount) : null,
+        minOrderAmount: Number(couponData.minOrderAmount) || 0,
+        expiresAt: new Date(couponData.expiresAt),
+        usageLimit: couponData.usageLimit ? Number(couponData.usageLimit) : null,
+        userUsageLimit: Number(couponData.userUsageLimit) || 1,
+        isActive: couponData.isActive === 'on' || couponData.isActive === true
+    });
+}
+
+export const editCouponPage=async(couponId)=>{
+    const coupon=await couponModel.findById(couponId);
+    if(!coupon)throw new Error("no coupon on this id");
+    return coupon;
+}
+
+export const editCoupon = async (couponId,couponData) => {
+    const existCoupon = await couponModel.findOne({
+        code: { $regex: new RegExp(`^${couponData.code}$`, "i") },
+        _id: { $ne: couponId }
+    });
+
+console.log(`exist coupon :${existCoupon}`)
+
+  if (existCoupon) {
+    throw new Error("This coupon code is already used by another coupon");
+  }
+
+  const updatedCoupon = await couponModel.findByIdAndUpdate(
+    couponId,
+    {
+      code: couponData.code.toUpperCase().trim(),
+      description: couponData.description?.trim(),
+      discountType: couponData.discountType,
+      discountValue: Number(couponData.discountValue),
+      maxDiscount: couponData.maxDiscount
+        ? Number(couponData.maxDiscount)
+        : undefined,
+      minOrderAmount: Number(couponData.minOrderAmount) || 0,
+      expiresAt: couponData.expiresAt
+        ? new Date(couponData.expiresAt)
+        : undefined,
+      usageLimit: couponData.usageLimit
+        ? Number(couponData.usageLimit)
+        : undefined,
+      userUsageLimit: Number(couponData.userUsageLimit) || 1,
+      isActive:
+        couponData.isActive === "on" || couponData.isActive === true,
+    },
+    { new: true, runValidators: true }
+  );
+
+  return updatedCoupon;
+};
+
+export const deleteCoupon=async(couponId)=>{
+    await couponModel.findOneAndDelete({_id:couponId});
+}
+
+//offer section
+
+export const getOffersPage = async (search, page, offerType) => {
+    const limit = 12;
+    const skip = limit * (page - 1);
+
+    let filter = { type: offerType || 'category' };
+
+    if (search) {
+        filter.name = { $regex: search, $options: "i" };
+    }
+
+    const [offerData, totalCount] = await Promise.all([
+        offerModel
+            .find(filter)
+            .populate(offerType === 'product' ? 'productId' : 'categoryId')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 }),
+        offerModel.countDocuments(filter)
+    ]);
+
+    return { offerData, totalCount };
+};
+
+export const getAddEditOfferPageData = async (offerId) => {
+    const [categories, products] = await Promise.all([
+        categoryModel.find({ isListed: true }).select('categoryName'),
+        productModel.find({ isListed: true }).select('productName')
+    ]);
+    let offer = null;
+    if (offerId) {
+        offer = await offerModel.findById(offerId);
+        if (!offer) throw new Error("Offer not found");
+    }
+
+    return { offer, categories, products };
+};
+
+export const addOffer = async (offerData) => {
+    const duplicateFilter = {
+        type: offerData.type,
+        isActive: true
+    };
+
+    if (offerData.type === 'category') {
+        duplicateFilter.categoryId = offerData.categoryId;
+    } else {
+        duplicateFilter.productId = offerData.productId;
+    }
+
+    const existingOffer = await offerModel.findOne(duplicateFilter);
+    if (existingOffer) {
+        throw new Error(`An active offer already exists for this ${offerData.type}`);
+    }
+
+    const newOffer = await offerModel.create({
+        name: offerData.name.trim(),
+        type: offerData.type,
+        discountType: 'percentage', 
+        discountValue: Number(offerData.discountValue),
+        categoryId: offerData.type === 'category' ? offerData.categoryId : undefined,
+        productId: offerData.type === 'product' ? offerData.productId : undefined,
+        expireAt: new Date(offerData.expireAt),
+        isActive: offerData.isActive === true || offerData.isActive === 'on'
+    });
+
+    return newOffer;
+};
+
+export const editOffer = async (offerId, offerData) => {
+    const duplicateFilter = {
+        type: offerData.type,
+        isActive: true,
+        _id: { $ne: offerId }
+    };
+
+    if (offerData.type === 'category') {
+        duplicateFilter.categoryId = offerData.categoryId;
+    } else {
+        duplicateFilter.productId = offerData.productId;
+    }
+
+    const existingOffer = await offerModel.findOne(duplicateFilter);
+    if (existingOffer) {
+        throw new Error(`Another active offer already exists for this ${offerData.type}`);
+    }
+
+    const updatedOffer = await offerModel.findByIdAndUpdate(
+        offerId,
+        {
+            name: offerData.name.trim(),
+            type: offerData.type,
+            discountValue: Number(offerData.discountValue),
+            categoryId: offerData.type === 'category' ? offerData.categoryId : undefined,
+            productId: offerData.type === 'product' ? offerData.productId : undefined,
+            expireAt: new Date(offerData.expireAt),
+            isActive: offerData.isActive === true || offerData.isActive === 'on'
+        },
+        { new: true, runValidators: true }
+    );
+
+    if (!updatedOffer) throw new Error("Offer not found");
+    return updatedOffer;
+};
+
+export const deleteOffer = async (offerId) => {
+    const deletedOffer = await offerModel.findByIdAndDelete(offerId);
+    if (!deletedOffer) throw new Error("Offer not found");
+    return deletedOffer;
+};
+

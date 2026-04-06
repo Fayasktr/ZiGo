@@ -302,7 +302,7 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- User Profile (same as dashboard) -->
+                <!-- User Profile -->
                 <div class="text-right hidden md:block">
                     <p class="font-bold text-sm">Fayas Admin</p>
                     <p class="text-xs opacity-40">System Architect</p>
@@ -311,96 +311,183 @@
                     F
                 </div>
                 
-                <a href="/admin/coupons/add" class="btn-add ml-4">
+                <a href="/admin/coupon/addEditPage" class="btn-add ml-4">
                     <i class="fas fa-plus"></i> Launch Campaign
                 </a>
             </div>
+
+            <div class="text-right ml-8 border-l border-white/10 pl-8">
+                <p class="text-2xl font-black">
+                    <%= locals.totalCount || 0 %>
+                </p>
+                <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Total Coupons</p>
+            </div>
         </header>
 
-        <section class="marketing-section">
+        <div class="marketing-container">
+            <div class="search-row flex gap-4 mb-8 items-center justify-between">
+                <div class="flex gap-4 flex-1 max-w-xl">
+                    <div class="relative flex-1">
+                        <input type="text" id="couponSearch" value="<%= locals.search || '' %>" placeholder="Search by code or description..."
+                            class="w-full bg-white/5 border border-white/10 p-3 pl-10 rounded-xl text-sm outline-none focus:border-orange-500 transition">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 opacity-20"></i>
+                    </div>
+                    <button onclick="triggerSearch()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 rounded-xl font-bold text-sm transition">
+                        SEARCH
+                    </button>
+                    <button onclick="clearSearch()" class="bg-white/5 hover:bg-white/10 text-white/60 px-6 rounded-xl font-bold text-sm transition border border-white/10">
+                        CLEAR
+                    </button>
+                </div>
+            </div>
+
             <h3 class="flex items-center gap-3 text-xl font-bold mb-8 italic opacity-60">
                 <i class="fas fa-ticket-alt text-orange-500"></i> Active Redemption Channels
             </h3>
 
             <% if (locals.coupons && coupons.length > 0) { %>
                 <div class="grid-coupons">
-                    <% coupons.forEach(coupon => { %>
-                        <div class="coupon-card" style="border-left-color: <%= coupon.type === 'percentage' ? '#2ED573' : '#3395FF' %>;">
-                            <span class="type-badge <%= coupon.type === 'percentage' ? 'type-percentage' : 'type-fixed' %>">
-                                <%= coupon.type === 'percentage' ? 'Percentage Off' : 'Flat Discount' %>
-                            </span>
+                    <% coupons.forEach(coupon => { 
+                        const isExpired = coupon.expiresAt ? (new Date(coupon.expiresAt) < new Date()) : false;
+                        const isInactive = !coupon.isActive;
+                    %>
+                        <div class="coupon-card <%= (isExpired || isInactive) ? 'opacity-60 grayscale-[0.5]' : '' %>" 
+                             style="border-left-color: <%= coupon.discountType === 'percentage' ? '#2ED573' : '#3395FF' %>;">
                             
-                            <p class="coupon-code" style="color: <%= coupon.type === 'percentage' ? '#2ED573' : '#3395FF' %>;">
-                                <%= coupon.code %>
-                            </p>
-                            <p class="coupon-desc text-white">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="type-badge <%= coupon.discountType === 'percentage' ? 'type-percentage' : 'type-fixed' %>">
+                                    <%= coupon.discountType === 'percentage' ? 'Percentage Off' : 'Flat Discount' %>
+                                </span>
+                                <% if (isInactive) { %>
+                                    <span class="text-[10px] font-black bg-red-500/20 text-red-500 px-2 py-1 rounded">INACTIVE</span>
+                                <% } else if (isExpired) { %>
+                                    <span class="text-[10px] font-black bg-gray-500/20 text-gray-400 px-2 py-1 rounded">EXPIRED</span>
+                                <% } %>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <p class="coupon-code text-2xl font-black tracking-tighter" style="color: <%= coupon.discountType === 'percentage' ? '#2ED573' : '#3395FF' %>;">
+                                    <%= coupon.code %>
+                                </p>
+                                <p class="text-xl font-bold text-white/90">
+                                    <% if (coupon.discountType === 'percentage') { %>
+                                        <%= coupon.discountValue %>% <span class="text-xs opacity-40">OFF</span>
+                                    <% } else { %>
+                                        ₹<%= coupon.discountValue %> <span class="text-xs opacity-40">OFF</span>
+                                    <% } %>
+                                </p>
+                            </div>
+
+                            <p class="coupon-desc text-white/60 text-sm line-clamp-2">
                                 <%= coupon.description %>
                             </p>
                             
-                            <div class="coupon-meta">
+                            <div class="coupon-meta mt-6 pt-4 border-t border-white/5">
                                 <div class="meta-box">
                                     <h5>Redemptions</h5>
                                     <p>
-                                        <%= coupon.usedCount || 0 %> / <%= coupon.usageLimit || '∞' %>
+                                        <%= coupon.usedCount || 0 %> <span class="opacity-30">/</span> <%= coupon.usageLimit || '∞' %>
                                     </p>
                                 </div>
                                 <div class="meta-box text-right">
-                                    <h5>Availability</h5>
-                                    <p class="<%= (new Date(coupon.expiryDate) < new Date()) ? 'text-red-500' : '' %>">
-                                        <%= coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Lifetime' %>
+                                    <h5>Ends On</h5>
+                                    <p class="<%= isExpired ? 'text-red-500' : '' %>">
+                                        <%= coupon.expiresAt ? new Date(coupon.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Lifetime' %>
                                     </p>
                                 </div>
                             </div>
 
                             <div class="mt-6 flex gap-2 justify-end">
-                                <a href="/admin/coupons/edit/<%= coupon._id %>" class="bg-white/5 hover:bg-white/10 p-2 px-4 rounded-xl transition">
+                                <a href="/admin/coupon/addEditPage?couponId=<%= coupon._id %>" class="bg-white/5 hover:bg-white/10 p-2 px-4 rounded-xl transition">
                                     <i class="fas fa-edit text-xs"></i>
                                 </a>
-                                <button onclick="deleteCoupon('<%= coupon._id %>')" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-2 px-4 rounded-xl transition">
+                                <button onclick="deleteCoupon('<%= coupon._id %>', '<%= coupon.code %>')" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-2 px-4 rounded-xl transition">
                                     <i class="fas fa-trash text-xs"></i>
                                 </button>
                             </div>
                         </div>
                     <% }) %>
                 </div>
+
+                <div class="mt-12">
+                    <%- include('../partials/admin/pagination.ejs') %>
+                </div>
+
             <% } else { %>
                 <div class="empty-state">
                     <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-500">
                         <i class="fas fa-ticket-alt text-2xl"></i>
                     </div>
-                    <h4 class="font-bold text-lg mb-2">No Active Coupons</h4>
-                    <p class="text-sm opacity-40 mb-6">Launch a new marketing campaign to see your performance metrics here.</p>
+                    <h4 class="font-bold text-lg mb-2">No Campaigns Found</h4>
+                    <p class="text-sm opacity-40 mb-6">Launch a new marketing campaign or adjust your filters.</p>
                     <a href="/admin/coupons/add" class="text-orange-500 font-bold border-b border-orange-500 pb-1">Create Your First Coupon</a>
                 </div>
             <% } %>
-        </section>
+        </div>
     </main>
 
     <%- include('../partials/flashAlert') %>
 
     <script>
-        async function deleteCoupon(id) {
+        function triggerSearch() {
+            const query = document.getElementById('couponSearch').value.trim();
+            window.location.href = `/admin/coupons?page=1&search=${query}`;
+        }
+
+        function clearSearch() {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("search");
+            url.searchParams.set("page", "1");
+            window.location.href = url.toString();
+        }
+
+        document.getElementById('couponSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') triggerSearch();
+        });
+
+        async function deleteCoupon(id, code) {
             const confirmed = await Swal.fire({
-                title: 'Deactivate Coupon?',
-                text: "This campaign will be immediately revoked from customer availability.",
+                title: `Delete Coupon ${code}?`,
+                text: "This campaign will be permanently removed from circulation.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#FF5A1F',
+                confirmButtonColor: '#FF4757',
                 cancelButtonColor: '#334155',
-                confirmButtonText: 'Yes, revoke it'
+                confirmButtonText: 'Yes, delete it',
+                background: '#1A1A1A',
+                color: '#FFFFFF'
             });
 
             if (confirmed.isConfirmed) {
                 try {
-                    const response = await fetch(`/admin/coupons/delete/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`/admin/coupon/delete/${id}`, { method: 'DELETE' });
                     const res = await response.json();
+                    
                     if (res.success) {
-                        location.reload();
+                        Swal.fire({
+                            toast: true,
+                            position: 'top',
+                            icon: 'success',
+                            title: 'Coupon deleted successfully',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            timerProgressBar: true,
+                            background: '#1A1A1A',
+                            color: '#FFFFFF'
+                        });
+                        setTimeout(() => location.reload(), 1500);
                     } else {
                         throw new Error(res.message);
                     }
                 } catch (error) {
-                    Swal.fire('Failed!', error.message, 'error');
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'error',
+                        title: 'Deletion Failed',
+                        text: error.message,
+                        background: '#1A1A1A',
+                        color: '#FFFFFF'
+                    });
                 }
             }
         }

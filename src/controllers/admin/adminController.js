@@ -134,27 +134,165 @@ export const handleReturnRequest=asynchandler(async(req,res)=>{
 
 export const couponPage=asynchandler(async(req,res)=>{
     try {
-        const {search="",page=1}=req.body;
-        const couponData=await adminService.couponPage(search,page);
-        res.render("admin/coupons",{coupons:couponData});
+        const {search="",page=1}=req.query;
+        const limit=12;
+        console.log(`search :${search}, ${page}`)
+        const [couponData,totalCount]=await adminService.couponPage(search,page);
+        const totalPages=Math.ceil(totalCount/limit);
+        res.render("admin/coupons",{coupons:couponData,totalCount,totalPages,currentPage:page,limit,search});
     } catch (error) {
+        console.log(error)
         req.flash("error",error.message);
         res.redirect("/admin/dashbord")
     }
 })
 
+export const addEditCouponPage=asynchandler(async(req,res)=>{
+    try {
+        const couponId=req.query?.couponId||"";
+        let coupon=null;
+        if(couponId){
+            coupon=await adminService.editCouponPage(couponId);
+        }
+        res.render("admin/addEditCoupon",{coupon});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/coupons");
+    }
+})
+
 export const addCoupon=asynchandler(async(req,res)=>{
     try {
-        
+        const couponData=req.body;
+        const addCoupon=await adminService.addCoupon(couponData);
+        res.status(200).json({success:true,message:"new coupon added"})
     } catch (error) {
-        
+        req.status(400).json({success:false,message:error.message})
     }
 })
 
 export const editCoupon=asynchandler(async(req,res)=>{
     try {
-        
+        const couponId=req.params.id;
+        const couponData=req.body;
+        await adminService.editCoupon(couponId,couponData);
+        res.json({success:true,message:"coupon upddated successfully"})
     } catch (error) {
-        
+        console.log(error);
+        res.status(400).json({ success: false, message: error.message });
     }
 })
+
+export const deleteCoupon=asynchandler(async(req,res)=>{
+    try {
+        const couponId=req.params.id;
+        if(!couponId)throw new Error("missing couponId");
+        await adminService.deleteCoupon(couponId);
+        res.status(200).json({success:true,message:"coupon deleted"})
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+})
+
+
+export const offersPage = asynchandler(async (req, res) => {
+    try {
+        const { search = "", page = 1, type = "category" } = req.query;
+        const limit = 12;
+
+        const { offerData, totalCount } = await adminService.getOffersPage(search, page, type);
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.render("admin/offers", {
+            offers: offerData,
+            totalCount,
+            totalPages,
+            currentPage: Number(page),
+            limit,
+            search,
+            offerType: type
+        });
+    } catch (error) {
+        console.error("Offers page error:", error);
+        req.flash("error", error.message);
+        res.redirect("/admin/dashbord");
+    }
+});
+
+export const addEditOfferPage = asynchandler(async (req, res) => {
+    try {
+        const offerId = req.query?.offerId || "";
+        
+        const { offer, categories, products } = await adminService.getAddEditOfferPageData(offerId);
+
+        res.render("admin/addEditOffer", {
+            offer,
+            categories,
+            products
+        });
+    } catch (error) {
+        console.error("Add/Edit offer page error:", error);
+        req.flash("error", error.message);
+        res.redirect("/admin/offers");
+    }
+});
+
+export const addOffer = asynchandler(async (req, res) => {
+    try {
+        const offerData = req.body;
+        await adminService.addOffer(offerData);
+        
+        res.status(201).json({ 
+            success: true, 
+            message: "Offer created successfully" 
+        });
+    } catch (error) {
+        console.error("Add offer error:", error);
+        res.status(400).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+export const editOffer = asynchandler(async (req, res) => {
+    try {
+        const offerId = req.params.id;
+        const offerData = req.body;
+        
+        await adminService.editOffer(offerId, offerData);
+        
+        res.json({ 
+            success: true, 
+            message: "Offer updated successfully" 
+        });
+    } catch (error) {
+        console.error("Edit offer error:", error);
+        res.status(400).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+export const deleteOffer = asynchandler(async (req, res) => {
+    try {
+        const offerId = req.params.id;
+        
+        if (!offerId) {
+            throw new Error("Offer ID is required");
+        }
+        await adminService.deleteOffer(offerId);
+        res.json({ 
+            success: true, 
+            message: "Offer deleted successfully" 
+        });
+    } catch (error) {
+        console.error("Delete offer error:", error);
+        res.status(400).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
