@@ -423,7 +423,7 @@
 
                             <% 
                                 const deliveredDate = item.deliveredDate ? new Date(item.deliveredDate) : null;
-                                const isWithin7Days = deliveredDate ? (new Date() - deliveredDate) / (1000 * 60 * 60 * 24) < 0 : true;
+                                const isWithin7Days = deliveredDate ? (new Date() - deliveredDate) / (1000 * 60 * 60 * 24) < 7 : true;
                             %>
 
                             <% if (order.orderStatus.toLowerCase() === 'delivered') { %>

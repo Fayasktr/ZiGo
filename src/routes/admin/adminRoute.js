@@ -23,6 +23,10 @@ router.patch("/admin/orderDetails/:id/update",adminControl.orderStatusUpdate);
 
 router.patch("/admin/orders/:orderId/item/:itemId/return",adminControl.handleReturnRequest);
 
+router.get("/admin/coupons",adminControl.couponPage);
+router.post("/admin/coupon/add",adminControl.addCoupon);
+router.put("/admin/editCoupon/:id",adminControl.editCoupon);
+
 const adminRoute = router;
 
 export default adminRoute;

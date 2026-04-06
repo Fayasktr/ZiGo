@@ -132,4 +132,29 @@ export const handleReturnRequest=asynchandler(async(req,res)=>{
     }
 })
 
+export const couponPage=asynchandler(async(req,res)=>{
+    try {
+        const {search="",page=1}=req.body;
+        const couponData=await adminService.couponPage(search,page);
+        res.render("admin/coupons",{coupons:couponData});
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/dashbord")
+    }
+})
 
+export const addCoupon=asynchandler(async(req,res)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+})
+
+export const editCoupon=asynchandler(async(req,res)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+})

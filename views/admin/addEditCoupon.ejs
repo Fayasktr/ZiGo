@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= locals.coupon ? 'Edit Coupon' : 'Add New Coupon' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Admin Sidebar --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        /* --- Main Content --- */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.25rem 3rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .discount-type-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .discount-type-btn.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashbord" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+
+        <nav class="admin-nav">
+            <a href="/admin/dashbord" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item active">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/coupons" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Marketing Suite</a>
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Campaign Center</p>
+            <h1 class="text-3xl font-extrabold italic">
+                <%= locals.coupon ? 'Edit' : 'Create' %> <span class="text-orange-500">Campaign</span>
+            </h1>
+        </header>
+
+        <form class="form-card" id="couponForm" action="<%= locals.coupon ? '/admin/coupons/edit/' + coupon._id + '?_method=PUT' : '/admin/coupons/add' %>" method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">Coupon Code</label>
+                        <input type="text" name="code" class="form-input" required 
+                             style="text-transform: uppercase; letter-spacing: 2px;" 
+                             placeholder="e.g. SUMMER20" 
+                             value="<%= locals.coupon ? coupon.code : '' %>">
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Unique identifier for checkout entry</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Discount Structure</label>
+                        <div class="flex gap-4">
+                            <input type="hidden" name="type" id="discountType" value="<%= (locals.coupon && coupon.type) ? coupon.type : 'percentage' %>">
+                            <div class="discount-type-btn <%= (!locals.coupon || coupon.type === 'percentage') ? 'active' : '' %>" 
+                                 onclick="setType(this, 'percentage')">Percentage (%)</div>
+                            <div class="discount-type-btn <%= (locals.coupon && coupon.type === 'fixed') ? 'active' : '' %>" 
+                                 onclick="setType(this, 'fixed')">Flat Amount (₹)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reward Value</label>
+                        <input type="number" name="discountValue" id="rewardValue" class="form-input" required 
+                             placeholder="e.g. 15 or 500" 
+                             value="<%= locals.coupon ? coupon.discountValue : '' %>">
+                        <p id="valueNote" class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">
+                            <%= (!locals.coupon || coupon.type === 'percentage') ? 'Maximum allowable reduction (0-100)' : 'Deduction in local currency' %>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">Expiration Timeline</label>
+                        <input type="date" name="expiryDate" class="form-input" required
+                             value="<%= (locals.coupon && coupon.expiryDate) ? new Date(coupon.expiryDate).toISOString().split('T')[0] : '' %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Global Redemption Cap</label>
+                        <input type="number" name="usageLimit" class="form-input" 
+                             placeholder="e.g. 500 (Optional)" 
+                             value="<%= locals.coupon ? coupon.usageLimit : '' %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Min. Transaction Requirement (₹)</label>
+                        <input type="number" name="minPurchaseAmount" class="form-input" 
+                             placeholder="e.g. 1499 (Optional)" 
+                             value="<%= locals.coupon ? coupon.minPurchaseAmount : '' %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-6">
+                <label class="form-label">Strategic Description</label>
+                <textarea name="description" class="form-input h-24" style="resize: none;" 
+                    placeholder="Describe the offer for your analytics..." required><%= locals.coupon ? coupon.description : '' %></textarea>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 mb-8 mt-8">
+                <label class="relative inline-flex items-center cursor-pointer group">
+                    <input type="checkbox" name="isActive" <%= (!locals.coupon || coupon.isActive) ? 'checked' : '' %> class="sr-only peer">
+                    <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                    </div>
+                </label>
+                <div>
+                    <p class="font-bold text-sm">Campaign Active Status</p>
+                    <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest italic">Immediately enable this coupon for customer use</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <%= locals.coupon ? 'Update Campaign Strategy' : 'Finalize & Launch Campaign' %>
+            </button>
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function setType(el, type) {
+            document.querySelectorAll('.discount-type-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('discountType').value = type;
+            
+            const note = document.getElementById('valueNote');
+            if(type === 'percentage'){
+                note.textContent = 'Maximum allowable reduction (0-100)';
+            } else {
+                note.textContent = 'Deduction in local currency';
+            }
+        }
+
+        document.getElementById('couponForm').addEventListener('submit', function(e) {
+            const type = document.getElementById('discountType').value;
+            const value = parseFloat(document.getElementById('rewardValue').value);
+
+            if (type === 'percentage' && (value <= 0 || value > 100)) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Percentage',
+                    text: 'Percentage discount must be between 1 and 100.',
+                    confirmButtonColor: '#FF5A1F'
+                });
+                return;
+            }
+
+            if (!value || value <= 0) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Value',
+                    text: 'Reward value must be greater than zero.',
+                    confirmButtonColor: '#FF5A1F'
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

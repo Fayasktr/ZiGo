@@ -542,7 +542,7 @@
                         </div>
 
                         <!-- Flash Message Alerts -->
-                        <% if (success && success.length > 0) { %>
+                        <% if (locals.success && success && success.length > 0) { %>
                             <script>
                                 window.addEventListener('DOMContentLoaded', () => {
                                     Swal.fire({
@@ -555,7 +555,7 @@
                                 });
                             </script>
                         <% } %>
-                        <% if (error && error.length > 0) { %>
+                        <% if (locals.error && error && error.length > 0) { %>
                             <script>
                                 window.addEventListener('DOMContentLoaded', () => {
                                     Swal.fire({
@@ -625,7 +625,7 @@
                         </div>
 
                         <% 
-                            const walletBalance = (locals.wallet && wallet.balance) || 0;
+                            const walletBalance = (locals.wallet && locals.wallet.balance) || 0;
                             const totalAmount = checkout.totals.total || 0;
                             const isWalletDisabled = walletBalance < totalAmount;
                             const onWalletSelect = isWalletDisabled ? '' : "selectPayment(this, 'wallet')";
@@ -1101,7 +1101,12 @@
                         const data = await response.json();
                         if (!data.success) throw new Error(data.message || 'Payment setup failed');
 
-                        handleRazorpayModal(data, addressId);
+                        handleRazorpayModal(
+                            data, 
+                            addressId, 
+                            document.getElementById('buyNowProductId').value, 
+                            document.getElementById('buyNowVariantId').value
+                        );
                     } catch (error) {
                         resetBtn();
                         Swal.fire({ icon: 'error', title: 'Payment Error', text: error.message });

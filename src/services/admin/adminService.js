@@ -5,6 +5,7 @@ import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
 import walletModel from "../../models/walletModel.js"
 import * as paymentService from '../admin/paymentService.js';
+import { couponModel,couponUsage } from "../../models/couponModel.js";
 
 export const accessToAdmin = async (adminMail, password) => {
     const adminData = await admin.findOne({ email: adminMail });
@@ -216,3 +217,18 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
     await order.save();
     return order;
 };
+
+
+export const couponPage=async(search,page)=>{
+    const limit=9;
+    const skip=limit*(page-1);
+    let filter={};
+    if (search) {
+        filter.$or = [
+            { couponId: { $regex: search, $options: "i" } }
+        ];
+    }
+    const couponData=await couponModel.find(filter).skip(skip).limit(limit);
+    return couponData;
+
+}
