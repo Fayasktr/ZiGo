@@ -6,6 +6,7 @@ import addressModel from "../models/addressModel.js";
 import userModel from "../models/userModel.js"
 import mongoose from "mongoose";
 import orderModel from "../models/orderModel.js";
+import { getBestOffer } from "./getBestOffer.js";
 
 export const getShopData = async (quary, userId) => {
     let { page = 1, search = "", category = "", price = "" } = quary;
@@ -55,9 +56,29 @@ export const getShopData = async (quary, userId) => {
         productModel.countDocuments(filter)
     ]);
 
+    const productsWithOffers = await Promise.all(
+        products.map(async (product) =>{
+            const basePrice = product.variants?.[0]?.price || 0;
+
+            const bestOffer = await getBestOffer({
+                productId: product._id,
+                categoryId: product.category?._id,
+                price: basePrice
+            });
+            let offerDiscount = bestOffer?.discount || 0;
+            let finalPrice = basePrice - offerDiscount;
+            return {
+                ...product.toObject(),
+                offer: bestOffer?.offer || null,
+                offerDiscount,
+                finalPrice
+            };
+        })
+    );
+
     return {
         userWishlist,
-        products,
+        products: productsWithOffers,
         categories,
         totalCount,
         currentPage: page,
@@ -87,14 +108,46 @@ export const productDetailsePage = async (productId, userId) => {
             isListed: true
         }).limit(4);
     }
+    const basePrice = product.variants?.[0]?.price || 0;
+    const bestOffer = await getBestOffer({
+        productId: product._id,
+        categoryId: product.category?._id,
+        price: basePrice
+    });
+    const offerDiscount = bestOffer?.discount || 0;
+    const finalPrice = basePrice - offerDiscount;
+
+    product.offer = bestOffer?.offer || null;
+    product.offerDiscount = offerDiscount;
+    product.finalPrice = finalPrice;
+
+    const relatedProductsWithOffers = await Promise.all(
+        relatedProducts.map(async (rel) => {
+            const relBasePrice = rel.variants?.[0]?.price || 0;
+            const relBestOffer = await getBestOffer({
+                productId: rel._id,
+                categoryId: rel.category?._id,
+                price: relBasePrice
+            });
+            const relOfferDiscount = relBestOffer?.discount || 0;
+            const relFinalPrice = relBasePrice - relOfferDiscount;
+
+            const relDoc = rel; 
+            relDoc.offer = relBestOffer?.offer || null;
+            relDoc.offerDiscount = relOfferDiscount;
+            relDoc.finalPrice = relFinalPrice;
+            return relDoc;
+        })
+    );
+
     let wishlist = [];
     if (userId) {
         const wishlistData = await wishlistModel.find({ userId: userId }).distinct('variantId');
         wishlist = wishlistData.filter(Boolean).map(id => id.toString());
     }
-    const variantAttributes = relatedProducts[0]?.variantAttributes;
+    const variantAttributes = product.category?.variantAttributes || [];
 
-    return { product, relatedProducts, wishlist };
+    return { product, relatedProducts: relatedProductsWithOffers, wishlist, variantAttributes };
 }
 
 
