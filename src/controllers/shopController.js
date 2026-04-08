@@ -92,7 +92,7 @@ export const proceedToCheckout = asyncHandler(async (req, res) => {
 export const placeOrder = asyncHandler(async (req, res) => {
     try {
         const userId = req.session.user.id || req.user.id;
-        const { addressId, paymentMethod, productId, variantId } = req.body;
+        const { addressId, paymentMethod, productId, variantId, couponCode } = req.body;
 
         const sendError = (message, path = "/user/checkout") => {
             if (paymentMethod === "razorpay") {
@@ -112,16 +112,26 @@ export const placeOrder = asyncHandler(async (req, res) => {
         if (paymentMethod !== "cash") {
             if (productId && variantId) {
                 const buyNowData = await shopService.checkoutBuyNowOrder(userId, req.session.buyNowItem);
-                total = Number(buyNowData.totals.total);
-            } else {
-                cartItems = await getCartData(userId);
-                if (!cartItems || cartItems.length === 0) {
-                    return sendError("Your cart is empty", "/user/cart");
+                
+                let discountedAmount = buyNowData.totals.subTotal - (buyNowData.totals.totalSavings || 0);
+                if (couponCode) {
+                    const coupon = await shopService.validateCoupon(couponCode, discountedAmount);
+                    if (coupon.isValid) discountedAmount -= coupon.discountAmount;
                 }
-                subTotal = cartItems.reduce((s, i) => s + (Number(i.variant?.price) || 0) * i.quantity, 0);
-                const shipping = subTotal < 1000 ? 40 : 0;
-                const tax = Math.round(subTotal * 0.18);
-                total = Number(subTotal) + Number(shipping) + Number(tax);
+                const shipping = discountedAmount < 1000 && discountedAmount > 0 ? 40 : 0;
+                const tax = Math.round(discountedAmount * 0.18);
+                total = Number(discountedAmount) + Number(shipping) + Number(tax);
+            } else {
+                const checkoutData = await shopService.checkoutPage(userId);
+                
+                let discountedAmount = checkoutData.totals.subTotal - (checkoutData.totals.totalSavings || 0);
+                if (couponCode) {
+                    const coupon = await shopService.validateCoupon(couponCode, discountedAmount);
+                    if (coupon.isValid) discountedAmount -= coupon.discountAmount;
+                }
+                const shipping = discountedAmount < 1000 && discountedAmount > 0 ? 40 : 0;
+                const tax = Math.round(discountedAmount * 0.18);
+                total = Number(discountedAmount) + Number(shipping) + Number(tax);
             }
 
             if (total <= 0 || isNaN(total)) {
@@ -137,12 +147,12 @@ export const placeOrder = asyncHandler(async (req, res) => {
         }
 
         if (productId && variantId) {
-            const order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem);
+            const order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem, couponCode);
             delete req.session.buyNowItem;
             return res.redirect(`/order/success/${order.orderNumber}`);
         } else {
             const cart = await getCartData(userId);
-            const order = await shopService.placeOrder(userId, addressId, paymentMethod, cart);
+            const order = await shopService.placeOrder(userId, addressId, paymentMethod, cart, couponCode);
             return res.redirect(`/order/success/${order.orderNumber}`);
         }
 
@@ -194,7 +204,8 @@ export const verifyPayment = asyncHandler(async (req, res) => {
             razorpay_signature, 
             addressId, 
             productId, 
-            variantId 
+            variantId,
+            couponCode
         } = req.body;
 
         const isVerified = paymentService.verifyRazorpaySignature(
@@ -210,11 +221,11 @@ export const verifyPayment = asyncHandler(async (req, res) => {
         let order;
         if (productId && variantId) {
             const buyNowItem = req.session.buyNowItem || { productId, variantId, quantity: 1 };
-            order = await shopService.placeBuyNowOrder(userId, addressId, "razorpay", buyNowItem);
+            order = await shopService.placeBuyNowOrder(userId, addressId, "razorpay", buyNowItem, couponCode);
             delete req.session.buyNowItem;
         } else {
             const cartItems = await getCartData(userId);
-            order = await shopService.placeOrder(userId, addressId, "razorpay", cartItems);
+            order = await shopService.placeOrder(userId, addressId, "razorpay", cartItems, couponCode);
         }
 
         order.paymentStatus = "paid";

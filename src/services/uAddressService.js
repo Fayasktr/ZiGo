@@ -15,6 +15,7 @@ import puppeteer from "puppeteer";
 import ejs from "ejs";
 import path from "path";
 import fs from "fs";
+import { getBestOffer } from "../utils/getBestOffer.js";
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -331,19 +332,43 @@ export const getCartPage = async (userId) => {
             });
         }
 
+        
+        
         return { ...item, quantity, isAvailable, quantityReduced };
     });
-
+    
     if (quantityUpdateOps.length > 0) {
         await cartModel.bulkWrite(quantityUpdateOps);
     }
 
-    const totalPrice = itemsWithStatus.reduce((acc, item) => {
+    const itemsWithOffers =await Promise.all(itemsWithStatus.map(async (item) => {
+        if (!item.isAvailable) return item;
+
+        const bestOffer = await getBestOffer({
+            productId: item.productId,
+            categoryId: item.category?._id,
+            price: item.matchedVariant.price
+        });
+
+        item.offer = bestOffer?.offer || null;
+        item.offerDiscount = bestOffer?.discount || 0;
+        item.finalPrice = item.matchedVariant.price - item.offerDiscount; // The new discounted price
+        
+        return item;
+    }));
+
+    const totalFinalPrice = itemsWithOffers.reduce((acc, item) => {
         if (!item.isAvailable) return acc;
-        return acc + ((item.matchedVariant?.price || 0) * item.quantity);
+        return acc + (item.finalPrice * item.quantity);
     }, 0);
 
-    return { items: itemsWithStatus, totalPrice };
+    const totalSavings = itemsWithOffers.reduce((acc, item) => {
+        if (!item.isAvailable) return acc;
+        return acc + (item.offerDiscount * item.quantity);
+    }, 0);
+    
+    
+    return { items: itemsWithOffers, totalPrice: totalFinalPrice, totalSavings };
 };
 
 export const deleteCart = async (userId, productId, variantId) => {

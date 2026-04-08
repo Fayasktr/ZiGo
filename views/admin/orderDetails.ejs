@@ -394,9 +394,18 @@
                             </div>
                             <div class="text-right flex flex-col justify-between items-end min-w-[140px]">
                                 <div class="w-full">
-                                    <% const activeQtyForTotalAdmin = item.quantity - (item.cancelledQuantity || 0) - (item.returnedQuantity || 0); %>
-                                    <p class="font-black text-lg">₹<%= item.price.toLocaleString() %></p>
-                                    <p class="text-[10px] opacity-40 font-bold mt-1">Active Total: ₹<%= (item.price * activeQtyForTotalAdmin).toLocaleString() %></p>
+                                    <% 
+                                       const activeQtyForTotalAdmin = item.quantity - (item.cancelledQuantity || 0) - (item.returnedQuantity || 0); 
+                                       const itemPriceToDisplayAdmin = item.finalPrice || item.price;
+                                       const hasItemOfferAdmin = (item.finalPrice && item.finalPrice < item.price);
+                                    %>
+                                    <div class="flex flex-col items-end">
+                                        <p class="font-black text-lg">₹<%= itemPriceToDisplayAdmin.toLocaleString() %></p>
+                                        <% if (hasItemOfferAdmin) { %>
+                                            <p class="text-[10px] line-through opacity-40">MRP: ₹<%= item.price.toLocaleString() %></p>
+                                        <% } %>
+                                    </div>
+                                    <p class="text-[10px] opacity-40 font-bold mt-1">Active Total: ₹<%= (itemPriceToDisplayAdmin * activeQtyForTotalAdmin).toLocaleString() %></p>
                                     <div class="mt-2 text-right">
                                         <p class="text-[9px] opacity-40 font-bold uppercase mb-1">Quantity Breakdown</p>
                                         <div class="flex flex-col gap-1 text-[10px]">
@@ -529,7 +538,7 @@
                     <h2 class="section-title"><i class="fas fa-receipt"></i> Order Summary</h2>
                     <div class="summary-row">
                         <span class="opacity-40">Subtotal</span>
-                        <span class="font-bold">₹<%= (order.pricing.total + (order.pricing.discount || 0)).toLocaleString() %></span>
+                        <span class="font-bold">₹<%= (order.pricing.total + (order.pricing.discound || 0)).toLocaleString() %></span>
                     </div>
                     <div class="summary-row">
                         <span class="opacity-40">Tax (GST 18%)</span>
@@ -539,10 +548,10 @@
                         <span class="opacity-40">Shipping</span>
                         <span class="font-bold text-green-500">FREE</span>
                     </div>
-                    <% if (order.pricing.discount > 0) { %>
+                    <% if (order.pricing.discound > 0) { %>
                         <div class="summary-row text-red-500">
                             <span class="opacity-40">Discount</span>
-                            <span class="font-bold">- ₹<%= order.pricing.discount.toLocaleString() %></span>
+                            <span class="font-bold">- ₹<%= order.pricing.discound.toLocaleString() %></span>
                         </div>
                     <% } %>
                     <hr class="border-white/5 my-4">

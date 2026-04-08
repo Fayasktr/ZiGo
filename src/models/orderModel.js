@@ -16,6 +16,13 @@ const itemsSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
+    finalPrice: {
+        type: Number
+    },
+    offerDiscount: {
+        type: Number,
+        default: 0
+    },
     quantity: {
         type: Number,
         default: 1
@@ -81,6 +88,7 @@ const orderSchema = mongoose.Schema({
         tax: { type: Number, default: 0 },
         shipping: { type: Number, default: 0 },
         discound: { type: Number, default: 0 },
+        couponDiscount: { type: Number, default: 0 },
         total: { type: Number, required: true }
 
     },
