@@ -1101,7 +1101,7 @@
                         const data = await response.json();
                         if (!data.success) throw new Error(data.message || 'Payment setup failed');
 
-                        handleRazorpayModal(data, addressId);
+                        handleRazorpayModal(data, addressId, document.getElementById('buyNowProductId').value, document.getElementById('buyNowVariantId').value);
                     } catch (error) {
                         resetBtn();
                         Swal.fire({ icon: 'error', title: 'Payment Error', text: error.message });
@@ -1137,7 +1137,8 @@
                                     razorpay_signature: response.razorpay_signature,
                                     addressId,
                                     productId,
-                                    variantId
+                                    variantId,
+                                    orderId: orderData.dbOrderId
                                 })
                             });
 
@@ -1148,12 +1149,12 @@
                                 throw new Error(verifyResult.message || "Verification failed");
                             }
                         } catch (err) {
-                            window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                            window.location.href = `/user/paymentFailed?orderId=${orderData.dbOrderId}`;
                         }
                     },
                     modal: {
                         ondismiss: function() {
-                            window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                            window.location.href = `/user/paymentFailed?orderId=${orderData.dbOrderId}`;
                         }
                     },
                     prefill: {
@@ -1166,7 +1167,7 @@
                 const rzp = new Razorpay(options);
                 
                 rzp.on('payment.failed', function (response) {
-                    window.location.href = `/user/paymentFailed?orderId=${orderData.orderId}`;
+                    window.location.href = `/user/paymentFailed?orderId=${orderData.dbOrderId}`;
                 });
 
                 rzp.open();

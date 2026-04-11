@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #EF4444;
@@ -132,13 +134,20 @@
         </div>
 
         <h1 class="text-3xl font-black text-slate-900 mb-2">Transaction Failed</h1>
-        <p class="text-slate-500 mb-10 px-4">We couldn't process your payment. But don't worry, your order was saved and is currently <b>pending</b>. You can try paying for it again in your order history.</p>
+        <p class="text-slate-500 mb-10 px-4">We couldn't process your payment. But don't worry, your order was saved and is currently <b>pending</b>. You can try paying for it again now or in your order history.</p>
 
         <div class="space-y-4">
-            <a href="/user/checkout" class="btn-retry w-full">
-                <i class="fas fa-redo"></i> Try Checkout Again
-            </a>
-            <a href="/order/history" class="btn-outline w-full">
+            <% if (order) { %>
+                <button onclick="retryPayment('<%= order._id %>', event)" class="btn-retry w-full">
+                    <i class="fas fa-redo"></i> Retry Payment Now
+                </button>
+            <% } else { %>
+                <a href="/user/checkout" class="btn-retry w-full">
+                    <i class="fas fa-redo"></i> Try Checkout Again
+                </a>
+            <% } %>
+            
+            <a href="/user/orders" class="btn-outline w-full">
                 <i class="fas fa-list-ul"></i> Go to Order History
             </a>
         </div>
@@ -149,6 +158,8 @@
             </p>
         </div>
     </div>
+
+    <script src="/public/frentend.js/retryPayment.js"></script>
 </body>
 
 </html>

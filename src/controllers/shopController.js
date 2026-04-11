@@ -3,6 +3,7 @@ import * as shopService from "../services/shopService.js";
 import cartModel from "../models/cartModel.js";
 import mongoose from "mongoose";
 import walletModel from "../models/walletModel.js";
+import orderModel from "../models/orderModel.js";
 import * as paymentService from "../services/paymentService.js"
 
 export const loadShop = asyncHandler(async (req, res) => {
@@ -129,21 +130,41 @@ export const placeOrder = asyncHandler(async (req, res) => {
             }
 
             if (paymentMethod === "razorpay") {
+                let order;
+                if (productId && variantId) {
+                    order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem);
+                    delete req.session.buyNowItem;
+                } else {
+                    const cart = await getCartData(userId);
+                    order = await shopService.placeOrder(userId, addressId, paymentMethod, cart);
+                }
+
                 const data = await paymentService.createRazorpayOrder(total);
-                return res.status(200).json({ success: true, ...data });
+                
+                order.razorpayOrderId = data.orderId;
+                await order.save();
+
+                return res.status(200).json({ 
+                    success: true, 
+                    ...data, 
+                    dbOrderId: order._id,
+                    orderNumber: order.orderNumber 
+                });
             } else if (paymentMethod === "wallet") {
                 await paymentService.checkWalletBalance(userId, total);
             }
         }
 
-        if (productId && variantId) {
-            const order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem);
-            delete req.session.buyNowItem;
-            return res.redirect(`/order/success/${order.orderNumber}`);
-        } else {
-            const cart = await getCartData(userId);
-            const order = await shopService.placeOrder(userId, addressId, paymentMethod, cart);
-            return res.redirect(`/order/success/${order.orderNumber}`);
+        if (paymentMethod !== "razorpay") {
+            if (productId && variantId) {
+                const order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem);
+                delete req.session.buyNowItem;
+                return res.redirect(`/order/success/${order.orderNumber}`);
+            } else {
+                const cart = await getCartData(userId);
+                const order = await shopService.placeOrder(userId, addressId, paymentMethod, cart);
+                return res.redirect(`/order/success/${order.orderNumber}`);
+            }
         }
 
     } catch (error) {
@@ -194,7 +215,8 @@ export const verifyPayment = asyncHandler(async (req, res) => {
             razorpay_signature, 
             addressId, 
             productId, 
-            variantId 
+            variantId,
+            orderId
         } = req.body;
 
         const isVerified = paymentService.verifyRazorpaySignature(
@@ -208,16 +230,26 @@ export const verifyPayment = asyncHandler(async (req, res) => {
         }
 
         let order;
-        if (productId && variantId) {
-            const buyNowItem = req.session.buyNowItem || { productId, variantId, quantity: 1 };
-            order = await shopService.placeBuyNowOrder(userId, addressId, "razorpay", buyNowItem);
-            delete req.session.buyNowItem;
+        if (orderId) {
+            order = await orderModel.findById(orderId);
         } else {
-            const cartItems = await getCartData(userId);
-            order = await shopService.placeOrder(userId, addressId, "razorpay", cartItems);
+            order = await orderModel.findOne({ razorpayOrderId: razorpay_order_id });
+        }
+
+        if (!order) {
+
+            if (productId && variantId) {
+                const buyNowItem = req.session.buyNowItem || { productId, variantId, quantity: 1 };
+                order = await shopService.placeBuyNowOrder(userId, addressId, "razorpay", buyNowItem);
+                delete req.session.buyNowItem;
+            } else {
+                const cartItems = await getCartData(userId);
+                order = await shopService.placeOrder(userId, addressId, "razorpay", cartItems);
+            }
         }
 
         order.paymentStatus = "paid";
+        order.orderStatus = "pending";
         order.paymentId = razorpay_payment_id;
         await order.save();
 
@@ -248,7 +280,15 @@ export const successPage = asyncHandler(async (req, res) => {
 })
 
 export const paymentFailed = asyncHandler(async (req, res) => {
-    res.render("user/userAfterLogin/paymentFail", { user: req.session?.user || req?.user });
+    const { orderId } = req.query;
+    let order = null;
+    if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
+        order = await orderModel.findById(orderId);
+    }
+    res.render("user/userAfterLogin/paymentFail", { 
+        user: req.session?.user || req?.user,
+        order
+    });
 });
 
 export const buyNow = asyncHandler(async (req, res) => {
@@ -265,4 +305,34 @@ export const buyNow = asyncHandler(async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 })
+
+export const retryPayment = asyncHandler(async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        const order = await orderModel.findById(orderId);
+        
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+        
+        if (order.paymentStatus === 'paid') {
+            return res.status(400).json({ success: false, message: "Order is already paid" });
+        }
+
+        const data = await paymentService.createRazorpayOrder(order.pricing.total);
+        
+        order.razorpayOrderId = data.orderId;
+        await order.save();
+
+        res.status(200).json({ 
+            success: true, 
+            ...data, 
+            dbOrderId: order._id,
+            orderNumber: order.orderNumber
+        });
+    } catch (error) {
+        console.error("Retry Payment Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
