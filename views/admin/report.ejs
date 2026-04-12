@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -241,6 +242,17 @@
         canvas {
             filter: drop-shadow(0 0 10px rgba(255, 90, 31, 0.1));
         }
+
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 
@@ -273,7 +285,7 @@
             <a href="/admin/offers" class="nav-item">
                 <i class="fas fa-percent"></i> Offers
             </a>
-            <a href="/admin/salesReport" class="nav-item active">
+            <a href="/admin/reports" class="nav-item active">
                 <i class="fas fa-file-invoice-dollar"></i> Sales Report
             </a>
         </nav>
@@ -289,21 +301,24 @@
                 <h1 class="text-3xl font-extrabold">Sales <span class="text-orange-500">Overview</span></h1>
             </div>
             <div class="flex gap-4">
-                <button class="export-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-                <button class="export-btn"><i class="fas fa-file-excel"></i> Export excel</button>
+                <button onclick="exportReport('pdf')" class="export-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                <button onclick="exportReport('excel')" class="export-btn"><i class="fas fa-file-excel"></i> Export excel</button>
             </div>
         </header>
 
         <!-- Filters -->
-        <div class="flex gap-3 mb-10">
-            <button class="filter-btn active">Today</button>
-            <button class="filter-btn">Last 7 Days</button>
-            <button class="filter-btn">Last 30 Days</button>
-            <button class="filter-btn"><i class="far fa-calendar-alt mr-2"></i> Custom Range</button>
-            <div class="xl:ml-auto w-full xl:max-w-xs relative hidden xl:block">
-                <input type="text" placeholder="Search report metrics..."
-                    class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-2.5 outline-none focus:border-orange-500/50 transition-all text-sm">
-                <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 opacity-30"></i>
+        <div class="flex flex-wrap gap-3 mb-10 items-center">
+            <button class="filter-btn active" data-period="today">Today</button>
+            <button class="filter-btn" data-period="week">Last 7 Days</button>
+            <button class="filter-btn" data-period="month">Last 30 Days</button>
+            <button class="filter-btn" data-period="year">Yearly</button>
+            <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1">
+                <input type="date" id="startDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
+                <span class="text-white/20">to</span>
+                <input type="date" id="endDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
+                <button onclick="applyCustomRange()" class="ml-2 text-orange-500 hover:text-white transition-colors">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
 
@@ -311,9 +326,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <div class="glass-card">
                 <p class="metric-title">Total Revenue</p>
-                <p class="metric-value">₹8,45,230</p>
+                <p class="metric-value" id="totalRevenue">₹0</p>
                 <span class="metric-trend trend-up">
-                    <i class="fas fa-arrow-up"></i> 12.5%
+                    <i class="fas fa-arrow-up"></i> Collected
                 </span>
                 <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-orange-500 w-[75%] rounded-full shadow-[0_0_10px_rgba(255,90,31,0.5)]"></div>
@@ -321,9 +336,9 @@
             </div>
             <div class="glass-card">
                 <p class="metric-title">Total Orders</p>
-                <p class="metric-value">452</p>
+                <p class="metric-value" id="totalOrders">0</p>
                 <span class="metric-trend trend-down">
-                    <i class="fas fa-arrow-down"></i> 2.4%
+                    <i class="fas fa-shopping-bag"></i> Count
                 </span>
                 <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-blue-500 w-[60%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
@@ -331,19 +346,19 @@
             </div>
             <div class="glass-card">
                 <p class="metric-title">Avg. Order Value</p>
-                <p class="metric-value">₹1,870</p>
+                <p class="metric-value" id="avgOrderValue">₹0</p>
                 <span class="metric-trend trend-up">
-                    <i class="fas fa-arrow-up"></i> 5.1%
+                    <i class="fas fa-chart-bar"></i> Efficiency
                 </span>
                 <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-green-500 w-[85%] rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                 </div>
             </div>
             <div class="glass-card">
-                <p class="metric-title">Conversion Rate</p>
-                <p class="metric-value">3.2%</p>
+                <p class="metric-title">Items Sold</p>
+                <p class="metric-value" id="totalItemsSold">0</p>
                 <span class="metric-trend trend-up">
-                    <i class="fas fa-arrow-up"></i> 0.8%
+                    <i class="fas fa-box-open"></i> Volume
                 </span>
                 <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-purple-500 w-[45%] rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
@@ -359,14 +374,6 @@
                         <h2 class="text-xl font-black">Sales over Time</h2>
                         <p class="text-xs opacity-40 mt-1">Revenue performance for current period</p>
                     </div>
-                    <div class="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
-                        <span class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-orange-500"></div> Current
-                        </span>
-                        <span class="flex items-center gap-2 opacity-30">
-                            <div class="w-3 h-3 rounded-full bg-white/20"></div> Previous
-                        </span>
-                    </div>
                 </div>
                 <div class="h-[300px]">
                     <canvas id="salesChart"></canvas>
@@ -376,33 +383,9 @@
                 <h2 class="text-xl font-black mb-8">Sales by Category</h2>
                 <div class="h-[250px] relative">
                     <canvas id="categoryChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <p class="text-3xl font-black">64%</p>
-                        <p class="text-[10px] uppercase font-bold tracking-widest opacity-40">Growth</p>
-                    </div>
                 </div>
-                <div class="mt-8 space-y-3">
-                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
-                            <span class="text-xs font-bold">Electronics</span>
-                        </div>
-                        <span class="text-xs font-black">₹4.2L</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span class="text-xs font-bold">Apparel</span>
-                        </div>
-                        <span class="text-xs font-black">₹1.8L</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                            <span class="text-xs font-bold">Home Decor</span>
-                        </div>
-                        <span class="text-xs font-black">₹1.2L</span>
-                    </div>
+                <div class="mt-8 space-y-3" id="categoryBreakdown">
+                    <!-- Dynamic Categories -->
                 </div>
             </div>
         </div>
@@ -415,123 +398,207 @@
                     class="text-orange-500 text-xs font-bold uppercase tracking-widest hover:underline">View All
                     Products</a>
             </div>
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>SKU</th>
-                        <th>Status</th>
-                        <th>Units Sold</th>
-                        <th>Revenue</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-4">
-                                <img src="/public/landing/neo2.png" alt="Product" class="product-thumb">
-                                <span class="font-bold">ZiGo Neo 2 Pro</span>
-                            </div>
-                        </td>
-                        <td class="opacity-40 font-mono text-xs">PHN-15-PR</td>
-                        <td><span
-                                class="px-3 py-1 bg-green-500/10 text-green-500 text-[10px] font-black rounded-lg uppercase">In
-                                Stock</span></td>
-                        <td class="font-black">842</td>
-                        <td class="text-orange-500 font-black">₹42,10,000</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-4">
-                                <img src="/public/landing/watch_pro.png" alt="Product" class="product-thumb">
-                                <span class="font-bold">Wireless Buds G2</span>
-                            </div>
-                        </td>
-                        <td class="opacity-40 font-mono text-xs">WRL-G2-B</td>
-                        <td><span
-                                class="px-3 py-1 bg-green-500/10 text-green-500 text-[10px] font-black rounded-lg uppercase">In
-                                Stock</span></td>
-                        <td class="font-black">612</td>
-                        <td class="text-orange-500 font-black">₹15,30,000</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                            <th>Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topSellingTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
     <script>
-        // Sales Chart
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Current Period',
-                    data: [12, 19, 15, 25, 22, 38, 30],
-                    borderColor: '#FF5A1F',
-                    borderWidth: 4,
-                    pointBackgroundColor: '#FF5A1F',
-                    pointBorderColor: 'rgba(255,255,255,0.5)',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(255, 90, 31, 0.05)'
-                }, {
-                    label: 'Previous Period',
-                    data: [18, 15, 12, 15, 18, 20, 22],
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    tension: 0.4,
-                    fill: false,
-                    borderDash: [5, 5]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-                        ticks: { color: 'rgba(255,255,255,0.3)', font: { weight: '700', size: 10 } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: 'rgba(255,255,255,0.3)', font: { weight: '700', size: 10 } }
-                    }
-                }
-            }
+        let salesChart, categoryChart;
+        let currentPeriod = 'today';
+        let currentStartDate = null;
+        let currentEndDate = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            fetchReportData('today');
+
+            // Filter Click Handlers
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const period = btn.getAttribute('data-period');
+                    if(period) fetchReportData(period);
+                });
+            });
         });
 
-        // Category Chart
-        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Electronics', 'Apparel', 'Home Decor'],
-                datasets: [{
-                    data: [42, 18, 12],
-                    backgroundColor: ['#FF5A1F', '#3B82F6', '#A855F7'],
-                    borderWidth: 0,
-                    weight: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '85%',
-                plugins: {
-                    legend: { display: false }
+        function initCharts() {
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [],
+                        borderColor: '#FF5A1F',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#FF5A1F',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(255, 90, 31, 0.05)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)' } },
+                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)' } }
+                    }
                 }
+            });
+
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#FF5A1F', '#3B82F6', '#A855F7', '#2ED573', '#FF4757'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '85%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        async function fetchReportData(period, start = null, end = null) {
+            try {
+                // Update local state
+                currentPeriod = period;
+                currentStartDate = start;
+                currentEndDate = end;
+
+                const query = new URLSearchParams({ period });
+                if (start) query.append('startDate', start);
+                if (end) query.append('endDate', end);
+
+                const response = await fetch(`/admin/api/reportData?${query.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    updateDashboard(result.data);
+                } else {
+                    console.error('Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
             }
-        });
+        }
+
+        function applyCustomRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (!start || !end) {
+                Swal.fire('Oops!', 'Please select both start and end dates', 'warning');
+                return;
+            }
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            fetchReportData('custom', start, end);
+        }
+
+        function updateDashboard(data) {
+            const { metrics, salesOverTime, topProducts, categoryWiseSales } = data;
+
+            // 1. Update Metrics
+            document.getElementById('totalRevenue').innerText = `₹${Math.round(metrics.totalRevenue).toLocaleString()}`;
+            document.getElementById('totalOrders').innerText = metrics.totalOrders;
+            document.getElementById('avgOrderValue').innerText = `₹${Math.round(metrics.avgOrderValue).toLocaleString()}`;
+            document.getElementById('totalItemsSold').innerText = metrics.totalItemsSold;
+
+            // 2. Update Sales Chart
+            salesChart.data.labels = salesOverTime.map(d => d.date);
+            salesChart.data.datasets[0].data = salesOverTime.map(d => d.revenue);
+            salesChart.update();
+
+            // 3. Update Category Chart & Breakdown
+            categoryChart.data.labels = categoryWiseSales.map(c => c.category || 'Uncategorized');
+            categoryChart.data.datasets[0].data = categoryWiseSales.map(c => c.revenue);
+            categoryChart.update();
+
+            const breakdownHtml = categoryWiseSales.map((c, i) => `
+                <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full" style="background: ${categoryChart.data.datasets[0].backgroundColor[i % 5]}"></div>
+                        <span class="text-xs font-bold">${c.category || 'Uncategorized'}</span>
+                    </div>
+                    <span class="text-xs font-black">₹${Math.round(c.revenue).toLocaleString()}</span>
+                </div>
+            `).join('');
+            document.getElementById('categoryBreakdown').innerHTML = breakdownHtml;
+
+            // 4. Update Top Products Table
+            const tableBody = document.getElementById('topSellingTableBody');
+            tableBody.innerHTML = topProducts.map(p => `
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-4">
+                            <img src="${p.image || '/public/landing/watch_pro.png'}" alt="Product" class="product-thumb">
+                            <span class="font-bold">${p.productName}</span>
+                        </div>
+                    </td>
+                    <td class="opacity-40 font-bold text-xs uppercase tracking-widest">${p.category || 'Uncategorized'}</td>
+                    <td class="font-black">${p.unitsSold}</td>
+                    <td class="text-orange-500 font-black">₹${Math.round(p.revenue).toLocaleString()}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <span class="font-black text-sm">${p.stock}</span>
+                            <span class="px-2 py-0.5 ${p.stock > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} text-[8px] font-black rounded uppercase">
+                                ${p.stock > 0 ? 'In Stock' : 'Out'}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportReport(format) {
+            const query = new URLSearchParams({ 
+                period: currentPeriod 
+            });
+            if (currentStartDate) query.append('startDate', currentStartDate);
+            if (currentEndDate) query.append('endDate', currentEndDate);
+
+            const exportUrl = `/export/${format}?${query.toString()}`;
+            
+            Swal.fire({
+                title: `Export as ${format.toUpperCase()}?`,
+                text: "Generating your report based on the current filters...",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#FF5A1F',
+                confirmButtonText: 'Download',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    window.location.href = exportUrl;
+                    return true;
+                }
+            });
+        }
     </script>
 </body>
 

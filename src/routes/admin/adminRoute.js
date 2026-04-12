@@ -2,6 +2,7 @@ import express from "express";
 import * as adminControl from "../../controllers/admin/adminController.js"
 import adminAuth from "../../middlewares/adminAuth.js"
 import * as adminDashboard from "../../controllers/admin/dashboradAndSalseContl.js";
+
 const router = express.Router();
 
 router.route("/admin")
@@ -16,6 +17,9 @@ router.get("/admin/dashboard", adminDashboard.adminDashboard);
 router.get("/admin/api/dashboardData",adminDashboard.getDashboardData);
 router.get("/admin/reports",adminDashboard.salsePage);
 router.get("/admin/api/reportData",adminDashboard.reportData);
+
+router.get("/export/pdf", adminDashboard.exportSalesPDF);
+router.get("/export/excel", adminDashboard.exportSalesExcel);
 
 router.get("/admin/logout", adminControl.adminLogout);
 
