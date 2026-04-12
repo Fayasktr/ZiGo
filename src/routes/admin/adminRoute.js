@@ -1,6 +1,7 @@
 import express from "express";
 import * as adminControl from "../../controllers/admin/adminController.js"
 import adminAuth from "../../middlewares/adminAuth.js"
+import * as adminDashboard from "../../controllers/admin/dashboradAndSalseContl.js";
 const router = express.Router();
 
 router.route("/admin")
@@ -11,7 +12,11 @@ router.use(adminAuth.preventCache);
 
 router.use("/admin", adminAuth.protectAdmin);
 
-router.get("/admin/dashbord", adminControl.adminDashbord);
+router.get("/admin/dashboard", adminDashboard.adminDashboard);
+router.get("/admin/api/dashboardData",adminDashboard.getDashboardData);
+router.get("/admin/reports",adminDashboard.salsePage);
+router.get("/admin/api/reportData",adminDashboard.reportData);
+
 router.get("/admin/logout", adminControl.adminLogout);
 
 router.get("/admin/users", adminControl.userManagementPage);

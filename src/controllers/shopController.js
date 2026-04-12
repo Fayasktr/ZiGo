@@ -146,15 +146,22 @@ export const placeOrder = asyncHandler(async (req, res) => {
             }
         }
 
+        let order;
         if (productId && variantId) {
-            const order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem, couponCode);
+            order = await shopService.placeBuyNowOrder(userId, addressId, paymentMethod, req.session.buyNowItem, couponCode);
             delete req.session.buyNowItem;
-            return res.redirect(`/order/success/${order.orderNumber}`);
         } else {
-            const cart = await getCartData(userId);
-            const order = await shopService.placeOrder(userId, addressId, paymentMethod, cart, couponCode);
-            return res.redirect(`/order/success/${order.orderNumber}`);
+            const cartItems = await getCartData(userId);
+            order = await shopService.placeOrder(userId, addressId, paymentMethod, cartItems, couponCode);
         }
+
+        if (paymentMethod === "wallet") {
+            await paymentService.deductWalletBalance(userId, total, order._id);
+            order.paymentStatus = "paid";
+            await order.save();
+        }
+
+        return res.redirect(`/order/success/${order.orderNumber}`);
 
     } catch (error) {
         console.error("Place Order Error:", error);

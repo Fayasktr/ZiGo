@@ -5,9 +5,6 @@ export const adminLoginPage = asynchandler(async (req, res) => {
     res.render("admin/adminLogin");
 })
 
-export const adminDashbord = asynchandler(async (req, res) => {
-    res.render("admin/adminDashbord")
-})
 export const adminAccess = asynchandler(async (req, res) => {
     try {
         const { adminMail, password } = req.body;
@@ -16,7 +13,7 @@ export const adminAccess = asynchandler(async (req, res) => {
             adminMail: adminMail,
             adminName: checkAdminAuth.adminMail
         }
-        res.redirect("/admin/dashbord")
+        res.redirect("/admin/dashboard")
     } catch (error) {
         req.flash("error", error);
         res.redirect("/admin");
@@ -53,7 +50,7 @@ export const userManagementPage = asynchandler(async (req, res) => {
         });
     } catch (error) {
         req.flash("error", error.message);
-        res.redirect("/admin/dashbord");
+        res.redirect("/admin/dashboard");
     }
 })
 
@@ -84,7 +81,7 @@ export const adminOrderList=asynchandler(async(req,res)=>{
         res.render("admin/orders",{orders,totalCount,currentPage:page,totalPages,limit,search,status,returnRequested})
     } catch (error) {
         req.flash("error",error.message);
-        res.redirect("/admin/dashbord");
+        res.redirect("/admin/dashboard");
     }
 })
 
@@ -143,7 +140,7 @@ export const couponPage=asynchandler(async(req,res)=>{
     } catch (error) {
         console.log(error)
         req.flash("error",error.message);
-        res.redirect("/admin/dashbord")
+        res.redirect("/admin/dashboard")
     }
 })
 
@@ -216,7 +213,7 @@ export const offersPage = asynchandler(async (req, res) => {
     } catch (error) {
         console.error("Offers page error:", error);
         req.flash("error", error.message);
-        res.redirect("/admin/dashbord");
+        res.redirect("/admin/dashboard");
     }
 });
 

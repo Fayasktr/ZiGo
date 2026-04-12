@@ -28,6 +28,8 @@ router.get("/auth/google/callback", passport.authenticate("google", {
 
 
 router.get("/", userAuth.isLogin, userCntrl.landingBeforeLogin)
+router.get("/about", userAuth.isLogin, userCntrl.loadAboutPage);
+router.get("/contact", userAuth.isLogin, userCntrl.loadContactPage);
 router.get("/login", userAuth.preventCache, userAuth.isLogin, userCntrl.loginPage);
 router.post("/login", userAuth.isLogin, userCntrl.login);
 router.get("/logout", userAuth.isLogout, userCntrl.logOut)

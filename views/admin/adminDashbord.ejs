@@ -154,7 +154,7 @@
         /* --- Stats Grid --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3rem;
         }
@@ -340,23 +340,28 @@
         <section class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-wallet"></i></div>
-                <p class="stat-value">₹12.4L</p>
+                <p class="stat-value" id="totalRevenue">₹0</p>
                 <p class="stat-label">Total Revenue</p>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
-                <p class="stat-value">1,240</p>
+                <p class="stat-value" id="totalOrders">0</p>
                 <p class="stat-label">Total Orders</p>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <p class="stat-value">8,432</p>
+                <p class="stat-value" id="activeUsers">0</p>
                 <p class="stat-label">Active Users</p>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
-                <p class="stat-value">4.2%</p>
-                <p class="stat-label">Conversion</p>
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <p class="stat-value" id="avgOrderValue">₹0</p>
+                <p class="stat-label">Avg. Order Value</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <p class="stat-value" id="totalProducts">0</p>
+                <p class="stat-label">Total Products</p>
             </div>
         </section>
 
@@ -365,13 +370,34 @@
             <div class="chart-container">
                 <h3 class="font-bold mb-6 flex justify-between items-center">
                     Revenue Trends
-                    <span class="text-xs opacity-40">Last 7 Days</span>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-xl border border-white/5">
+                            <input type="date" id="startDate" class="bg-transparent text-[10px] outline-none text-white/60 focus:text-orange-500 transition-all">
+                            <span class="text-[10px] opacity-20">to</span>
+                            <input type="date" id="endDate" class="bg-transparent text-[10px] outline-none text-white/60 focus:text-orange-500 transition-all">
+                            <button onclick="applyCustomFilter()" class="ml-2 text-[10px] font-bold text-orange-500 hover:text-white transition-all"><i class="fas fa-check"></i></button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="updateDashboard('1d', event)" class="filter-btn text-[10px] px-3 py-1 rounded-lg border border-white/5 hover:bg-white/5 transition-all">1D</button>
+                            <button onclick="updateDashboard('7d', event)" class="filter-btn text-[10px] px-3 py-1 rounded-lg border border-white/5 hover:bg-white/5 transition-all active-filter">7D</button>
+                            <button onclick="updateDashboard('30d', event)" class="filter-btn text-[10px] px-3 py-1 rounded-lg border border-white/5 hover:bg-white/5 transition-all">30D</button>
+                            <button onclick="updateDashboard('1y', event)" class="filter-btn text-[10px] px-3 py-1 rounded-lg border border-white/5 hover:bg-white/5 transition-all">1Y</button>
+                        </div>
+                    </div>
                 </h3>
                 <canvas id="revenueChart" height="150"></canvas>
             </div>
             <div class="chart-container">
-                <h3 class="font-bold mb-6">Top Categories</h3>
+                <h3 class="font-bold mb-6">Top Selling Categories</h3>
                 <canvas id="categoryChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Top Products Section -->
+        <section class="mb-12">
+            <h3 class="font-bold mb-6">Top Selling <span class="text-orange-500">Products</span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="topProductsContainer">
+                <!-- Dynamic Content -->
             </div>
         </section>
 
@@ -391,78 +417,196 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="font-bold">#ZIGO-9921</td>
-                        <td>
-                            <p class="font-bold">Fayas A.</p>
-                            <p class="text-[10px] opacity-40">personal@fayas.com</p>
-                        </td>
-                        <td>Neo 1 Flagship</td>
-                        <td class="font-black">₹82,339</td>
-                        <td><span class="status-pill status-delivered">Delivered</span></td>
-                        <td><button class="text-xs font-bold text-orange-500">Manage</button></td>
-                    </tr>
-                    <tr>
-                        <td class="font-bold">#ZIGO-9922</td>
-                        <td>
-                            <p class="font-bold">John Doe</p>
-                            <p class="text-[10px] opacity-40">john@example.com</p>
-                        </td>
-                        <td>Watch S Edition</td>
-                        <td class="font-black">₹22,805</td>
-                        <td><span class="status-pill status-pending">Pending</span></td>
-                        <td><button class="text-xs font-bold text-orange-500">Manage</button></td>
-                    </tr>
+                <tbody id="recentOrdersTable">
+                    <!-- Dynamic Content -->
                 </tbody>
             </table>
         </section>
     </main>
 
     <script>
-        // Revenue Chart
-        const ctxRev = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctxRev, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000, 45000],
-                    borderColor: '#FF5A1F',
-                    backgroundColor: 'rgba(255, 90, 31, 0.1)',
-                    borderWidth: 4,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)' } }
-                }
-            }
-        });
+        let revenueChartInstance = null;
+        let categoryChartInstance = null;
 
-        // Category Chart
-        const ctxCat = document.getElementById('categoryChart').getContext('2d');
-        new Chart(ctxCat, {
-            type: 'doughnut',
-            data: {
-                labels: ['Phones', 'Watches', 'Audio'],
-                datasets: [{
-                    data: [55, 25, 20],
-                    backgroundColor: ['#FF5A1F', '#1E293B', '#334155'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', boxWidth: 12, padding: 20 } } }
+        function fetchDashboardData(filter = '7d', startDate = '', endDate = '') {
+            let url = `/admin/api/dashboardData?filter=${filter}`;
+            if (startDate) url += `&startDate=${startDate}`;
+            if (endDate) url += `&endDate=${endDate}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateMetrics(data.summary || {});
+                        updateRevenueChart(data.revenueTrend || { labels: [], data: [] });
+                        updateCategoryChart(data.categoryDistribution || { labels: [], data: [] });
+                        updateRecentOrders(data.recentOrders || []);
+                        updateTopProducts(data.topProducts || []);
+                    }
+                })
+                .catch(error => console.error('Dashboard Fetch Error:', error));
+        }
+
+        function updateMetrics(summary = {}) {
+            document.getElementById('totalRevenue').innerText = `₹${(summary.totalRevenue || 0).toLocaleString()}`;
+            document.getElementById('totalOrders').innerText = (summary.totalOrders || 0).toLocaleString();
+            document.getElementById('activeUsers').innerText = (summary.activeUsers || 0).toLocaleString();
+            document.getElementById('avgOrderValue').innerText = `₹${(summary.avgOrderValue || 0).toLocaleString()}`;
+            document.getElementById('totalProducts').innerText = (summary.totalProducts || 0).toLocaleString();
+        }
+
+        function updateRevenueChart(trend) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            if (revenueChartInstance) {
+                revenueChartInstance.destroy();
             }
+
+            revenueChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trend.labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: trend.data,
+                        borderColor: '#FF5A1F',
+                        backgroundColor: 'rgba(255, 90, 31, 0.1)',
+                        borderWidth: 4,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#FF5A1F',
+                        pointBorderColor: '#0F0F0F',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } } },
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { 
+                                color: 'rgba(255,255,255,0.4)', 
+                                font: { size: 10 },
+                                callback: (value) => '₹' + value.toLocaleString()
+                            } 
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCategoryChart(distribution) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
+            }
+
+            categoryChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: distribution.labels,
+                    datasets: [{
+                        data: distribution.data,
+                        backgroundColor: ['#FF5A1F', '#3B82F6', '#10B981', '#F59E0B', '#6366F1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                color: 'rgba(255,255,255,0.6)', 
+                                boxWidth: 12, 
+                                padding: 20,
+                                font: { size: 11 }
+                            } 
+                        } 
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateRecentOrders(orders) {
+            const tbody = document.getElementById('recentOrdersTable');
+            tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td class="font-bold">#${order.orderId}</td>
+                    <td>
+                        <p class="font-bold">${order.shippingAddress?.fullName || order.customerName}</p>
+                        <p class="text-[10px] opacity-40">${order.customerEmail}</p>
+                        <p class="text-[10px] opacity-40">${order.shippingAddress?.phone || ''}</p>
+                    </td>
+                    <td>${order.productName}</td>
+                    <td class="font-black">₹${order.totalAmount.toLocaleString()}</td>
+                    <td><span class="status-pill status-${order.status.toLowerCase()}">${order.status}</span></td>
+                    <td><a href="/admin/orderDetails/${order.orderId}" class="text-xs font-bold text-orange-500">Manage</a></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTopProducts(products) {
+            const container = document.getElementById('topProductsContainer');
+            container.innerHTML = products.map(product => `
+                <div class="bg-white/5 border border-white/5 p-4 rounded-3xl hover:border-orange-500/30 transition-all group">
+                    <p class="text-[10px] uppercase tracking-wider opacity-40 mb-2">Top Performer</p>
+                    <h4 class="font-bold text-sm mb-1 truncate">${product.name}</h4>
+                    <p class="text-xs text-orange-500 font-bold mb-4">${product.salesCount} Sales</p>
+                    <div class="pt-3 border-t border-white/5 flex justify-between items-center">
+                        <span class="text-[10px] opacity-40">Total Revenue</span>
+                        <span class="text-xs font-black">₹${product.revenue.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateDashboard(filter, event) {
+            // Clear custom dates when predefined filters are used
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+
+            // Update filter button UI
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active-filter', 'bg-white/10', 'text-orange-500');
+            });
+            if (event && event.target) {
+                event.target.classList.add('active-filter', 'bg-white/10', 'text-orange-500');
+            }
+            
+            fetchDashboardData(filter);
+        }
+
+        function applyCustomFilter() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate) {
+                alert('Please select a starting date');
+                return;
+            }
+
+            // Remove active classes from predefined buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active-filter', 'bg-white/10', 'text-orange-500');
+            });
+
+            fetchDashboardData('custom', startDate, endDate);
+        }
+
+        // Styles for active filter
+        const style = document.createElement('style');
+        style.innerHTML = '.active-filter { border-color: rgba(255, 90, 31, 0.5) !important; background: rgba(255, 90, 31, 0.1) !important; color: #FF5A1F !important; }';
+        document.head.appendChild(style);
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardData('7d');
         });
     </script>
     <%- include('../partials/flashAlert') %>
