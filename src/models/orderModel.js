@@ -113,6 +113,9 @@ const orderSchema = mongoose.Schema({
     paymentId: {
         type: String
     },
+    razorpayOrderId: {
+        type: String
+    },
     returnRequested: {
         type: Boolean,
         default: false

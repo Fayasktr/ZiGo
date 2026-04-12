@@ -16,6 +16,7 @@ router.post("/shop/cart/:id", wishlistAndCart.isThereUser, shopCntrl.addToCart);
 router.get("/user/checkout", wishlistAndCart.isThereUser, shopCntrl.proceedToCheckout);
 router.post("/user/checkout/place", wishlistAndCart.isThereUser, shopCntrl.placeOrder);
 router.post("/user/checkout/verify", wishlistAndCart.isThereUser, shopCntrl.verifyPayment);
+router.post("/user/checkout/retry", wishlistAndCart.isThereUser, shopCntrl.retryPayment);
 router.get("/user/paymentFailed", wishlistAndCart.isThereUser, shopCntrl.paymentFailed);
 router.get("/order/success/:orderNumber", wishlistAndCart.isThereUser, shopCntrl.successPage);
 router.post("/productDetailse/buyNow", shopCntrl.buyNow);
