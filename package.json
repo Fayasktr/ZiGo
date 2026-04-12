@@ -15,6 +15,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^6.0.0",
@@ -23,6 +24,7 @@
     "crypto-random": "^2.1.0",
     "dotenv": "^17.2.4",
     "ejs": "^4.0.1",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
     "express-rate-limit": "^8.3.1",
@@ -36,6 +38,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
+    "pdfkit": "^0.18.0",
     "puppeteer": "^24.40.0",
     "razorpay": "^2.9.6",
     "sharp": "^0.34.5"

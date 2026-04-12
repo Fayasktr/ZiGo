@@ -46,6 +46,14 @@ export const LoadHomePage = asyncHandler(async (req, res) => {
   res.render("user/userAfterLogin/ZiGo.com.ejs");
 });
 
+export const loadAboutPage = asyncHandler(async (req, res) => {
+  res.render("user/userAfterLogin/about.ejs");
+});
+
+export const loadContactPage = asyncHandler(async (req, res) => {
+  res.render("user/userAfterLogin/contact.ejs");
+});
+
 export const loadSignUp = asyncHandler(async (req, res) => {
   res.render("user/signUp");
 });
