@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZiGo Admin | Edit Order #<%= order.orderNumber %></title>
+    <title>ZiGo Admin | Edit Order #<%= order.orderNumber %>
+    </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -56,7 +57,8 @@
 
         /* --- Global Scrollbar --- */
         ::-webkit-scrollbar {
-            width: 14px; /* Wider track to allow for internal padding */
+            width: 14px;
+            /* Wider track to allow for internal padding */
         }
 
         ::-webkit-scrollbar-track {
@@ -73,7 +75,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background-color: rgba(255, 90, 31, 0.6);
         }
-        
+
         /* Sidebar should remain super thin */
         .admin-sidebar::-webkit-scrollbar {
             width: 4px;
@@ -337,18 +339,20 @@
             <div>
                 <a href="/admin/orders" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Orders</a>
                 <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Management</p>
-                <h1 class="text-3xl font-extrabold">Edit Order <span class="text-orange-500">#<%= order.orderNumber %></span></h1>
+                <h1 class="text-3xl font-extrabold">Edit Order <span class="text-orange-500">#<%= order.orderNumber %>
+                            </span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
                     <p class="text-[10px] opacity-40 font-bold uppercase mb-1">Current Status</p>
-                    <% 
-                       let statusClass = 'bg-orange-500/10 text-orange-500';
-                       const currentStatus = order.orderStatus.toLowerCase();
-                       if (currentStatus === 'delivered') statusClass = 'bg-green-500/10 text-green-500';
-                       else if (currentStatus === 'cancelled') statusClass = 'bg-red-500/10 text-red-500';
-                    %>
-                    <span class="<%= statusClass %> px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider"><%= order.orderStatus.toLowerCase() %></span>
+                    <% let statusClass='bg-orange-500/10 text-orange-500' ; const
+                        currentStatus=order.orderStatus.toLowerCase(); if (currentStatus==='delivered' )
+                        statusClass='bg-green-500/10 text-green-500' ; else if (currentStatus==='cancelled' )
+                        statusClass='bg-red-500/10 text-red-500' ; %>
+                        <span
+                            class="<%= statusClass %> px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                            <%= order.orderStatus.toLowerCase() %>
+                        </span>
                 </div>
             </div>
         </header>
@@ -358,121 +362,151 @@
                 <!-- Order Items -->
                 <div class="glass-card">
                     <h2 class="section-title"><i class="fas fa-box-open"></i> Order Items</h2>
-                    <% order.items.forEach(item => { %>
+                    <% order.items.forEach(item=> { %>
                         <div class="order-item">
                             <div class="item-thumb">
                                 <% if (item.image) { %>
                                     <img src="<%= item.image %>" alt="<%= item.productName %>">
-                                <% } else { %>
-                                    <img src="/public/landing/no-image.png" alt="No image">
-                                <% } %>
+                                    <% } else { %>
+                                        <img src="/public/landing/no-image.png" alt="No image">
+                                        <% } %>
                             </div>
                             <div class="flex-1">
-                                <p class="font-bold text-sm"><%= item.productName %></p>
+                                <p class="font-bold text-sm">
+                                    <%= item.productName %>
+                                </p>
                                 <div class="flex flex-wrap gap-2 mt-2">
-                                    <% if (item.variantAttributes) { 
-                                        const attrs = (item.variantAttributes instanceof Map) ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
-                                        Object.entries(attrs).forEach(([key, value]) => { %>
-                                            <span class="px-2 py-0.5 bg-white/10 rounded-md text-[9px] font-bold uppercase tracking-wider opacity-60 border border-white/5">
-                                                <%= key %>: <span class="text-orange-400"><%= value %></span>
-                                            </span>
-                                        <% }) 
-                                    } %>
+                                    <% if (item.variantAttributes) { const attrs=(item.variantAttributes instanceof Map)
+                                        ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
+                                        Object.entries(attrs).forEach(([key, value])=> { %>
+                                        <span
+                                            class="px-2 py-0.5 bg-white/10 rounded-md text-[9px] font-bold uppercase tracking-wider opacity-60 border border-white/5">
+                                            <%= key %>: <span class="text-orange-400">
+                                                    <%= value %>
+                                                </span>
+                                        </span>
+                                        <% }) } %>
                                 </div>
                                 <div class="mt-2">
-                                    <% 
-                                       let itemStatusClass = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-                                       const s = item.itemStatus.toLowerCase();
-                                       if (s === 'delivered') itemStatusClass = 'bg-green-500/10 text-green-400 border border-green-500/20';
-                                       else if (s === 'cancelled') itemStatusClass = 'bg-red-500/10 text-red-400 border border-red-500/20';
-                                       else if (s === 'returned') itemStatusClass = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
-                                    %>
-                                    <span class="<%= itemStatusClass %> px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[1px]">
-                                        <i class="fas fa-circle text-[6px] mr-1 opacity-70"></i> <%= item.itemStatus %>
-                                    </span>
+                                    <% let itemStatusClass='bg-blue-500/10 text-blue-400 border border-blue-500/20' ;
+                                        const s=item.itemStatus.toLowerCase(); if (s==='delivered' )
+                                        itemStatusClass='bg-green-500/10 text-green-400 border border-green-500/20' ;
+                                        else if (s==='cancelled' )
+                                        itemStatusClass='bg-red-500/10 text-red-400 border border-red-500/20' ; else if
+                                        (s==='returned' )
+                                        itemStatusClass='bg-purple-500/10 text-purple-400 border border-purple-500/20' ;
+                                        %>
+                                        <span
+                                            class="<%= itemStatusClass %> px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[1px]">
+                                            <i class="fas fa-circle text-[6px] mr-1 opacity-70"></i>
+                                            <%= item.itemStatus %>
+                                        </span>
                                 </div>
                             </div>
                             <div class="text-right flex flex-col justify-between items-end min-w-[140px]">
                                 <div class="w-full">
-                                    <% 
-                                       const activeQtyForTotalAdmin = item.quantity - (item.cancelledQuantity || 0) - (item.returnedQuantity || 0); 
-                                       const itemPriceToDisplayAdmin = item.finalPrice || item.price;
-                                       const hasItemOfferAdmin = (item.finalPrice && item.finalPrice < item.price);
-                                    %>
-                                    <div class="flex flex-col items-end">
-                                        <p class="font-black text-lg">₹<%= itemPriceToDisplayAdmin.toLocaleString() %></p>
-                                        <% if (hasItemOfferAdmin) { %>
-                                            <p class="text-[10px] line-through opacity-40">MRP: ₹<%= item.price.toLocaleString() %></p>
-                                        <% } %>
-                                    </div>
-                                    <p class="text-[10px] opacity-40 font-bold mt-1">Active Total: ₹<%= (itemPriceToDisplayAdmin * activeQtyForTotalAdmin).toLocaleString() %></p>
-                                    <div class="mt-2 text-right">
-                                        <p class="text-[9px] opacity-40 font-bold uppercase mb-1">Quantity Breakdown</p>
-                                        <div class="flex flex-col gap-1 text-[10px]">
-                                            <div class="flex justify-between gap-4">
-                                                <span class="opacity-50">Ordered:</span>
-                                                <span class="font-bold"><%= item.quantity %></span>
-                                            </div>
-                                            <% if (item.cancelledQuantity > 0) { %>
-                                                <div class="flex justify-between gap-4 text-red-400">
-                                                    <span class="opacity-80">Cancelled:</span>
-                                                    <span class="font-bold"><%= item.cancelledQuantity %></span>
-                                                </div>
-                                            <% } %>
-                                            <% if (item.returnedQuantity > 0) { %>
-                                                <div class="flex justify-between gap-4 text-purple-400">
-                                                    <span class="opacity-80">Returned:</span>
-                                                    <span class="font-bold"><%= item.returnedQuantity %></span>
-                                                </div>
-                                            <% } %>
-                                            <% if (item.pendingReturnQuantity > 0) { %>
-                                                <div class="flex justify-between gap-4 text-yellow-400">
-                                                    <span class="opacity-80">Pending:</span>
-                                                    <span class="font-bold"><%= item.pendingReturnQuantity %></span>
-                                                </div>
-                                            <% } %>
+                                    <% const activeQtyForTotalAdmin=item.quantity - (item.cancelledQuantity || 0) -
+                                        (item.returnedQuantity || 0); const itemPriceToDisplayAdmin=item.finalPrice ||
+                                        item.price; const hasItemOfferAdmin=(item.finalPrice && item.finalPrice <
+                                        item.price); %>
+                                        <div class="flex flex-col items-end">
+                                            <p class="font-black text-lg">₹<%= itemPriceToDisplayAdmin.toLocaleString()
+                                                    %>
+                                            </p>
+                                            <% if (hasItemOfferAdmin) { %>
+                                                <p class="text-[10px] line-through opacity-40">MRP: ₹<%=
+                                                        item.price.toLocaleString() %>
+                                                </p>
+                                                <% } %>
                                         </div>
-                                    </div>
+                                        <p class="text-[10px] opacity-40 font-bold mt-1">Active Total: ₹<%=
+                                                (itemPriceToDisplayAdmin * activeQtyForTotalAdmin).toLocaleString() %>
+                                        </p>
+                                        <div class="mt-2 text-right">
+                                            <p class="text-[9px] opacity-40 font-bold uppercase mb-1">Quantity Breakdown
+                                            </p>
+                                            <div class="flex flex-col gap-1 text-[10px]">
+                                                <div class="flex justify-between gap-4">
+                                                    <span class="opacity-50">Ordered:</span>
+                                                    <span class="font-bold">
+                                                        <%= item.quantity %>
+                                                    </span>
+                                                </div>
+                                                <% if (item.cancelledQuantity> 0) { %>
+                                                    <div class="flex justify-between gap-4 text-red-400">
+                                                        <span class="opacity-80">Cancelled:</span>
+                                                        <span class="font-bold">
+                                                            <%= item.cancelledQuantity %>
+                                                        </span>
+                                                    </div>
+                                                    <% } %>
+                                                        <% if (item.returnedQuantity> 0) { %>
+                                                            <div class="flex justify-between gap-4 text-purple-400">
+                                                                <span class="opacity-80">Returned:</span>
+                                                                <span class="font-bold">
+                                                                    <%= item.returnedQuantity %>
+                                                                </span>
+                                                            </div>
+                                                            <% } %>
+                                                                <% if (item.pendingReturnQuantity> 0) { %>
+                                                                    <div
+                                                                        class="flex justify-between gap-4 text-yellow-400">
+                                                                        <span class="opacity-80">Pending:</span>
+                                                                        <span class="font-bold">
+                                                                            <%= item.pendingReturnQuantity %>
+                                                                        </span>
+                                                                    </div>
+                                                                    <% } %>
+                                            </div>
+                                        </div>
                                 </div>
-                                
-                                <% if (item.returnStatus === 'requested') { %>
+
+                                <% if (item.returnStatus==='requested' ) { %>
                                     <div class="mt-4 flex flex-col gap-2 w-full">
-                                        <span class="text-[9px] font-black text-yellow-500 uppercase tracking-widest text-right mb-1">
+                                        <span
+                                            class="text-[9px] font-black text-yellow-500 uppercase tracking-widest text-right mb-1">
                                             ⏳ Return Requested
                                         </span>
-                                        <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'approved')"
+                                        <button
+                                            onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'approved')"
                                             class="text-[10px] font-bold bg-green-500/10 text-green-500 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-all">
                                             ✓ Approve Return (<%= item.pendingReturnQuantity %>)
                                         </button>
-                                        <button onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'rejected')"
+                                        <button
+                                            onclick="handleReturn('<%= order._id %>', '<%= item._id %>', 'rejected')"
                                             class="text-[10px] font-bold bg-red-500/10 text-red-500 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all">
                                             ✗ Reject Return
                                         </button>
                                     </div>
-                                <% } else if (item.returnStatus === 'approved') { %>
-                                    <span class="text-[9px] font-black text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg mt-4 border border-green-500/20">
-                                        ✓ Return Approved
-                                    </span>
-                                <% } else if (item.returnStatus === 'rejected') { %>
-                                    <span class="text-[9px] font-black text-red-500 bg-red-500/10 px-3 py-1.5 rounded-lg mt-4 border border-red-500/20">
-                                        ✗ Return Rejected
-                                    </span>
-                                <% } %>
+                                    <% } else if (item.returnStatus==='approved' ) { %>
+                                        <span
+                                            class="text-[9px] font-black text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg mt-4 border border-green-500/20">
+                                            ✓ Return Approved
+                                        </span>
+                                        <% } else if (item.returnStatus==='rejected' ) { %>
+                                            <span
+                                                class="text-[9px] font-black text-red-500 bg-red-500/10 px-3 py-1.5 rounded-lg mt-4 border border-red-500/20">
+                                                ✗ Return Rejected
+                                            </span>
+                                            <% } %>
                             </div>
                         </div>
-                        <% if (item.itemStatus === 'cancelled' && item.cancelReason) { %>
+                        <% if (item.itemStatus==='cancelled' && item.cancelReason) { %>
                             <div class="mx-4 mb-4 p-3 bg-red-500/5 rounded-xl border border-red-500/10">
-                                <p class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">Cancellation Reason</p>
+                                <p class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">
+                                    Cancellation Reason</p>
                                 <p class="text-xs opacity-60 italic">"<%= item.cancelReason %>"</p>
                             </div>
-                        <% } %>
-                        <% if (item.returnStatus === 'requested' && item.returnReason) { %>
-                            <div class="mx-4 mb-4 p-3 bg-white/5 rounded-xl border border-white/5">
-                                <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Return Reason</p>
-                                <p class="text-xs opacity-60 italic">"<%= item.returnReason %>"</p>
-                            </div>
-                        <% } %>
-                    <% }) %>
+                            <% } %>
+                                <% if (item.returnStatus==='requested' && item.returnReason) { %>
+                                    <div class="mx-4 mb-4 p-3 bg-white/5 rounded-xl border border-white/5">
+                                        <p
+                                            class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">
+                                            Return Reason</p>
+                                        <p class="text-xs opacity-60 italic">"<%= item.returnReason %>"</p>
+                                    </div>
+                                    <% } %>
+                                        <% }) %>
                 </div>
 
                 <!-- Shipping Details -->
@@ -481,15 +515,18 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div class="form-group">
                             <label class="form-label">Full Name</label>
-                            <input type="text" class="form-input" value="<%= order.shippingAddress.fullName %>" readonly>
+                            <input type="text" class="form-input" value="<%= order.shippingAddress.fullName %>"
+                                readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
-                            <input type="text" class="form-input" value="+91 <%= order.shippingAddress.phone %>" readonly>
+                            <input type="text" class="form-input" value="+91 <%= order.shippingAddress.phone %>"
+                                readonly>
                         </div>
                         <div class="form-group col-span-2">
                             <label class="form-label">Shipping Address</label>
-                            <textarea class="form-input h-24" readonly><%= `${order.shippingAddress.addressLine}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}` %></textarea>
+                            <textarea class="form-input h-24"
+                                readonly><%= `${order.shippingAddress.addressLine}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}` %></textarea>
                         </div>
                         <!-- 
                         <div class="form-group">
@@ -512,20 +549,15 @@
                     <div class="form-group">
                         <label class="form-label">Order Status</label>
                         <select id="orderStatus" class="form-input status-select">
-                            <% 
-                               const allowed = {
-                                   "pending":    ["pending","processing","shipped","delivered", "cancelled"],
-                                   "processing": ["processing","shipped","delivered", "cancelled"],
-                                   "shipped":    ["shipped","delivered", "cancelled"],
-                                   "cancelled":  ["cancelled"],
-                                   "delivered":  ["delivered","returned"],
-                                   "returned":   ["returned"]
-                               };
-                               const options = allowed[currentStatus] || [currentStatus];
-                               options.forEach(st => { 
-                            %>
-                                <option value="<%= st %>" <%= currentStatus === st ? 'selected' : '' %>><%= st %></option>
-                            <% }) %>
+                            <% const allowed={ "pending" : ["pending","processing","shipped","delivered", "cancelled"
+                                ], "processing" : ["processing","shipped","delivered", "cancelled" ], "shipped" :
+                                ["shipped","delivered", "cancelled" ], "cancelled" : ["cancelled"], "delivered" :
+                                ["delivered","returned"], "returned" : ["returned"] }; const
+                                options=allowed[currentStatus] || [currentStatus]; options.forEach(st=> {
+                                %>
+                                <option value="<%= st %>" <%=currentStatus===st ? 'selected' : '' %>><%= st %>
+                                </option>
+                                <% }) %>
                         </select>
                     </div>
                     <button class="btn-update" onclick="updateOrder()">
@@ -538,7 +570,8 @@
                     <h2 class="section-title"><i class="fas fa-receipt"></i> Order Summary</h2>
                     <div class="summary-row">
                         <span class="opacity-40">Subtotal</span>
-                        <span class="font-bold">₹<%= (order.pricing.total + (order.pricing.discound || 0)).toLocaleString() %></span>
+                        <span class="font-bold">₹<%= (order.pricing.total + (order.pricing.discound ||
+                                0)).toLocaleString() %></span>
                     </div>
                     <div class="summary-row">
                         <span class="opacity-40">Tax (GST 18%)</span>
@@ -548,40 +581,43 @@
                         <span class="opacity-40">Shipping</span>
                         <span class="font-bold text-green-500">FREE</span>
                     </div>
-                    <% if (order.pricing.discound > 0) { %>
+                    <% if (order.pricing.discound> 0) { %>
                         <div class="summary-row text-red-500">
                             <span class="opacity-40">Discount</span>
                             <span class="font-bold">- ₹<%= order.pricing.discound.toLocaleString() %></span>
                         </div>
-                    <% } %>
-                    <hr class="border-white/5 my-4">
-                    <div class="summary-row text-lg">
-                        <span class="font-bold">Total</span>
-                        <span class="font-black text-orange-500">₹<%= order.pricing.total.toLocaleString() %></span>
-                    </div>
-                    <div class="mt-6 space-y-3">
-                        <div class="p-4 bg-white/5 rounded-2xl">
-                            <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-wallet text-xl text-orange-400"></i>
-                                <p class="font-bold text-sm"><%= order.paymentMethod %></p>
+                        <% } %>
+                            <hr class="border-white/5 my-4">
+                            <div class="summary-row text-lg">
+                                <span class="font-bold">Total</span>
+                                <span class="font-black text-orange-500">₹<%= order.pricing.total.toLocaleString() %>
+                                        </span>
                             </div>
-                        </div>
+                            <div class="mt-6 space-y-3">
+                                <div class="p-4 bg-white/5 rounded-2xl">
+                                    <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Method</p>
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-wallet text-xl text-orange-400"></i>
+                                        <p class="font-bold text-sm">
+                                            <%= order.paymentMethod %>
+                                        </p>
+                                    </div>
+                                </div>
 
-                        <div class="p-4 bg-white/5 rounded-2xl">
-                            <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Status</p>
-                            <div class="flex items-center gap-3">
-                                <% 
-                                   let pStatusClass = 'text-orange-400';
-                                   const pStatus = order.paymentStatus.toLowerCase();
-                                   if (pStatus === 'paid') pStatusClass = 'text-green-400';
-                                   else if (pStatus === 'failed' || pStatus === 'refunded') pStatusClass = 'text-red-400';
-                                %>
-                                <i class="fas fa-receipt text-xl <%= pStatusClass %>"></i>
-                                <p class="font-bold text-sm uppercase tracking-wider <%= pStatusClass %>"><%= order.paymentStatus %></p>
+                                <div class="p-4 bg-white/5 rounded-2xl">
+                                    <p class="text-[10px] opacity-40 font-bold uppercase mb-2">Payment Status</p>
+                                    <div class="flex items-center gap-3">
+                                        <% let pStatusClass='text-orange-400' ; const
+                                            pStatus=order.paymentStatus.toLowerCase(); if (pStatus==='paid' )
+                                            pStatusClass='text-green-400' ; else if (pStatus==='failed' ||
+                                            pStatus==='refunded' ) pStatusClass='text-red-400' ; %>
+                                            <i class="fas fa-receipt text-xl <%= pStatusClass %>"></i>
+                                            <p class="font-bold text-sm uppercase tracking-wider <%= pStatusClass %>">
+                                                <%= order.paymentStatus %>
+                                            </p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -620,10 +656,10 @@
 
         async function handleReturn(orderId, itemId, action) {
             const actionText = action === 'approved' ? 'approve' : 'reject';
-            
+
             const { isConfirmed } = await Swal.fire({
                 title: `${action === 'approved' ? 'Approve' : 'Reject'} Return?`,
-                text: action === 'approved' 
+                text: action === 'approved'
                     ? 'Stock will be restored and amount refunded to customer wallet.'
                     : 'Customer will be notified that return was rejected.',
                 icon: 'warning',

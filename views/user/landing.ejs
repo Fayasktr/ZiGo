@@ -650,8 +650,9 @@
                         </div>
                     </div>
                     <div class="hero-visual w-full flex justify-center lg:justify-end">
-                        <img src="/public/landing/hero_premium.png" alt="Premium Tech Showcase"
-                            class="w-[85%] max-w-[500px]">
+                        <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
+                             alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                             class="w-[85%] max-w-[500px]">
                     </div>
                 </div>
             </section>

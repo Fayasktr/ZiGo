@@ -1,8 +1,14 @@
 import asyncHandler from "express-async-handler";
 import * as userServises from "../services/uLoginService.js";
+import * as addressService from "../services/uAddressService.js"
 
 export const landingBeforeLogin = asyncHandler(async (req, res) => {
-  res.render("user/landing");
+  try {
+    let activeBanner=await userServises.landingPage();
+    res.render("user/landing",{activeBanner});
+  } catch (error) {
+    res.redirect("/404")
+  }
 });
 
 export const forgotPasswordPage = asyncHandler(async (req, res) => {
@@ -43,7 +49,12 @@ export const logOut = asyncHandler(async (req, res, next) => {
 });
 
 export const LoadHomePage = asyncHandler(async (req, res) => {
-  res.render("user/userAfterLogin/ZiGo.com.ejs");
+  try {
+    let activeBanner=await addressService.homePage();
+    res.render("user/userAfterLogin/ZiGo.com.ejs",{activeBanner});
+  } catch (error) {
+    res.redirect("/404")
+  }
 });
 
 export const loadAboutPage = asyncHandler(async (req, res) => {

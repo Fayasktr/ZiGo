@@ -653,24 +653,22 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="hero flex flex-col lg:flex-row items-center pt-32 md:pt-48 pb-20 md:pb-32">
+        <section class="hero flex flex-col lg:flex-row items-center text-center lg:text-left pt-48 pb-32">
             <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
-                <div class="hero-content text-center lg:text-left">
-                    <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-4">Smart Tech. Zero Compromise.</p>
-                    <h1 class="text-5xl md:text-7xl lg:text-8xl mb-6">Fast Tech. <span class="block">Smart Prices.</span></h1>
-                    <p class="mx-auto lg:mx-0 text-lg md:text-xl mb-10 opacity-80 font-light max-w-lg">
-                        Premium electronics delivered faster than you expect. Quality tech that makes sense.
-                    </p>
-                    <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                        <a href="/shop" class="btn btn-primary px-10 py-4 rounded-xl text-center">Shop Now</a>
-                        <a href="/shop" class="btn btn-secondary px-10 py-4 rounded-xl text-center">Browse Collections</a>
+                <div class="hero-content">
+                    <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
+                    <p class="mx-auto lg:mx-0">Phones, smart watches & accessories — delivered faster than you expect.
+                        Premium quality at prices
+                        that make sense.</p>
+                    <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start">
+                        <a href="/shop" class="btn btn-primary">Shop Now</a>
+                        <a href="/shop" class="btn btn-secondary">Browse Collections</a>
                     </div>
                 </div>
                 <div class="hero-visual w-full flex justify-center lg:justify-end">
-                    <div class="relative group">
-                        <div class="absolute -inset-4 bg-orange-500/20 blur-3xl rounded-full group-hover:bg-orange-500/30 transition-all duration-500"></div>
-                        <img src="/public/landing/hero_premium.png" alt="Premium Tech" class="relative w-full max-w-[450px] drop-shadow-[0_20px_50px_rgba(255,90,31,0.3)] hover:scale-105 transition-transform duration-700">
-                    </div>
+                    <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
+                         alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                         class="w-[85%] max-w-[500px]">
                 </div>
             </div>
         </section>

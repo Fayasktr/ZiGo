@@ -17,6 +17,11 @@
             --white: #FFFFFF;
         }
 
+        @page {
+            margin: 15mm;
+            size: A4;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -25,22 +30,21 @@
         }
 
         body {
-            background-color: var(--bg-light);
+            background-color: #FAFAFA;
             color: var(--text-main);
-            line-height: 1.5;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
         }
 
         .invoice-card {
-            background: var(--white);
             width: 100%;
-            max-width: 800px;
-            padding: 50px;
-            border-radius: 24px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         /* Header */
@@ -48,26 +52,26 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid var(--bg-light);
+            padding: 48px 48px 32px;
+            background: linear-gradient(to bottom, #FFFFFF 0%, #FAFBFC 100%);
+            border-bottom: 3px solid var(--primary-orange);
+            page-break-inside: avoid;
         }
 
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .brand-logo img.icon {
-            height: 50px;
+            height: 56px;
             width: auto;
         }
 
         .brand-logo img.name {
-            height: 22px;
+            height: 28px;
             width: auto;
-            margin-top: 4px;
         }
 
         .invoice-meta {
@@ -79,90 +83,147 @@
             font-weight: 800;
             color: var(--primary-orange);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+
+        .meta-group {
+            display: grid;
+            gap: 8px;
         }
 
         .meta-item {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
             font-weight: 500;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
         }
 
         .meta-value {
             color: var(--text-main);
             font-weight: 700;
+            min-width: 140px;
+            text-align: right;
         }
 
-        /* Info Grid */
-        .info-grid {
+        /* Customer Section */
+        .customer-section {
             display: grid;
-            grid-template-columns: 1fr 1.5fr;
+            grid-template-columns: 1fr 1fr;
             gap: 40px;
-            margin-bottom: 40px;
+            padding: 40px 48px;
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+            page-break-inside: avoid;
         }
 
-        .info-section h4 {
-            font-size: 11px;
+        .info-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-block h4 {
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.8px;
             color: var(--primary-orange);
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             font-weight: 800;
         }
 
         .info-content {
             font-size: 14px;
-            font-weight: 500;
+            flex: 1;
         }
 
         .info-name {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 4px;
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            line-height: 1.3;
         }
 
         .info-address {
             color: var(--text-muted);
-            white-space: pre-line;
-            line-height: 1.6;
+            line-height: 1.8;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .info-address strong {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .info-block.text-right {
+            align-items: flex-end;
+            text-align: right;
         }
 
         /* Items Table */
+        .items-container {
+            padding: 40px 48px;
+        }
+
         .items-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 40px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .items-table thead {
+            background: var(--bg-light);
+            display: table-header-group;
         }
 
         .items-table th {
-            background-color: var(--bg-light);
-            padding: 15px 20px;
+            padding: 16px 12px;
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             color: var(--text-muted);
             font-weight: 800;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid #F1F5F9;
+            page-break-inside: avoid;
+        }
+
+        .items-table tbody tr:last-child {
+            border-bottom: none;
         }
 
         .items-table td {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 14px;
+            padding: 24px 12px;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .item-description {
+            max-width: 100%;
         }
 
         .item-name {
             font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 4px;
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.4;
         }
 
-        .item-variant-container {
+        .variant-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
+            gap: 6px;
+            margin-top: 8px;
         }
 
         .item-variant {
@@ -170,99 +231,165 @@
             color: var(--primary-orange);
             font-weight: 700;
             text-transform: uppercase;
-            background: rgba(255, 90, 31, 0.05);
-            padding: 2px 6px;
+            background: rgba(255, 90, 31, 0.08);
+            padding: 4px 8px;
             border-radius: 4px;
-            border: 1px solid rgba(255, 90, 31, 0.1);
+            display: inline-block;
+            letter-spacing: 0.3px;
         }
 
-        .qty-cell {
-            text-align: center;
-            font-weight: 600;
+        .text-right { 
+            text-align: right; 
+        }
+        
+        .text-center { 
+            text-align: center; 
+        }
+        
+        .font-bold { 
+            font-weight: 700;
+            color: var(--text-main);
         }
 
-        .price-cell {
-            text-align: right;
+        .savings-tag {
+            color: #10B981;
+            font-size: 13px;
             font-weight: 700;
         }
 
-        /* Summary Section */
-        .summary-container {
+        /* Financial Summary */
+        .summary-wrapper {
             display: flex;
             justify-content: flex-end;
+            padding: 0 48px 40px;
+            page-break-inside: avoid;
         }
 
-        .summary-box {
-            width: 100%;
-            max-width: 300px;
+        .summary-card {
+            width: 400px;
+            background: var(--bg-light);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            align-items: center;
+            margin-bottom: 14px;
             font-size: 14px;
-            font-weight: 500;
-            color: var(--text-muted);
         }
 
-        .summary-row.total {
-            border-top: 2px solid var(--bg-light);
-            margin-top: 10px;
-            padding-top: 20px;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary-orange);
+        .summary-label {
+            color: var(--text-muted);
+            font-weight: 600;
         }
 
         .summary-value {
             color: var(--text-main);
             font-weight: 700;
-        }
-
-        .summary-row.total .summary-value {
-            color: var(--primary-orange);
+            font-size: 15px;
         }
 
         .summary-row.discount .summary-value {
             color: #10B981;
         }
 
+        .summary-row.total {
+            margin-top: 20px;
+            margin-bottom: 0;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+            font-size: 18px;
+        }
+
+        .summary-row.total .summary-label {
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .summary-row.total .summary-value {
+            color: var(--primary-orange);
+            font-weight: 800;
+            font-size: 24px;
+        }
+
         /* Footer */
         .invoice-footer {
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 2px solid var(--bg-light);
+            padding: 40px 48px;
             text-align: center;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border-color);
         }
 
-        .footer-note {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            font-weight: 500;
+        .footer-logo img {
+            height: 26px;
+            opacity: 0.4;
+            margin-bottom: 16px;
         }
 
-        .support-info {
-            font-size: 14px;
+        .thanks-msg {
+            font-size: 15px;
             font-weight: 700;
             color: var(--text-main);
+            margin-bottom: 12px;
         }
 
-        .support-info span {
+        .contact-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            line-height: 1.8;
+        }
+
+        .contact-info b {
             color: var(--primary-orange);
+            font-weight: 700;
         }
 
         @media print {
-            body {
+            body { 
                 padding: 0;
-                background-color: white;
+                background: white;
             }
-            .invoice-card {
-                box-shadow: none;
-                border: none;
+            .invoice-card { 
                 max-width: 100%;
-                padding: 20px;
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .invoice-header,
+            .customer-section,
+            .items-container,
+            .summary-wrapper,
+            .invoice-footer {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+
+            .customer-section {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .summary-card {
+                width: 100%;
+            }
+
+            .invoice-title {
+                font-size: 24px;
+            }
+
+            .meta-item {
+                font-size: 12px;
             }
         }
     </style>
@@ -271,98 +398,120 @@
     <div class="invoice-card">
         <header class="invoice-header">
             <div class="brand-logo">
-                <img src="<%= logoIcon %>" alt="ZiGo Icon" class="icon">
-                <img src="<%= logoName %>" alt="ZiGo" class="name">
+                <% if (logoIcon) { %>
+                    <img src="<%= logoIcon %>" alt="ZiGo Icon" class="icon">
+                <% } %>
+                <% if (logoName) { %>
+                    <img src="<%= logoName %>" alt="ZiGo" class="name">
+                <% } %>
             </div>
             <div class="invoice-meta">
-                <div class="invoice-title">Invoice</div>
-                <div class="meta-item">Order Number: <span class="meta-value">#<%= order.orderNumber %></span></div>
-                <div class="meta-item">Date: <span class="meta-value"><%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></div>
-                <div class="meta-item">Payment: <span class="meta-value"><%= order.paymentMethod %></span></div>
+                <div class="invoice-title">Tax Invoice</div>
+                <div class="meta-group">
+                    <span class="meta-item">Invoice ID: <span class="meta-value">INV-<%= order.orderNumber.split('-')[1] %></span></span>
+                    <span class="meta-item">Order ID: <span class="meta-value">#<%= order.orderNumber %></span></span>
+                    <span class="meta-item">Order Date: <span class="meta-value"><%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span></span>
+                    <span class="meta-item">Payment Method: <span class="meta-value"><%= order.paymentMethod.toUpperCase() %></span></span>
+                </div>
             </div>
         </header>
 
         <main>
-            <div class="info-grid">
-                <div class="info-section">
-                    <h4>Billed To</h4>
+            <div class="customer-section">
+                <div class="info-block">
+                    <h4>Consignee (Shipping Address)</h4>
                     <div class="info-content">
                         <div class="info-name"><%= order.shippingAddress.fullName %></div>
                         <div class="info-address">
-                            <%= order.shippingAddress.addressLine %>
-                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %>
-                            <%= order.shippingAddress.country %>
-                            Phone: +91 <%= order.shippingAddress.phone %>
+                            <%= order.shippingAddress.addressLine %><br>
+                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %><br>
+                            <%= order.shippingAddress.country %><br>
+                            <strong>Phone:</strong> +91 <%= order.shippingAddress.phone %>
                         </div>
                     </div>
                 </div>
-                <div class="info-section">
-                    <h4>Shipping Address</h4>
+                <div class="info-block text-right">
+                    <h4>Order Status</h4>
                     <div class="info-content">
-                        <div class="info-name"><%= order.shippingAddress.fullName %></div>
+                        <div class="info-name" style="color: var(--primary-orange);"><%= order.orderStatus.toUpperCase() %></div>
                         <div class="info-address">
-                            <%= order.shippingAddress.addressLine %>
-                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %>
-                            <%= order.shippingAddress.country %>
-                            Phone: +91 <%= order.shippingAddress.phone %>
+                            Payment: <%= order.paymentStatus.toUpperCase() %><br>
+                            Invoice Date: <%= new Date().toLocaleDateString() %>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50%;">Description</th>
-                        <th style="width: 15%; text-align: center;">Qty</th>
-                        <th style="width: 15%; text-align: right;">Price</th>
-                        <th style="width: 20%; text-align: right;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% order.items.forEach(item => { %>
-                    <tr>
-                        <td>
-                            <div class="item-name"><%= item.productName %></div>
-                            <div class="item-variant-container">
-                                <% if (item.variantAttributes) { 
-                                    const attrs = (item.variantAttributes instanceof Map) ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
-                                    Object.entries(attrs).forEach(([key, value]) => { %>
-                                        <span class="item-variant"><%= key %>: <%= value %></span>
-                                    <% }) 
-                                } %>
-                            </div>
-                        </td>
-                        <td class="qty-cell"><%= item.quantity %></td>
-                        <td class="price-cell">₹<%= item.price.toLocaleString() %></td>
-                        <td class="price-cell">₹<%= item.itemTotal.toLocaleString() %></td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+            <div class="items-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Item Description</th>
+                            <th style="width: 15%;" class="text-center">Rate (MRP)</th>
+                            <th style="width: 10%;" class="text-center">Qty</th>
+                            <th style="width: 15%;" class="text-right">Offer Disc.</th>
+                            <th style="width: 15%;" class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% order.items.forEach(item => { %>
+                        <tr>
+                            <td class="item-description">
+                                <div class="item-name"><%= item.productName %></div>
+                                <div class="variant-tags">
+                                    <% if (item.variantAttributes) { 
+                                        const attrs = (item.variantAttributes instanceof Map) ? Object.fromEntries(item.variantAttributes) : item.variantAttributes;
+                                        Object.entries(attrs).forEach(([key, value]) => { %>
+                                            <span class="item-variant"><%= key %>: <%= value %></span>
+                                        <% }) 
+                                    } %>
+                                </div>
+                            </td>
+                            <td class="text-center font-bold">₹<%= item.price.toLocaleString() %></td>
+                            <td class="text-center font-bold"><%= item.quantity %></td>
+                            <td class="text-right">
+                                <span class="savings-tag">-₹<%= (item.offerDiscount * item.quantity).toLocaleString() %></span>
+                            </td>
+                            <td class="text-right font-bold">₹<%= (item.finalPrice * item.quantity).toLocaleString() %></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="summary-container">
-                <div class="summary-box">
+            <div class="summary-wrapper">
+                <div class="summary-card">
                     <div class="summary-row">
-                        <span>Subtotal</span>
+                        <span class="summary-label">Bag Total (MRP)</span>
                         <span class="summary-value">₹<%= order.pricing.subTotal.toLocaleString() %></span>
                     </div>
-                    <div class="summary-row">
-                        <span>Tax (GST 18%)</span>
-                        <span class="summary-value">₹<%= order.pricing.tax.toLocaleString() %></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Shipping</span>
-                        <span class="summary-value"><%= order.pricing.shipping === 0 ? 'FREE' : '₹' + order.pricing.shipping.toLocaleString() %></span>
-                    </div>
+                    
                     <% if (order.pricing.discound && order.pricing.discound > 0) { %>
                     <div class="summary-row discount">
-                        <span>Discount</span>
+                        <span class="summary-label">Product Offer Savings</span>
                         <span class="summary-value">-₹<%= order.pricing.discound.toLocaleString() %></span>
                     </div>
                     <% } %>
+
+                    <% if (order.pricing.couponDiscount && order.pricing.couponDiscount > 0) { %>
+                    <div class="summary-row discount">
+                        <span class="summary-label">Coupon Discount</span>
+                        <span class="summary-value">-₹<%= order.pricing.couponDiscount.toLocaleString() %></span>
+                    </div>
+                    <% } %>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Tax (GST 18%)</span>
+                        <span class="summary-value">₹<%= order.pricing.tax.toLocaleString() %></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Delivery Charges</span>
+                        <span class="summary-value"><%= order.pricing.shipping === 0 ? 'FREE' : '₹' + order.pricing.shipping.toLocaleString() %></span>
+                    </div>
+
                     <div class="summary-row total">
-                        <span>Grand Total</span>
+                        <span class="summary-label">Amount Payable</span>
                         <span class="summary-value">₹<%= order.pricing.total.toLocaleString() %></span>
                     </div>
                 </div>
@@ -370,10 +519,16 @@
         </main>
 
         <footer class="invoice-footer">
-            <p class="footer-note">Thank you for shopping with ZiGo! We appreciate your business.</p>
-            <div class="support-info">
-                For any questions, contact us at <span>support@zigo.com</span> or call <span>+91 1800-ZIGO-APP</span>
+            <div class="footer-logo">
+                <% if (logoName) { %>
+                    <img src="<%= logoName %>" alt="ZiGo">
+                <% } %>
             </div>
+            <p class="thanks-msg">Thank you for choosing ZiGo!</p>
+            <p class="contact-info">
+                In case of discrepancies, please reach out to <b>support@zigo.com</b><br>
+                ZiGo E-commerce Solutions Pvt. Ltd. | <b>1800-ZIGO-APP</b>
+            </p>
         </footer>
     </div>
 </body>

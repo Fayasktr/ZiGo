@@ -4,7 +4,19 @@ import checkPass from '../utils/checkPassword.js';
 import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
 import { hashPassword } from "../utils/hashPassword.js"
-import { hash } from "bcryptjs";
+import bannerModel from "../models/bannerModel.js";
+
+export const landingPage=async()=>{
+  let banner=await bannerModel.findOne({isActive:true});
+  if(banner){
+    console.log(banner)
+    return banner
+  }else{
+    banner =await bannerModel.findOne({createdAt:-1}).limit(1)
+  }
+  console.log(banner)
+  return banner
+}
 
 export const userLogin = async (email, password) => {
   email = email.trim().toLowerCase();

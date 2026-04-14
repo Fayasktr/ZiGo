@@ -3,6 +3,13 @@ import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
 import PDFDocument from "pdfkit";
 import ExcelJS from "exceljs";
+import puppeteer from "puppeteer";
+import ejs from "ejs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const adminDashboard = async (filter = '7d', customStart = null, customEnd = null) => {
     try {
@@ -512,51 +519,41 @@ const getDefaultMetrics = () => ({
 
 export const exportSalesPDF = async (req, res) => {
     try {
-    const { period = 'today', startDate, endDate } = req.query;
-    const data = await reportData({ period, startDate, endDate });
+        const { period = 'today', startDate, endDate } = req.query;
+        const data = await reportData({ period, startDate, endDate });
 
-    const doc = new PDFDocument({ margin: 50 });
+        const templatePath = path.join(__dirname, "../../../views/admin/salesReportPDF.ejs");
+        const html = await ejs.renderFile(templatePath, {
+            ...data,
+            period,
+            startDate,
+            endDate
+        });
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename=sales-report-${period}.pdf`);
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
 
-    doc.pipe(res);
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: "networkidle0" });
+        
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true,
+            margin: { top: "20mm", bottom: "20mm", left: "20mm", right: "20mm" }
+        });
 
-    doc.fontSize(20).text("ZiGo Sales Report", { align: "center", color: "#FF5A1F" });
-    doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, { align: "center" });
-    doc.fontSize(10).text(`Period: ${period.toUpperCase()}`, { align: "center" });
-    doc.moveDown(2);
+        await browser.close();
 
-    doc.fontSize(14).text("Overall Performance", { underline: true });
-    doc.moveDown();
-    doc.fontSize(12).text(`Total Revenue: ₹${Math.round(data.metrics.totalRevenue).toLocaleString()}`);
-    doc.text(`Total Orders: ${data.metrics.totalOrders}`);
-    doc.text(`Avg Order Value: ₹${Math.round(data.metrics.avgOrderValue).toLocaleString()}`);
-    doc.text(`Items Sold: ${data.metrics.totalItemsSold}`);
-    doc.text(`Returns: ${data.metrics.totalItemsReturned}`);
-    doc.text(`Cancellations: ${data.metrics.totalItemsCancelled}`);
-    doc.moveDown(2);
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename=sales-report-${period}.pdf`);
+        res.send(pdfBuffer);
 
-    doc.fontSize(14).text("Top Selling Products (Top 10)", { underline: true });
-    doc.moveDown();
-    
-    data.topProducts.forEach((p, i) => {
-        doc.fontSize(10).text(`${i + 1}. ${p.productName} | Category: ${p.category} | Sold: ${p.unitsSold} | Revenue: ₹${Math.round(p.revenue).toLocaleString()}`);
-    });
-
-    doc.moveDown(2);
-
-    doc.fontSize(14).text("Sales by Category", { underline: true });
-    doc.moveDown();
-    data.categoryWiseSales.forEach(c => {
-        doc.fontSize(10).text(`${c.category || 'Uncategorized'}: ₹${Math.round(c.revenue).toLocaleString()} (${c.itemsSold} items sold)`);
-    });
-
-    doc.end();
     } catch (error) {
         console.error("PDF Export Error:", error);
-        res.status(500).send("Error generating PDF");
-}
+        res.status(500).send("Error generating professional PDF report");
+    }
 };
 
 export const exportSalesExcel = async (req, res) => {

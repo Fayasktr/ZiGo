@@ -22,7 +22,8 @@ const couponSchema = new mongoose.Schema(
       required: true,
     },
     maxDiscount: {
-      type: Number, 
+      type: Number,
+      
     },
     minOrderAmount: {
       type: Number,

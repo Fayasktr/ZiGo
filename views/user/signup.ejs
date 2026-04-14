@@ -440,7 +440,7 @@
                             <p id="ConfirmPasswordError"
                                 style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;"></p>
                         </div>
-                        <div class="form-group full-width">
+                        <!-- <div class="form-group full-width">
                             <label for="referralCode">Referral Code (Optional)</label>
                             <div class="input-wrapper">
                                 <input type="text" id="referralCode" name="referralCode" placeholder="ZIGO-XXXXXX">
@@ -450,7 +450,7 @@
                                 <p class="text-[0.7rem] font-bold text-[#FF5A1F] uppercase tracking-wider">Friend Bonus:
                                     Get ₹100</p>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
 
                     <div class="terms-check">
@@ -546,12 +546,37 @@
                     }
                 };
 
+                const validateUsername = () => {
+                    if (!validators.name(nameInput.value.trim())) {
+                        return validateField(nameInput, nameError, "Name must be at least 3 characters", () => false);
+                    }
+                    if (!validators.nameCheckNumber(nameInput.value.trim())) {
+                        return validateField(nameInput, nameError, "Name can't contain numbers", () => false);
+                    }
+                    return validateField(nameInput, nameError, "", () => true);
+                };
+
                 const validators = {
                     name: (val) => val.length >= 3,
                     nameCheckNumber: (val) => !/\d/.test(val),
                     email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
                     pass: (val) => val.length >= 6
                 };
+
+                // Live Validation
+                nameInput.addEventListener('input', validateUsername);
+                emailInput.addEventListener('input', () => validateField(emailInput, emailError, "Please enter a valid email address", validators.email));
+                passInput.addEventListener('input', () => validateField(passInput, passError, "Password must be at least 6 characters", validators.pass));
+                confirmInput.addEventListener('input', () => {
+                    if (passInput.value !== confirmInput.value) {
+                        confirmError.textContent = "Passwords do not match";
+                        confirmError.style.display = 'block';
+                        confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                    } else {
+                        confirmError.style.display = 'none';
+                        confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                });
 
                 termsBox.addEventListener('change', () => {
                     signupBtn.disabled = !termsBox.checked;
@@ -561,8 +586,7 @@
                 signupForm.addEventListener('submit', (e) => {
                     let isFormValid = true;
 
-                    if (!validateField(nameInput, nameError, "Name must be at least 3 characters", validators.name)) isFormValid = false;
-                    if (!validateField(nameInput, nameError, "Name can't contain numbers", validators.nameCheckNumber)) isFormValid = false;
+                    if (!validateUsername()) isFormValid = false;
                     if (!validateField(emailInput, emailError, "Please enter a valid email address", validators.email)) isFormValid = false;
                     if (!validateField(passInput, passError, "Password must be at least 6 characters", validators.pass)) isFormValid = false;
 
@@ -571,14 +595,10 @@
                         confirmError.style.display = 'block';
                         confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
                         isFormValid = false;
-                    } else {
-                        confirmError.style.display = 'none';
-                        confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                     }
 
                     if (!isFormValid) {
                         e.preventDefault();
-                        // Scroll to first error
                         const firstError = document.querySelector('[id$="Error"][style*="block"]');
                         if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }

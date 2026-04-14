@@ -16,6 +16,17 @@ import ejs from "ejs";
 import path from "path";
 import fs from "fs";
 import { getBestOffer } from "../utils/getBestOffer.js";
+import bannerModel from "../models/bannerModel.js";
+
+export const homePage=async()=>{
+    let banner=await bannerModel.findOne({isActive:true});
+    if(banner){
+        return banner
+    }else{
+        banner =await bannerModel.findOne({createdAt:-1}).limit(1)
+    }
+    return banner
+}
 
 export const showProfileData = async (email) => {
     const userId = await User.findOne({ email });
@@ -450,6 +461,27 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
     if (!["pending", "processing"].includes(order.orderStatus)) {
         throw new Error("This order cannot be cancelled");
     }
+    let totalRefundAmt=0
+    if(order.paymentStatus=="paid"){
+        totalRefundAmt=order.pricing.total- order.pricing.shipping;
+
+        await walletModel.updateOne(
+            { userId: order.userId },
+            { 
+                $inc: { balance: totalRefundAmt },
+                $push: { 
+                    transactions: {
+                        amount: totalRefundAmt,
+                        type: "credit",
+                        description: `Refund for cancellation: ${order.orderNumber}`,
+                        orderId: order._id,
+                        date: new Date()
+                    }
+                }
+            },
+            { upsert: true }
+        );
+    }
 
     for(let item of order.items){
         if(item.itemStatus=='active'){
@@ -463,6 +495,8 @@ export const orderCancel=async(userId,orderId,reason="",comments="")=>{
             console.log(`item comment saved: ${item.comments}`);
         }
     }
+
+
     order.orderStatus ="cancelled";
     order.cancelReason = reason;
     await order.save();
@@ -497,12 +531,50 @@ export const itemCancel = async (userId, orderId, itemId, reason, comments, quan
     if (qty > cancellable) {
         throw new Error(`You can only cancel ${cancellable} unit(s). ${alreadyCancelled} already cancelled`);
     }
+    let refundAmt=0;
+    if(order.paymentStatus=="paid"){
+        const itemGrossValue = item.price * qty; 
+        const orderOriginalSubtotal = order.pricing.subTotal; 
+        const itemWeight = itemGrossValue / orderOriginalSubtotal;
+        const totalOrderDiscounts = order.pricing.discound + order.pricing.couponDiscount;
+        const itemDiscountShare = itemWeight * totalOrderDiscounts;
+        const itemTaxShare = itemWeight * order.pricing.tax;
+        refundAmt = Math.round((itemGrossValue - itemDiscountShare) + itemTaxShare);
+
+        await walletModel.updateOne(
+            { userId: order.userId },
+            { 
+                $inc: { balance: refundAmt },
+                $push: { 
+                    transactions: {
+                        amount: refundAmt,
+                        type: "credit",
+                        description: `Refund for Item Cancellation: ${qty}x ${item.productName}`,
+                        orderId: order._id,
+                        date: new Date()
+                    }
+                }
+            },
+            { upsert: true }
+        );
+
+        order.pricing.subTotal -= itemGrossValue;
+        order.pricing.discound -= (itemWeight * order.pricing.discound);
+        order.pricing.couponDiscount -= (itemWeight * order.pricing.couponDiscount);
+        order.pricing.tax -= itemTaxShare;
+        order.pricing.total -= refundAmt;
+        
+        Object.keys(order.pricing).forEach(key => {
+            if (order.pricing[key] < 0) order.pricing[key] = 0;
+        });
+    }
+    
 
     await productModel.updateOne(
         { _id: item.productId, "variants._id": item.variantId },
         { $inc: { "variants.$.stock": qty } }
     );
-
+    
     item.cancelledQuantity = alreadyCancelled + qty;
     item.cancelReason = reason;
     item.comments = comments;

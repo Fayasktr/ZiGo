@@ -1,10 +1,15 @@
 import asynchandler from "express-async-handler"
 import * as adminService from "../../services/admin/adminService.js"
+import sharp from "sharp";
+import { uploadToCloudinary } from "../../config/cloudinary.js";
 
 export const adminLoginPage = asynchandler(async (req, res) => {
     res.render("admin/adminLogin");
 })
 
+export const adminDashboard = asynchandler(async (req, res) => {
+    res.render("admin/adminDashboard")
+})
 export const adminAccess = asynchandler(async (req, res) => {
     try {
         const { adminMail, password } = req.body;
@@ -160,11 +165,13 @@ export const addEditCouponPage=asynchandler(async(req,res)=>{
 
 export const addCoupon=asynchandler(async(req,res)=>{
     try {
+        console.log("reached coupon controll")
         const couponData=req.body;
-        const addCoupon=await adminService.addCoupon(couponData);
+        await adminService.addCoupon(couponData);
+
         res.status(200).json({success:true,message:"new coupon added"})
     } catch (error) {
-        req.status(400).json({success:false,message:error.message})
+        res.status(400).json({success:false,message:error.message})
     }
 })
 
@@ -293,3 +300,89 @@ export const deleteOffer = asynchandler(async (req, res) => {
         });
     }
 });
+
+
+export const bannerPage=asynchandler(async(req,res)=>{
+    try {
+        console.log("reached banner ctrl")
+        const banners=await adminService.bannerPage();
+        res.render("admin/banners",{banners})
+    } catch (error) {
+        req.flash("error",error.message);
+        res.redirect("/admin/dashboard");
+    }
+})
+
+export const addEditBannerPage = asynchandler(async (req, res) => {
+    try {
+        const id = req.query.id;
+        let banner = null;
+        if (id) {
+            banner = await adminService.getBannerForEdit(id);
+        }
+        res.render("admin/addEditBanner", { banner });
+    } catch (error) {
+        req.flash("error", error.message);
+        res.redirect("/admin/banners");
+    }
+});
+
+export const addBanner = asynchandler(async (req, res) => {
+    try {
+        const bannerData = req.body;
+        if (!req.file) {
+            throw new Error("Banner image is required");
+        }
+
+        const webpBuffer = await sharp(req.file.buffer).webp().toBuffer();
+        const imageUrl = await uploadToCloudinary(webpBuffer, "ZiGo_banners");
+        bannerData.image = imageUrl;
+
+        await adminService.addBanner(bannerData);
+        res.status(200).json({ success: true, message: "Banner added successfully" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+export const editBanner = asynchandler(async (req, res) => {
+    try {
+        const id = req.params.id;
+        const bannerData = req.body;
+
+        if (req.file) {
+            const webpBuffer = await sharp(req.file.buffer).webp().toBuffer();
+            const imageUrl = await uploadToCloudinary(webpBuffer, "ZiGo_banners");
+            bannerData.image = imageUrl;
+        }
+
+        await adminService.editBanner(id, bannerData);
+        res.status(200).json({ success: true, message: "Banner updated successfully" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+export const deleteBanner = asynchandler(async (req, res) => {
+    try {
+        const { id } = req.body;
+        await adminService.deleteBanner(id);
+        res.status(200).json({ success: true, message: "Banner deleted successfully" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+export const bannerStatus=asynchandler(async(req,res)=>{
+    try {
+        console.log("change status")
+        const bannerId=req.params.id;
+        if(!bannerId){
+            throw new Error("bannerId is missing");
+        }
+        const banner=await adminService.bannerStatus(bannerId);
+        res.status(200).json({success:true,message:"status updated"});
+    } catch (error) {
+        res.json({success:false,message:error.message});
+    }
+})

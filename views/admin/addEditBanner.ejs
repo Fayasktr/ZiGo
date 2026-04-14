@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= banner ? 'Edit' : 'Add' %> Banner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Form Styling --- */
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .image-upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-upload-box:hover {
+            border-color: var(--primary-orange);
+        }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 12px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .replace-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .image-upload-box:hover .replace-overlay {
+            opacity: 1;
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.2rem 3.5rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .error-message {
+            color: #FF4757;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item active">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item mt-auto text-red-500 bg-red-500/5">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/banners" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Banners</a>
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Visual Assets</p>
+            <h1 class="text-3xl font-extrabold">
+                <%= banner ? 'Edit' : 'Add New' %> <span class="text-orange-500">Banner</span>
+            </h1>
+        </header>
+
+        <form id="bannerForm" class="form-card" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" name="id" value="<%= banner ? banner._id : '' %>">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Left Column -->
+                <div class="space-y-8">
+                    <div class="form-group">
+                        <label class="form-label">Banner Image</label>
+                        <div class="image-upload-box" onclick="document.getElementById('file-input').click()">
+                            <img id="preview-img" src="<%= banner ? banner.image : '/public/public/placeholder-banner.png' %>" 
+                                 alt="Preview" class="<%= banner ? '' : 'opacity-20' %>">
+                            <div class="replace-overlay">
+                                <span class="font-black uppercase tracking-widest text-xs">Click to <%= banner ? 'Replace' : 'Upload' %></span>
+                            </div>
+                            <input type="file" id="file-input" name="image" class="hidden" accept="image/*" onchange="previewFile()">
+                        </div>
+                        <p id="error-image" class="error-message">A banner image is required</p>
+                        <p class="mt-2 text-[10px] opacity-40 font-bold uppercase">Recommended: 1920x600px (Hero) or 1200x400px (Promo)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Display Slot / Position</label>
+                        <select name="slot" class="form-input appearance-none bg-none">
+                            <option value="Hero Slider #1" <%= banner && banner.slot === 'Hero Slider #1' ? 'selected' : '' %>>Hero Slider #1 (Main Landing)</option>
+                            <option value="Hero Slider #2" <%= banner && banner.slot === 'Hero Slider #2' ? 'selected' : '' %>>Hero Slider #2 (Main Landing)</option>
+                            <option value="Mid-Page Promo" <%= banner && banner.slot === 'Mid-Page Promo' ? 'selected' : '' %>>Mid-Page Promo (Large)</option>
+                            <option value="Side-Widget" <%= banner && banner.slot === 'Side-Widget' ? 'selected' : '' %>>Side-Widget Promo (Small)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">Main Title</label>
+                        <input type="text" id="bannerName" name="name" class="form-input" placeholder="e.g., Neo 1 Flagship Launch" 
+                               value="<%= banner ? banner.name : '' %>">
+                        <p id="error-name" class="error-message">Please enter a main title</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sub-Title / Description</label>
+                        <textarea name="description" class="form-input h-24" style="resize: none;" 
+                                  placeholder="Describe the promotion..."><%= banner ? banner.description : '' %></textarea>
+                    </div>
+
+
+                    <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 mb-8">
+                        <label class="relative inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" name="isActive" class="sr-only peer" <%= !banner || banner.isActive ? 'checked' : '' %>>
+                            <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                            </div>
+                        </label>
+                        <div>
+                            <p class="font-bold text-sm">Banner is Active</p>
+                            <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Publicly visible on the chosen slot</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-white/5 flex justify-end gap-4">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save mr-2"></i> <%= banner ? 'Save Changes' : 'Create Banner' %>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        function previewFile() {
+            const preview = document.getElementById('preview-img');
+            const file = document.getElementById('file-input').files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                preview.classList.remove('opacity-20');
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const isEdit = "<%= !!banner %>" === "true";
+            const bannerId = "<%= banner ? banner._id : '' %>";
+
+            // Validation
+            let hasError = false;
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+
+            const nameValue = document.getElementById('bannerName').value.trim();
+            const fileInput = document.getElementById('file-input');
+            
+            if (!nameValue) {
+                document.getElementById('error-name').style.display = 'block';
+                hasError = true;
+            }
+
+            if (!isEdit && !fileInput.files[0]) {
+                document.getElementById('error-image').style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            const formData = new FormData(form);
+
+            // Add isActive manually if not checked (FormData doesn't include unchecked checkboxes)
+            if (!formData.has('isActive')) {
+                formData.append('isActive', false);
+            } else {
+                formData.set('isActive', true);
+            }
+
+            try {
+                const url = isEdit ? `/admin/editBanner/${bannerId}` : '/admin/addBanner';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                Swal.fire({
+                    title: isEdit ? 'Updating Banner...' : 'Creating Banner...',
+                    text: 'Please wait while we process the image.',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: '#0F0F0F',
+                    color: '#FFFFFF'
+                });
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message,
+                        background: '#0F0F0F',
+                        color: '#FFFFFF',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    window.location.href = '/admin/banners';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.message,
+                    background: '#0F0F0F',
+                    color: '#FFFFFF'
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

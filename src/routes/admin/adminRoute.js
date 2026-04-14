@@ -2,6 +2,7 @@ import express from "express";
 import * as adminControl from "../../controllers/admin/adminController.js"
 import adminAuth from "../../middlewares/adminAuth.js"
 import * as adminDashboard from "../../controllers/admin/dashboradAndSalseContl.js";
+import upload from "../../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -34,7 +35,7 @@ router.patch("/admin/orders/:orderId/item/:itemId/return",adminControl.handleRet
 
 router.get("/admin/coupons",adminControl.couponPage);
 router.get("/admin/coupon/addEditPage",adminControl.addEditCouponPage);
-router.post("/admin/coupon/add",adminControl.addCoupon);
+router.post("/admin/coupon/add",adminControl.addCoupon,()=>console.log("ethyo"));
 router.put("/admin/editCoupon/:id",adminControl.editCoupon);
 router.delete("/admin/coupon/delete/:id",adminControl.deleteCoupon);
 
@@ -43,6 +44,13 @@ router.get("/admin/offer/addEditPage", adminControl.addEditOfferPage);
 router.post("/admin/offer/add", adminControl.addOffer);
 router.put("/admin/offer/edit/:id", adminControl.editOffer);
 router.delete("/admin/offer/delete/:id", adminControl.deleteOffer);
+
+router.get("/admin/banners",adminControl.bannerPage);
+router.get("/admin/banners/addEditPage", adminControl.addEditBannerPage);
+router.post("/admin/addBanner", upload.single('image'), adminControl.addBanner);
+router.put("/admin/editBanner/:id", upload.single('image'), adminControl.editBanner);
+router.delete("/admin/deleteBanner",adminControl.deleteBanner);
+router.patch("/admin/banner/changeStatus/:id",adminControl.bannerStatus);
 
 const adminRoute = router;
 

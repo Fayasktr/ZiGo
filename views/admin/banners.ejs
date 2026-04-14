@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Banner Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Admin Sidebar --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        /* --- Main Content --- */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header-info h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .btn-add {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-add:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        /* --- Banner Grid --- */
+        .banners-container {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2.5rem;
+        }
+
+        .banner-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+        }
+
+        .banner-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 90, 31, 0.3);
+            transform: translateX(10px);
+        }
+
+        .banner-preview {
+            width: 280px;
+            height: 140px;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .banner-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s ease;
+        }
+
+        .banner-card:hover .banner-preview img {
+            transform: scale(1.1);
+        }
+
+        .banner-info h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--white);
+        }
+
+        .banner-slot {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.1);
+            padding: 4px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-icon:hover {
+            background: white;
+            color: black;
+            transform: translateY(-3px);
+        }
+
+        .btn-delete:hover {
+            background: #FF4757;
+            color: white;
+            border-color: #FF4757;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: var(--glass);
+            border-radius: 32px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- Toggle Switch --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-orange);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item active">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="page-header-info">
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Visuals</p>
+                <h1>Banner <span class="text-orange-500">Management</span></h1>
+            </div>
+            <a href="/admin/banners/addEditPage" class="btn-add">
+                <i class="fas fa-plus"></i> Upload New Banner
+            </a>
+        </header>
+
+        <div class="banners-container">
+            <% if (locals.banners && banners.length > 0) { %>
+                <% banners.forEach((banner, index) => { %>
+                    <div class="banner-card">
+                        <div class="banner-preview">
+                            <img src="<%= banner.image %>" alt="<%= banner.name %>">
+                        </div>
+                        <div class="flex-1">
+                            <span class="banner-slot">Slot: <%= banner.slot || 'N/A' %></span>
+                            <h3 class="font-bold text-xl mb-2 text-white"><%= banner.name %></h3>
+                            <div class="flex items-center gap-2">
+                                <label class="switch">
+                                    <input type="checkbox" <%= banner.isActive ? 'checked' : '' %>
+                                           onchange="changeStatus('<%= banner._id %>', this)">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="status-label text-[10px] opacity-40 font-bold uppercase">
+                                    <%= banner.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <a href="/admin/banners/addEditPage?id=<%= banner._id %>" class="btn-icon" title="Edit Metadata">
+                                <i class="fas fa-pen text-sm"></i>
+                            </a>
+                            <button onclick="confirmDelete('<%= banner._id %>', '<%= banner.name %>')" class="btn-icon btn-delete" title="Delete">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-500">
+                        <i class="fas fa-image text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">No Banners Found</h4>
+                    <p class="text-sm opacity-40 mb-6">Create promotional banners to highlight your latest products and offers.</p>
+                    <a href="/admin/banners/addEditPage" class="text-orange-500 font-bold border-b border-orange-500 pb-1 italic">
+                        Upload Your First Banner
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        async function confirmDelete(id, name) {
+            const result = await Swal.fire({
+                title: `Remove ${name}?`,
+                text: "This banner will be permanently deleted from the landing page.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF4757',
+                cancelButtonColor: 'rgba(255,255,255,0.05)',
+                confirmButtonText: 'Yes, delete it',
+                background: '#0F0F0F',
+                color: '#FFFFFF'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/admin/deleteBanner`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: 'Banner removed successfully.',
+                            background: '#0F0F0F',
+                            color: '#FFFFFF',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Something went wrong!',
+                        background: '#0F0F0F',
+                        color: '#FFFFFF'
+                    });
+                }
+            }
+        }
+
+        async function changeStatus(id, element) {
+            const checked = element.checked;
+            try {
+                const response = await fetch(`/admin/banner/changeStatus/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Status Updated',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        background: '#0F0F0F',
+                        color: '#FFFFFF'
+                    });
+                    
+                    // IF WE ACTIVATED THIS BANNER: Deactivate all others on the UI
+                    if (checked) {
+                        const allSwitches = document.querySelectorAll('.switch input');
+                        allSwitches.forEach(sw => {
+                            if (sw !== element) {
+                                sw.checked = false;
+                                // Update accompanying label
+                                const otherLabel = sw.closest('.flex').querySelector('.status-label');
+                                if (otherLabel) otherLabel.textContent = 'Inactive';
+                            }
+                        });
+                    }
+
+                    // Update current label text
+                    const label = element.closest('.flex').querySelector('.status-label');
+                    if (label) {
+                        label.textContent = checked ? 'Active' : 'Inactive';
+                    }
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to update status',
+                    background: '#0F0F0F',
+                    color: '#FFFFFF'
+                });
+                element.checked = !checked;
+            }
+        }
+    </script>
+</body>
+
+</html>

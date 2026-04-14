@@ -5,9 +5,9 @@ import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
 import categoryModel from "../../models/categoryModel.js";
 import walletModel from "../../models/walletModel.js"
-import * as paymentService from '../admin/paymentService.js';
-import { couponModel,couponUsage } from "../../models/couponModel.js";
+import {couponModel}  from "../../models/couponModel.js";
 import offerModel from '../../models/offerModel.js';
+import bannerModel from "../../models/bannerModel.js";
 
 
 export const accessToAdmin = async (adminMail, password) => {
@@ -104,7 +104,7 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
     
     if (newStatus === "returned") {
     order.returnRequested = false;
-    order.paymentStatus=""
+    order.paymentStatus="refunded"
     order.items.forEach(item => {
         if (item.itemStatus !== 'cancelled') {
             item.itemStatus = 'returned';
@@ -126,6 +126,27 @@ export const orderStatusUpdate=async(orderId,newStatus,paymentStatus)=>{
                 item.itemStatus = "cancelled";
             }
         }
+        let totalRefundAmt=0
+            if(order.paymentStatus=="paid"){
+                totalRefundAmt=order.pricing.total- order.pricing.shipping;
+        
+                await walletModel.updateOne(
+                    { userId: order.userId },
+                    { 
+                        $inc: { balance: totalRefundAmt },
+                        $push: { 
+                            transactions: {
+                                amount: totalRefundAmt,
+                                type: "credit",
+                                description: `Refund for cancellation: ${order.orderNumber}`,
+                                orderId: order._id,
+                                date: new Date()
+                            }
+                        }
+                    },
+                    { upsert: true }
+                );
+            }
     }
 
     if(newStatus =="delivered"){
@@ -170,9 +191,16 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
             { $inc: { "variants.$.stock": pendingQty }}
         );
         
-        const refundAmount = item.price * pendingQty;
+        const itemGrossValue = item.price * pendingQty; 
+        const orderOriginalSubtotal = order.pricing.subTotal; 
+        const itemWeight = itemGrossValue / orderOriginalSubtotal;
+        const totalOrderDiscounts = order.pricing.discound + order.pricing.couponDiscount;
+        const itemDiscountShare = itemWeight * totalOrderDiscounts;
+        const netAmount = itemGrossValue - itemDiscountShare;
+        const itemTaxShare = itemWeight * order.pricing.tax;
+        const refundAmount = Math.round(netAmount + itemTaxShare);
         
-        await walletModel.findOneAndUpdate(
+        await walletModel.updateOne(
             { userId: order.userId },
             {
                 $inc: { balance: refundAmount },
@@ -181,34 +209,32 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
                         type: "credit",
                         amount: refundAmount,
                         description: `Refund: ${pendingQty} unit(s) of ${item.productName} returned`,
-                        orderId: order._id
+                        orderId: order._id,
+                        date: new Date()
                     }
                 }
             },
-            { upsert: true, new: true }
+            { upsert: true }
         );
 
         item.returnedQuantity = (item.returnedQuantity || 0) + pendingQty;
         item.pendingReturnQuantity = 0;
-
         const totalAccountedFor = item.returnedQuantity + (item.cancelledQuantity || 0);
-
         if (totalAccountedFor >= item.quantity) {
             item.itemStatus = "returned";
             item.returnStatus = "approved";
         } else {
             item.returnStatus = "none";  
         }
-
         const allDone = order.items.every(i => {
             const accounted = (i.returnedQuantity || 0) + (i.cancelledQuantity || 0);
             return accounted >= i.quantity;
         });
+
         if (allDone){
             order.orderStatus = "returned";
-            order.paymentStatus="refunded"
+            order.paymentStatus = "refunded";
         }
-
     } else {
         item.returnStatus = "rejected";
         item.pendingReturnQuantity = 0;
@@ -240,11 +266,15 @@ export const couponPage=async(search,page)=>{
 
 
 export const addCoupon=async(couponData)=>{
-    console.log(`coupon data: ${couponData}`);
+    console.log("coupon data: ",couponData);
+    if(couponData.discountValue>couponData.minOrderAmount){
+        throw new Error("can't max discount grater than minimum order amount")
+    }
     const existCoupon = await couponModel.findOne({
         code: { $regex: `^${couponData.code}$`, $options: "i" }
     });
     if(existCoupon)throw new Error("this code coupon already exist");
+    
     const coupon = await couponModel.create({
         code: couponData.code,
         description: couponData.description,
@@ -420,3 +450,73 @@ export const deleteOffer = async (offerId) => {
     return deletedOffer;
 };
 
+
+
+export const bannerPage = async () => {
+    return bannerModel.find().sort({ createdAt: -1 });
+};
+
+export const getBannerForEdit = async (id) => {
+    const banner = await bannerModel.findById(id);
+    if (!banner) throw new Error("Banner not found");
+    return banner;
+};
+
+export const addBanner = async (bannerData) => {
+    const isActive = bannerData.isActive === 'true' || bannerData.isActive === true;
+    
+    if (isActive) {
+        await bannerModel.updateMany({}, { isActive: false });
+    }
+
+    const newBanner = await bannerModel.create({
+        name: bannerData.name,
+        description: bannerData.description,
+        image: bannerData.image,
+        slot: bannerData.slot,
+        isActive: isActive
+    });
+    return newBanner;
+};
+
+export const editBanner = async (id, bannerData) => {
+    const isActive = bannerData.isActive === 'true' || bannerData.isActive === true;
+
+    if (isActive) {
+        await bannerModel.updateMany({ _id: { $ne: id } }, { isActive: false });
+    }
+
+    const updateData = {
+        name: bannerData.name,
+        description: bannerData.description,
+        slot: bannerData.slot,
+        isActive: isActive
+    };
+    if (bannerData.image) {
+        updateData.image = bannerData.image;
+    }
+
+    const updatedBanner = await bannerModel.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updatedBanner) throw new Error("Banner not found");
+    return updatedBanner;
+};
+
+export const deleteBanner = async (id) => {
+    const deleted = await bannerModel.findByIdAndDelete(id);
+    if (!deleted) throw new Error("Banner not found");
+    return deleted;
+};
+
+export const bannerStatus=async(bannerId)=>{
+    const banner=await bannerModel.findById(bannerId);
+    if(!banner){
+        throw new Error("banner not found");
+    }
+    const newStatus = !banner.isActive;
+    if (newStatus) {
+        await bannerModel.updateMany({ _id: { $ne: bannerId } }, { isActive: false });
+    }
+    banner.isActive = newStatus;
+    await banner.save();
+    return banner;
+}

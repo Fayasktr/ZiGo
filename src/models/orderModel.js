@@ -90,7 +90,6 @@ const orderSchema = mongoose.Schema({
         discound: { type: Number, default: 0 },
         couponDiscount: { type: Number, default: 0 },
         total: { type: Number, required: true }
-
     },
     orderStatus: {
         type: String,
