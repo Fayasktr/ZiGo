@@ -5,17 +5,27 @@ import { otpSendToMail } from "../utils/nodemailer.js";
 import OTPModel from "../models/otpModel.js";
 import { hashPassword } from "../utils/hashPassword.js"
 import bannerModel from "../models/bannerModel.js";
+import productModel from "../models/productModel.js";
+import mongoose from "mongoose";
 
 export const landingPage=async()=>{
   let banner=await bannerModel.findOne({isActive:true});
+  const [phone,watch,headset]=await Promise.all([
+    productModel.findOne({category:"69a0eb22ed2d4c66fb4fc85c"}),
+    productModel.findOne({category:new mongoose.Types.ObjectId("699f51c3ff79d682af33bc87")}),
+    productModel.findOne({category:"ObjectId('69a0ebed6da7adfa1aab5a05')"})
+  ])
+  console.log("phone ",phone)
+  console.log("watch ",watch)
+  console.log("headset ",headset)
+  let showProducts=[phone,watch,headset].filter(i=>i!=null);
+  
   if(banner){
-    console.log(banner)
-    return banner
+    return {banner,showProducts}
   }else{
     banner =await bannerModel.findOne({createdAt:-1}).limit(1)
   }
-  console.log(banner)
-  return banner
+  return {banner,showProducts}
 }
 
 export const userLogin = async (email, password) => {

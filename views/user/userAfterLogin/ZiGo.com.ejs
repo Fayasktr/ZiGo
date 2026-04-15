@@ -725,56 +725,47 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <!-- Featured Product Card -->
-                    <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
-                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
-                            <img src="/public/landing/neo2.png" alt="ZiGo Neo" class="max-h-full group-hover:scale-110 transition-transform duration-700">
+                    <% if (locals.showProducts && showProducts.length > 0) { %>
+                        <% showProducts.forEach(product => { %>
+                            <% if (product) { %>
+                                <!-- Featured Product Card -->
+                                <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
+                                    <a href="/productDetailse/<%= product._id %>" class="block">
+                                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
+                                            <% const displayImg = (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images[0]) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>
+                                            <img src="<%= displayImg %>" alt="<%= product.productName %>" class="max-h-full group-hover:scale-110 transition-transform duration-700">
+                                        </div>
+                                    </a>
+                                    <div class="p-8">
+                                        <% 
+                                            let catName = 'Tech';
+                                            if (product.category) {
+                                                catName = product.category.categoryName || (typeof product.category === 'string' ? 'Premium' : 'Tech');
+                                            }
+                                        %>
+                                        <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block"><%= catName %></span>
+                                        <h3 class="text-2xl font-black mb-4"><%= product.productName || 'ZiGo Premium' %></h3>
+                                        <div class="flex justify-between items-center">
+                                            <% 
+                                                let displayPrice = '0';
+                                                if (product.variants && product.variants[0] && product.variants[0].price != null) {
+                                                    displayPrice = product.variants[0].price.toLocaleString('en-IN');
+                                                }
+                                            %>
+                                            <p class="text-2xl font-black">₹<%= displayPrice %></p>
+                                            <button onclick="addToCartAjax('<%= product._id %>', '<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
+                                                <i class="fas fa-plus text-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="col-span-full py-20 text-center opacity-40">
+                            <p class="text-xl font-bold">Featured deals loading...</p>
                         </div>
-                        <div class="p-8">
-                            <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">Flagship Series</span>
-                            <h3 class="text-2xl font-black mb-4">ZiGo Neo 1 Series</h3>
-                            <div class="flex justify-between items-center">
-                                <p class="text-2xl font-black">₹82,339.00</p>
-                                <button onclick="addToCartAjax('featured-product-1-placeholder')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
-                                    <i class="fas fa-plus text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Featured Product Card -->
-                    <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
-                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
-                            <img src="/public/landing/watch_pro.png" alt="ZiGo Watch" class="max-h-full group-hover:scale-110 transition-transform duration-700">
-                        </div>
-                        <div class="p-8">
-                            <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">Wearables</span>
-                            <h3 class="text-2xl font-black mb-4">ZiGo Watch S Pro</h3>
-                            <div class="flex justify-between items-center">
-                                <p class="text-2xl font-black">₹22,805.00</p>
-                                <button onclick="addToCartAjax('featured-product-2-placeholder')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
-                                    <i class="fas fa-plus text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Featured Product Card -->
-                    <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
-                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
-                            <img src="/public/landing/headset_elite.png" alt="ZiGo Audio" class="max-h-full group-hover:scale-110 transition-transform duration-700">
-                        </div>
-                        <div class="p-8">
-                            <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">Audio</span>
-                            <h3 class="text-2xl font-black mb-4">ZiGo Aura Elite</h3>
-                            <div class="flex justify-between items-center">
-                                <p class="text-2xl font-black">₹18,226.00</p>
-                                <button onclick="addToCartAjax('featured-product-3-placeholder')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
-                                    <i class="fas fa-plus text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
             </div>
         </section>

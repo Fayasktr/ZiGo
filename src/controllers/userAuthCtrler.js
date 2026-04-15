@@ -4,8 +4,8 @@ import * as addressService from "../services/uAddressService.js"
 
 export const landingBeforeLogin = asyncHandler(async (req, res) => {
   try {
-    let activeBanner=await userServises.landingPage();
-    res.render("user/landing",{activeBanner});
+    let {activeBanner,showProducts}=await userServises.landingPage();
+    res.render("user/landing",{activeBanner,showProducts});
   } catch (error) {
     res.redirect("/404")
   }
@@ -50,8 +50,8 @@ export const logOut = asyncHandler(async (req, res, next) => {
 
 export const LoadHomePage = asyncHandler(async (req, res) => {
   try {
-    let activeBanner=await addressService.homePage();
-    res.render("user/userAfterLogin/ZiGo.com.ejs",{activeBanner});
+    const { activeBanner, showProducts } = await userServises.landingPage();
+    res.render("user/userAfterLogin/ZiGo.com.ejs", { activeBanner, showProducts });
   } catch (error) {
     res.redirect("/404")
   }
