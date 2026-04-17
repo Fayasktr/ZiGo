@@ -1,67 +1,65 @@
-import mongoose from "mongoose";
-
+import mongoose from 'mongoose';
 
 const variantSchema = mongoose.Schema({
-    productId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Product"
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  stock: {
+    type: Number,
+    required: true,
+  },
+  attributes: {
+    type: Map,
+    of: String,
+    default: {},
+  },
+  images: {
+    type: [String],
+    validate: {
+      validator: function (val) {
+        return !val || val.length >= 3;
+      },
+      message: 'A product must have minimum 3 images',
     },
-    price:{
-        type:Number,
-        required:true
-    },
-    stock:{
-        type:Number,
-        required:true
-    },
-    attributes:{
-        type:Map,
-        of:String,
-        default:{}
-    },images:{
-        type:[String],
-        validate:{
-            validator:function(val){
-                return !val || val.length>=3
-            },
-            message:"A product must have minimum 3 images"
-        }
-    },
-    isListed:{
-        type:Boolean,
-        default:true
-    }
-})
+  },
+  isListed: {
+    type: Boolean,
+    default: true,
+  },
+});
 
-const productSchema = mongoose.Schema({
-    productName:{
-        type:String,
-        required:true
+const productSchema = mongoose.Schema(
+  {
+    productName: {
+      type: String,
+      required: true,
     },
-    description:{
-        type:String
+    description: {
+      type: String,
     },
-    brand:{
-        type:String
+    brand: {
+      type: String,
     },
-    category:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"category"
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'category',
     },
-    variants:[variantSchema],
-    isListed:{
-        type:Boolean,
-        default:true
-    }
+    variants: [variantSchema],
+    isListed: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-},  
-{
-    timestamps:true
-}
-)
-
-const productModel = mongoose.model("productModel",productSchema);
+const productModel = mongoose.model('productModel', productSchema);
 
 export default productModel;
-
-

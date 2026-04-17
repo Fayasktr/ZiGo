@@ -1,6 +1,6 @@
-import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import User from "../models/userModel.js";
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import User from '../models/userModel.js';
 
 // ═══════════════════════════════════════════════════
 // PART A — Define the Google Strategy
@@ -11,32 +11,31 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback"  
+      callbackURL: '/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ googleId:profile.id });
-        let email= profile.emails[0].value;
+        let user = await User.findOne({ googleId: profile.id });
+        let email = profile.emails[0].value;
         if (user) {
-            user.isVerified = true;
-            await user.save();
-        }else{
-          user=await User.findOne({email:email});
-          if(user){
+          user.isVerified = true;
+          await user.save();
+        } else {
+          user = await User.findOne({ email: email });
+          if (user) {
             user.googleId = profile.id;
             user.isVerified = true;
             await user.save();
-          }else{
+          } else {
             user = await User.create({
-            userName: profile.displayName,      
-            email: profile.emails[0].value,
-            profileImage: profile.photos[0].value,   
-            googleId: profile.id              
-           });
+              userName: profile.displayName,
+              email: profile.emails[0].value,
+              profileImage: profile.photos[0].value,
+              googleId: profile.id,
+            });
           }
         }
         return done(null, user);
-
       } catch (err) {
         return done(err, null);
       }
@@ -52,7 +51,6 @@ passport.use(
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
-
 
 // ═══════════════════════════════════════════════════
 // PART C — deserializeUser

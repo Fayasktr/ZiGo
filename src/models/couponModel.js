@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const couponSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const couponSchema = new mongoose.Schema(
     },
     discountType: {
       type: String,
-      enum: ["percentage", "fixed"],
+      enum: ['percentage', 'fixed'],
       required: true,
     },
     discountValue: {
@@ -23,7 +23,6 @@ const couponSchema = new mongoose.Schema(
     },
     maxDiscount: {
       type: Number,
-      
     },
     minOrderAmount: {
       type: Number,
@@ -35,32 +34,32 @@ const couponSchema = new mongoose.Schema(
     },
     usageLimit: {
       type: Number,
-      default:100,
+      default: 100,
     },
     usedCount: {
       type: Number,
       default: 0,
     },
     // userUsageLimit: {
-    //   type: Number, 
+    //   type: Number,
     //   default: 1,
     // },
     applicableUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     applicableProducts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: 'Product',
       },
     ],
     applicableCategories: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
+        ref: 'Category',
       },
     ],
     isActive: {
@@ -71,23 +70,23 @@ const couponSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const couponModel = mongoose.model("Coupon", couponSchema);
+export const couponModel = mongoose.model('Coupon', couponSchema);
 
 const couponUsageSchema = new mongoose.Schema(
   {
     couponId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon",
+      ref: 'Coupon',
       required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Order",
+      ref: 'Order',
     },
     discountedAmount: {
       type: Number,
@@ -101,5 +100,4 @@ const couponUsageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
-export const couponUsage =  mongoose.model("CouponUsage", couponUsageSchema);
+export const couponUsage = mongoose.model('CouponUsage', couponUsageSchema);

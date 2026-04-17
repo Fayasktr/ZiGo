@@ -1,52 +1,51 @@
-import User from "../models/userModel.js";
-import { GenerateOTP } from "../utils/otp.js";
+import User from '../models/userModel.js';
+import { GenerateOTP } from '../utils/otp.js';
 import checkPass from '../utils/checkPassword.js';
-import { otpSendToMail } from "../utils/nodemailer.js";
-import OTPModel from "../models/otpModel.js";
-import { hashPassword } from "../utils/hashPassword.js"
-import bannerModel from "../models/bannerModel.js";
-import productModel from "../models/productModel.js";
-import mongoose from "mongoose";
+import { otpSendToMail } from '../utils/nodemailer.js';
+import OTPModel from '../models/otpModel.js';
+import { hashPassword } from '../utils/hashPassword.js';
+import bannerModel from '../models/bannerModel.js';
+import productModel from '../models/productModel.js';
+import mongoose from 'mongoose';
 
-export const landingPage=async()=>{
-  let banner=await bannerModel.findOne({isActive:true});
-  const [phone,watch,headset]=await Promise.all([
-    productModel.findOne({category:"69a0eb22ed2d4c66fb4fc85c"}),
-    productModel.findOne({category:new mongoose.Types.ObjectId("699f51c3ff79d682af33bc87")}),
-    productModel.findOne({category:"ObjectId('69a0ebed6da7adfa1aab5a05')"})
-  ])
-  console.log("phone ",phone)
-  console.log("watch ",watch)
-  console.log("headset ",headset)
-  let showProducts=[phone,watch,headset].filter(i=>i!=null);
-  
-  if(banner){
-    return {banner,showProducts}
-  }else{
-    banner =await bannerModel.findOne({createdAt:-1}).limit(1)
+export const landingPage = async () => {
+  let banner = await bannerModel.findOne({ isActive: true });
+  const [phone, watch, headset] = await Promise.all([
+    productModel.findOne({ category: '69a0eb22ed2d4c66fb4fc85c' }),
+    productModel.findOne({
+      category: new mongoose.Types.ObjectId('699f51c3ff79d682af33bc87'),
+    }),
+    productModel.findOne({ category: '69a0ebed6da7adfa1aab5a05' }),
+  ]);
+
+  let showProducts = [phone, watch, headset].filter((i) => i != null);
+  if (banner) {
+    return { activeBanner: banner, showProducts };
+  } else {
+    banner = await bannerModel.findOne().sort({ createdAt: -1 });
+    return { activeBanner: banner, showProducts };
   }
-  return {banner,showProducts}
-}
+};
 
 export const userLogin = async (email, password) => {
   email = email.trim().toLowerCase();
   password = password.trim();
 
   if (!email || !password) {
-    throw new Error("Please fill all fields");
+    throw new Error('Please fill all fields');
   }
   const existUser = await User.findOne({ email });
 
   if (!existUser) {
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 
   if (existUser.isBlocked == true) {
-    throw new Error("User Blocked By Admin");
+    throw new Error('User Blocked By Admin');
   }
   const isMatch = await checkPass(password, existUser.password);
   if (!isMatch) {
-    throw new Error("Invalid credentials");
+    throw new Error('Invalid credentials');
   }
 
   return existUser;
@@ -55,7 +54,7 @@ export const userLogin = async (email, password) => {
 export const userSignUp = async (userName, email, password) => {
   const existUser = await User.findOne({ email, isVerified: true });
   if (existUser) {
-    throw new Error("Email already taken...");
+    throw new Error('Email already taken...');
   }
 
   const OTP = await GenerateOTP();
@@ -75,61 +74,61 @@ export const userSignUp = async (userName, email, password) => {
     { upsert: true }
   );
 
-  const subjectForMail = "SignUp OTP verification Code";
+  const subjectForMail = 'SignUp OTP verification Code';
 
   await otpSendToMail(OTP, email, subjectForMail);
   return newUser;
 };
 
 export const verifyOtp = async (entredOtp, userId) => {
-
-  let otpFromDB = await OTPModel.findOne({ userId })
-  console.log("generated otp  " + otpFromDB)
+  let otpFromDB = await OTPModel.findOne({ userId });
+  console.log('generated otp  ' + otpFromDB);
 
   if (!otpFromDB || otpFromDB.otp != entredOtp) {
-    throw new Error("Invalid OTP or expired..")
+    throw new Error('Invalid OTP or expired..');
   }
 
   await OTPModel.deleteOne({ userId });
   await User.findByIdAndUpdate(userId, { isVerified: true });
-  return await User.findById(userId)
-}
+  return await User.findById(userId);
+};
 
 export const resendOtp = async (userId) => {
   const OTP = await GenerateOTP();
   const user = await User.findById(userId);
-  const subjectForMail = "SignUp OTP verification Code";
-  console.log(`latest otp is ${OTP}`)
+  const subjectForMail = 'SignUp OTP verification Code';
+  console.log(`latest otp is ${OTP}`);
 
   await OTPModel.findOneAndUpdate(
     { userId },
     { otp: OTP, createdAt: new Date(), isUsed: false },
     { upsert: true }
-  )
+  );
   const mailSend = await otpSendToMail(OTP, user.email, subjectForMail);
-}
+};
 
 export const forgettPass = async (email) => {
   let user = await User.findOne({ email });
   if (!user) {
-    throw new Error("this user doesn't exist")
+    throw new Error("this user doesn't exist");
   }
-  const OTP = await GenerateOTP()
+  const OTP = await GenerateOTP();
   let userId = user._id;
   await OTPModel.findOneAndUpdate(
     { userId },
     { otp: OTP, createdAt: new Date(), isUsed: false },
     { upsert: true }
-  )
+  );
   console.log(`forgetpass otp :${OTP}`);
-  const subjectForMail = "Forget Password verification Code";
+  const subjectForMail = 'Forget Password verification Code';
   await otpSendToMail(OTP, email, subjectForMail);
   return userId;
-}
+};
 
 export const updatePassword = async (newPass, email) => {
   const hashedPassword = await hashPassword(newPass);
-  const savePass = await User.findOneAndUpdate({ email }, { password: hashedPassword });
-
-
-}
+  const savePass = await User.findOneAndUpdate(
+    { email },
+    { password: hashedPassword }
+  );
+};
