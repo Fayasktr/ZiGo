@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | <%= locals.coupon ? 'Edit Coupon' : 'Add New Coupon' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Admin Sidebar --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .nav-item.active {
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #FF4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #FF4757;
+            color: white;
+        }
+
+        /* --- Main Content --- */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        .form-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-orange);
+            background: rgba(255, 90, 31, 0.05);
+        }
+
+        .btn-submit {
+            background: var(--primary-orange);
+            color: white;
+            padding: 1.25rem 3rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .back-btn {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn:hover {
+            color: var(--primary-orange);
+        }
+
+        .discount-type-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .discount-type-btn.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: #FF4757;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item active">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/reports" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="mb-12">
+            <a href="/admin/coupons" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Marketing Suite</a>
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Campaign Center</p>
+            <h1 class="text-3xl font-extrabold italic">
+                <%= locals.coupon ? 'Edit' : 'Create' %> <span class="text-orange-500">Campaign</span>
+            </h1>
+        </header>
+
+        <form class="form-card" id="couponForm" action="<%= locals.coupon ? '/admin/editCoupon/' + coupon._id + '?_method=PUT' : '/admin/coupon/add' %>" method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">Coupon Code</label>
+                        <input type="text" name="code" id="couponCode" class="form-input" 
+                             style="text-transform: uppercase; letter-spacing: 2px;" 
+                             placeholder="e.g. SUMMER20" 
+                             value="<%= locals.coupon ? coupon.code : '' %>">
+                        <p id="error-code" class="error-message">Please enter a valid coupon code</p>
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Unique identifier for checkout entry</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Discount Structure</label>
+                        <div class="flex gap-4">
+                            <input type="hidden" name="discountType" id="discountType" value="<%= (locals.coupon && coupon.discountType) ? coupon.discountType : 'percentage' %>">
+                            <div class="discount-type-btn <%= (!locals.coupon || coupon.discountType === 'percentage') ? 'active' : '' %>" 
+                                 onclick="setType(this, 'percentage')">Percentage (%)</div>
+                            <div class="discount-type-btn <%= (locals.coupon && coupon.discountType === 'fixed') ? 'active' : '' %>" 
+                                 onclick="setType(this, 'fixed')">Flat Amount (₹)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="percentageGroup" style="<%= (!locals.coupon || coupon.discountType === 'percentage') ? '' : 'display: none;' %>">
+                        <label class="form-label">Discount Percentage (%)</label>
+                        <input type="number" id="percentageInput" 
+                             name="<%= (!locals.coupon || coupon.discountType === 'percentage') ? 'discountValue' : '' %>"
+                             class="form-input" 
+                             placeholder="write a number from 1 to 100 as %" 
+                             min="1" max="100"
+                             value="<%= (locals.coupon && coupon.discountType === 'percentage') ? coupon.discountValue : '' %>">
+                        <p id="error-percentage" class="error-message">Value must be between 1 and 100</p>
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Enter a value between 1 and 100</p>
+                    </div>
+
+                    <div class="form-group" id="fixedGroup" style="<%= (locals.coupon && coupon.discountType === 'fixed') ? '' : 'display: none;' %>">
+                        <label class="form-label">Reward Amount (₹)</label>
+                        <input type="number" id="fixedInput" 
+                             name="<%= (locals.coupon && coupon.discountType === 'fixed') ? 'discountValue' : '' %>"
+                             class="form-input" 
+                             placeholder="e.g. 500" 
+                             value="<%= (locals.coupon && coupon.discountType === 'fixed') ? coupon.discountValue : '' %>">
+                        <p id="error-fixed" class="error-message">Please enter a valid reward amount</p>
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Flat deduction in local currency</p>
+                    </div>
+
+                    <div class="form-group" id="maxDiscountGroup" style="<%= (locals.coupon && coupon.discountType === 'fixed') ? 'display: none;' : '' %>">
+                        <label class="form-label">Max Discount Amount (₹)</label>
+                        <input type="number" name="maxDiscount" class="form-input" 
+                             placeholder="Maximum ₹ savings " 
+                             value="<%= locals.coupon ? coupon.maxDiscount : '' %>">
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-widest italic">Cap the savings for high-value orders</p>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">Expiration Timeline</label>
+                        <input type="date" name="expiresAt" id="expiresAt" class="form-input"
+                             value="<%= (locals.coupon && coupon.expiresAt) ? new Date(coupon.expiresAt).toISOString().split('T')[0] : '' %>">
+                        <p id="error-expiresAt" class="error-message">Please select an expiration date</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Global usage limit</label>
+                        <input type="number" name="usageLimit" class="form-input" 
+                             placeholder="default: 100" 
+                             value="<%= locals.coupon ? coupon.usageLimit : '' %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Minimum Transaction Requirement (₹)</label>
+                        <input type="number" name="minOrderAmount" class="form-input" 
+                             placeholder="default: 1500" 
+                             value="<%= locals.coupon ? coupon.minOrderAmount : '' %>">
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="form-group mt-6">
+                <label class="form-label">Strategic Description</label>
+                <textarea name="description" id="description" class="form-input h-24" style="resize: none;" 
+                    placeholder="Describe the offer for your analytics..."><%= locals.coupon ? coupon.description : '' %></textarea>
+                <p id="error-description" class="error-message">Please provide a campaign description</p>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 mb-8 mt-8">
+                <label class="relative inline-flex items-center cursor-pointer group">
+                    <input type="checkbox" name="isActive" <%= (!locals.coupon || coupon.isActive) ? 'checked' : '' %> class="sr-only peer">
+                    <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full">
+                    </div>
+                </label>
+                <div>
+                    <p class="font-bold text-sm">Campaign Active Status</p>
+                    <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest italic">Immediately enable this coupon for customer use</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <%= locals.coupon ? 'Update Campaign Strategy' : 'Finalize & Launch Campaign' %>
+            </button>
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function setType(el, type) {
+            document.querySelectorAll('.discount-type-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('discountType').value = type;
+            
+            const percGroup = document.getElementById('percentageGroup');
+            const fixedGroup = document.getElementById('fixedGroup');
+            const maxGroup = document.getElementById('maxDiscountGroup');
+            const percInput = document.getElementById('percentageInput');
+            const fixedInput = document.getElementById('fixedInput');
+            
+            if(type === 'percentage'){
+                percGroup.style.display = 'block';
+                fixedGroup.style.display = 'none';
+                maxGroup.style.display = 'block';
+                percInput.name = 'discountValue';
+                fixedInput.name = '';
+            } else {
+                percGroup.style.display = 'none';
+                fixedGroup.style.display = 'block';
+                maxGroup.style.display = 'none';
+                percInput.name = '';
+                fixedInput.name = 'discountValue';
+            }
+        }
+
+        document.getElementById('couponForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            let hasError = false;
+            const typeValue = document.getElementById('discountType').value;
+            const codeValue = document.getElementById('couponCode').value.trim();
+            const expiresValue = document.getElementById('expiresAt').value;
+            const descValue = document.getElementById('description').value.trim();
+            
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+
+            if (!codeValue) { showError('error-code'); hasError = true; }
+            
+            if (typeValue === 'percentage') {
+                const val = parseFloat(document.getElementById('percentageInput').value);
+                if (isNaN(val) || val <= 0 || val > 100) { showError('error-percentage'); hasError = true; }
+            } else {
+                const val = parseFloat(document.getElementById('fixedInput').value);
+                if (isNaN(val) || val <= 0) { showError('error-fixed'); hasError = true; }
+            }
+
+            if (!expiresValue) { showError('error-expiresAt'); hasError = true; }
+            if (!descValue) { showError('error-description'); hasError = true; }
+
+            if (hasError) return;
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                data.isActive = this.querySelector('input[name="isActive"]').checked;
+
+                // Dynamically detect method from the URL (PUT if _method=PUT is present)
+                const method = this.action.includes('_method=PUT') ? 'PUT' : 'POST';
+
+                const response = await fetch(this.action, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // Read as text first to catch any HTML error pages before JSON parsing
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    throw new Error("Server returned an unexpected response (HTML instead of JSON). Check your controller.");
+                }
+
+                if (result.success) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top',
+                        icon: 'success',
+                        title: result.message || 'Updated Successfully',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: '#1A1A1A',
+                        color: '#FFFFFF'
+                    });
+                    setTimeout(() => window.location.href = '/admin/coupons', 2000);
+                } else {
+                    throw new Error(result.message || 'Action failed');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.message,
+                    confirmButtonColor: '#FF5A1F',
+                    background: '#1A1A1A',
+                    color: '#FFFFFF'
+                });
+            }
+        });
+
+        function showError(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

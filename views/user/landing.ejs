@@ -640,7 +640,7 @@
                 <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
                     <div class="hero-content">
                         <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
-                        <p class="mx-auto lg:mx-0">Phones, smart watches & accessories — delivered faster than you
+                        <p class="mx-auto lg:mx-0">Phones, smart watches & AirPods — delivered faster than you
                             expect.
                             Premium quality at prices
                             that make sense.</p>
@@ -650,8 +650,9 @@
                         </div>
                     </div>
                     <div class="hero-visual w-full flex justify-center lg:justify-end">
-                        <img src="/public/landing/hero_premium.png" alt="Premium Tech Showcase"
-                            class="w-[85%] max-w-[500px]">
+                        <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
+                             alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                             class="w-[85%] max-w-[500px]">
                     </div>
                 </div>
             </section>
@@ -682,29 +683,29 @@
                         <p>Everything you need, organized perfectly.</p>
                     </div>
                     <div class="category-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <a href="/shop?category=smartphones" class="category-card">
+                        <a href="/shop?category=smartPhone" class="category-card">
                             <div class="category-image">
                                 <img src="/public/landing/smartphone.png" alt="Smartphones">
                             </div>
                             <h3>Smartphones</h3>
                         </a>
-                        <a href="/shop?category=watches" class="category-card">
+                        <a href="/shop?category=watch" class="category-card">
                             <div class="category-image">
                                 <img src="/public/landing/watch.png" alt="Smart Watches">
                             </div>
                             <h3>Smart Watches</h3>
                         </a>
-                        <a href="/shop?category=headsets" class="category-card">
+                        <a href="/shop?category=headset" class="category-card">
                             <div class="category-image">
                                 <img src="/public/landing/headset.png" alt="Headsets">
                             </div>
                             <h3>Headsets</h3>
                         </a>
-                        <a href="/shop?category=accessories" class="category-card">
+                        <a href="/shop?category=AirPods" class="category-card">
                             <div class="category-image">
-                                <img src="/public/landing/accessories.png" alt="Accessories">
+                                <img src="/public/landing/airpods.png" alt="AirPods">
                             </div>
-                            <h3>Accessories</h3>
+                            <h3>AirPods</h3>
                         </a>
                     </div>
                 </div>
@@ -718,60 +719,49 @@
                         <p>Handpicked tech for your lifestyle.</p>
                     </div>
                     <div class="product-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <!-- Product 1 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/neo2.png" alt="ZiGo Neo 1 Flagship">
+                        <% if (locals.showProducts && showProducts.length > 0) { %>
+                            <% showProducts.forEach(product => { %>
+                                <% if (product) { %>
+                                    <div class="product-card">
+                                        <a href="/productDetailse/<%= product._id %>" class="block">
+                                            <div class="product-img-wrapper">
+                                                <% const displayImg = (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images[0]) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>
+                                                <img src="<%= displayImg %>" alt="<%= product.productName %>">
+                                            </div>
+                                        </a>
+                                        <div class="product-info">
+                                            <% 
+                                                let catName = 'Tech';
+                                                if (product.category) {
+                                                    catName = product.category.categoryName || (typeof product.category === 'string' ? 'Premium' : 'Tech');
+                                                }
+                                            %>
+                                            <span class="product-category"><%= catName %></span>
+                                            <h3 class="product-title"><%= product.productName || 'ZiGo Premium Tech' %></h3>
+                                            <% 
+                                                let displayPrice = '0';
+                                                if (product.variants && product.variants[0] && product.variants[0].price != null) {
+                                                    displayPrice = product.variants[0].price.toLocaleString('en-IN');
+                                                }
+                                            %>
+                                            <p class="product-price">₹<%= displayPrice %></p>
+                                            <button class="add-to-cart-btn">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% }) %>
+                        <% } else { %>
+                            <!-- Fallback in case showProducts is not yet available -->
+                            <div class="col-span-full py-20 text-center opacity-40">
+                                <p class="text-xl font-bold">Featured products loading...</p>
                             </div>
-                            <div class="product-info">
-                                <span class="product-category">Smartphone</span>
-                                <h3 class="product-title">ZiGo Neo 1 Flagship</h3>
-                                <p class="product-price">₹82,339.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Product 2 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/watch_pro.png" alt="ZiGo Watch S Series">
-                            </div>
-                            <div class="product-info">
-                                <span class="product-category">Smart Watch</span>
-                                <h3 class="product-title">ZiGo Watch S Series</h3>
-                                <p class="product-price">₹22,805.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Product 3 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/headset_elite.png" alt="ZiGo Aura Elite">
-                            </div>
-                            <div class="product-info">
-                                <span class="product-category">Audio</span>
-                                <h3 class="product-title">ZiGo Aura Elite</h3>
-                                <p class="product-price">₹18,226.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                        <% } %>
                     </div>
                 </div>
             </section>

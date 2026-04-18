@@ -177,9 +177,18 @@
             <div class="info-pill flex justify-between items-center">
                 <div>
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Payment Method</span>
-                    <span class="text-sm font-bold text-slate-800 uppercase italic">
-                        <%= order.paymentMethod === 'rozorpay' ? 'Digital Payment' : (order.paymentMethod === 'wallet' ? 'Wallet' : 'Cash on Delivery') %>
+                    <span class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <% if (order.paymentMethod === 'razorpay') { %>
+                            <i class="fas fa-bolt text-amber-500"></i> Online Payment (Razorpay)
+                        <% } else if (order.paymentMethod === 'wallet') { %>
+                            <i class="fas fa-wallet text-blue-500"></i> Wallet Payment
+                        <% } else { %>
+                            <i class="fas fa-money-bill-wave text-slate-400"></i> Cash on Delivery
+                        <% } %>
                     </span>
+                    <% if (order.paymentMethod === 'razorpay' && order.paymentId) { %>
+                        <span class="text-[10px] text-slate-400 block mt-1">Ref ID: <span class="font-mono text-slate-600"><%= order.paymentId %></span></span>
+                    <% } %>
                 </div>
                 <div class="text-right">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Status</span>

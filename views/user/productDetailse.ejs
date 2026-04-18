@@ -504,17 +504,19 @@
                                         </div>
 
                                         <div class="price-container">
-                                            <span class="current-price">₹<%= defaultVariant.price ?
-                                                    defaultVariant.price.toLocaleString() : '0' %></span>
-                                            <% if (defaultVariant.mrp && defaultVariant.mrp> defaultVariant.price) { %>
-                                                <span class="mrp-price">₹<%= defaultVariant.mrp.toLocaleString() %>
-                                                </span>
-                                                <% const discount=Math.round(((defaultVariant.mrp -
-                                                    defaultVariant.price) / defaultVariant.mrp) * 100); %>
-                                                    <span class="discount-badge">
-                                                        <%= discount %>% OFF
-                                                    </span>
-                                                    <% } %>
+                                            <% if (product.offerDiscount > 0) { %>
+                                                <span class="current-price">₹<%= product.finalPrice.toLocaleString() %></span>
+                                                <span class="mrp-price">₹<%= defaultVariant.price.toLocaleString() %></span>
+                                                <% const percentage = Math.round((product.offerDiscount / defaultVariant.price) * 100); %>
+                                                <span class="discount-badge"><%= percentage %>% OFF</span>
+                                            <% } else { %>
+                                                <span class="current-price">₹<%= defaultVariant.price ? defaultVariant.price.toLocaleString() : '0' %></span>
+                                                <% if (defaultVariant.mrp && defaultVariant.mrp > defaultVariant.price) { %>
+                                                    <span class="mrp-price">₹<%= defaultVariant.mrp.toLocaleString() %></span>
+                                                    <% const discount = Math.round(((defaultVariant.mrp - defaultVariant.price) / defaultVariant.mrp) * 100); %>
+                                                    <span class="discount-badge"><%= discount %>% OFF</span>
+                                                <% } %>
+                                            <% } %>
                                         </div>
 
                                         <div id="variant-selectors">
@@ -684,47 +686,49 @@
                                         </div>
 
                                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                                            <% relatedProducts.forEach(rel=> { %>
-                                                <div class="group cursor-pointer"
+                                            <% relatedProducts.forEach(rel => { %>
+                                                <div class="product-card group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#FF5A1F]/30 hover:shadow-2xl transition-all duration-500 cursor-pointer"
                                                     onclick="window.location.href='/productDetailse/<%= rel._id %>'">
-                                                    <div
-                                                        class="aspect-square bg-gray-50 rounded-3xl p-8 flex items-center justify-center border border-transparent group-hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
-                                                        <% let relImgSrc='/public/landing/no-image.png' ; if
-                                                            (rel.variants && rel.variants.length> 0 &&
-                                                            rel.variants[0].images && rel.variants[0].images.length > 0)
-                                                            {
-                                                            let relUrl = rel.variants[0].images[0];
-                                                            if (relUrl.startsWith('http') || relUrl.startsWith('/')) {
-                                                            relImgSrc = relUrl;
-                                                            } else {
-                                                            relImgSrc = '/' + relUrl;
+                                                    
+                                                    <div class="img-container relative aspect-square bg-gray-50 p-8 overflow-hidden">
+                                                        <% 
+                                                            let relImgSrc = '/public/landing/no-image.png';
+                                                            if (rel.variants && rel.variants.length > 0 && rel.variants[0].images && rel.variants[0].images.length > 0) {
+                                                                relImgSrc = rel.variants[0].images[0];
                                                             }
-                                                            }
-                                                            %>
-                                                            <img src="<%= relImgSrc %>" alt="<%= rel.productName %>"
-                                                                class="max-w-full max-height-full object-contain group-hover:scale-110 transition-transform duration-500">
-                                                            <% if (rel.variants && rel.variants[0] &&
-                                                                rel.variants[0].mrp> rel.variants[0].price) { %>
-                                                                <span
-                                                                    class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">-
-                                                                    <%= Math.round(((rel.variants[0].mrp -
-                                                                        rel.variants[0].price)/rel.variants[0].mrp)*100)
-                                                                        %>
-                                                                        %
-                                                                </span>
-                                                                <% } %>
+                                                        %>
+                                                        
+                                                        <!-- Offer Badge -->
+                                                        <% if (rel.offerDiscount > 0) { %>
+                                                            <% const relPercentage = Math.round((rel.offerDiscount / rel.variants[0].price) * 100); %>
+                                                            <div class="absolute top-4 left-4 bg-[#FF5A1F] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg z-10 uppercase tracking-widest">
+                                                                <%= relPercentage %>% OFF
+                                                            </div>
+                                                        <% } %>
+
+                                                        <img src="<%= relImgSrc %>" alt="<%= rel.productName %>" 
+                                                            class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110">
                                                     </div>
-                                                    <div class="mt-5">
-                                                        <h3
-                                                            class="font-bold text-lg group-hover:text-orange-500 transition-colors">
+
+                                                    <div class="product-info p-6">
+                                                        <span class="text-[10px] text-[#FF5A1F] font-bold uppercase tracking-[3px] mb-2 block opacity-70">
+                                                            <%= rel.category ? rel.category.categoryName : 'Tech' %>
+                                                        </span>
+                                                        <h3 class="text-gray-900 font-bold text-sm leading-snug line-clamp-2 min-h-[40px] group-hover:text-[#FF5A1F] transition-colors mb-4">
                                                             <%= rel.productName %>
                                                         </h3>
-                                                        <p class="text-xl font-extrabold mt-1">₹<%=
-                                                                rel.variants[0].price.toLocaleString() %>
-                                                        </p>
+                                                        
+                                                        <div class="flex items-center gap-3">
+                                                            <% if (rel.offerDiscount > 0) { %>
+                                                                <span class="text-sm text-gray-300 line-through">₹<%= rel.variants[0].price.toLocaleString() %></span>
+                                                                <span class="text-lg font-black text-[#0F0F0F]">₹<%= rel.finalPrice.toLocaleString() %></span>
+                                                            <% } else { %>
+                                                                <span class="text-lg font-black text-[#0F0F0F]">₹<%= rel.variants[0].price.toLocaleString() %></span>
+                                                            <% } %>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <% }) %>
+                                            <% }) %>
                                         </div>
                                     </section>
                                     <% } %>
@@ -962,9 +966,49 @@
                                     function updateVariantUI(variant) {
                                         currentVariantId = variant._id.toString();
 
-                                        // Update Price
+                                        // --- Offer-Aware Price Update ---
                                         const priceEl = document.querySelector('.current-price');
-                                        if (priceEl) priceEl.innerText = '₹' + variant.price.toLocaleString();
+                                        const mrpEl = document.querySelector('.mrp-price');
+                                        const badgeEl = document.querySelector('.discount-badge');
+
+                                        // Get offer data from the server-side variables
+                                        const offerDiscount = <%= product.offerDiscount || 0 %>;
+                                        const basePrice = <%= product.variants[0].price %>;
+                                        
+                                        if (offerDiscount > 0 && priceEl) {
+                                            // Calculate the percentage of the discount based on the original base price
+                                            const discountPercentage = offerDiscount / basePrice;
+                                            const variantDiscount = Math.round(variant.price * discountPercentage);
+                                            const finalVariantPrice = variant.price - variantDiscount;
+
+                                            priceEl.innerText = '₹' + finalVariantPrice.toLocaleString();
+                                            if (mrpEl) {
+                                                mrpEl.innerText = '₹' + variant.price.toLocaleString();
+                                                mrpEl.style.display = 'inline'; // Ensure it's visible
+                                            }
+                                            if (badgeEl) {
+                                                const newPercentage = Math.round((variantDiscount / variant.price) * 100);
+                                                badgeEl.innerText = newPercentage + '% OFF';
+                                                badgeEl.style.display = 'inline';
+                                            }
+                                        } else if (priceEl) {
+                                            // No offer logic
+                                            priceEl.innerText = '₹' + variant.price.toLocaleString();
+                                            if (mrpEl) {
+                                                if (variant.mrp && variant.mrp > variant.price) {
+                                                    mrpEl.innerText = '₹' + variant.mrp.toLocaleString();
+                                                    mrpEl.style.display = 'inline';
+                                                    if (badgeEl) {
+                                                        const mrpDisc = Math.round(((variant.mrp - variant.price) / variant.mrp) * 100);
+                                                        badgeEl.innerText = mrpDisc + '% OFF';
+                                                        badgeEl.style.display = 'inline';
+                                                    }
+                                                } else {
+                                                    mrpEl.style.display = 'none';
+                                                    if (badgeEl) badgeEl.style.display = 'none';
+                                                }
+                                            }
+                                        }
 
                                         // Update Stock Status and Buttons
                                         const stockEl = document.querySelector('.stock-status');

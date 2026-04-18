@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiGo Admin | Sales Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/png" href="/public/public/favicon.png">
+    <style>
+        :root {
+            --primary-orange: #FF5A1F;
+            --primary-orange-hover: #E44D18;
+            --deep-black: #0F0F0F;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 90, 31, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .admin-logo img {
+            height: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 90, 31, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem 3.5rem;
+        }
+
+        /* --- Dashboard Specific Styles --- */
+        .glass-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 90, 31, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        .metric-trend {
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .trend-up {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ED573;
+        }
+
+        .trend-down {
+            background: rgba(255, 71, 87, 0.1);
+            color: #FF4757;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--primary-orange);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+
+        .export-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .export-btn:hover {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* --- Table Styling --- */
+        .report-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .report-table th {
+            padding: 0 1.5rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.3;
+            text-align: left;
+        }
+
+        .report-table td {
+            padding: 1.2rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: 600;
+        }
+
+        .report-table tr td:first-child {
+            border-radius: 16px 0 0 16px;
+        }
+
+        .report-table tr td:last-child {
+            border-radius: 0 16px 16px 0;
+        }
+
+        .product-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: white;
+            padding: 4px;
+            object-fit: contain;
+        }
+
+        canvas {
+            filter: drop-shadow(0 0 10px rgba(255, 90, 31, 0.1));
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard" class="admin-logo">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/products" class="nav-item">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/admin/orders" class="nav-item">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+            <a href="/admin/users" class="nav-item">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="/admin/category" class="nav-item">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="/admin/coupons" class="nav-item">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+            <a href="/admin/offers" class="nav-item">
+                <i class="fas fa-percent"></i> Offers
+            </a>
+            <a href="/admin/banners" class="nav-item">
+                <i class="fas fa-image"></i> Banners
+            </a>
+            <a href="/admin/reports" class="nav-item active">
+                <i class="fas fa-file-invoice-dollar"></i> Sales Report
+            </a>
+        </nav>
+        <a href="/admin/logout" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </aside>
+
+    <main class="admin-main">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Analytics</p>
+                <h1 class="text-3xl font-extrabold">Sales <span class="text-orange-500">Overview</span></h1>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="exportReport('pdf')" class="export-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                <button onclick="exportReport('excel')" class="export-btn"><i class="fas fa-file-excel"></i> Export excel</button>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-3 mb-10 items-center">
+            <button class="filter-btn active" data-period="today">Today</button>
+            <button class="filter-btn" data-period="week">Last 7 Days</button>
+            <button class="filter-btn" data-period="month">Last 30 Days</button>
+            <button class="filter-btn" data-period="year">Yearly</button>
+            <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1">
+                <input type="date" id="startDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
+                <span class="text-white/20">to</span>
+                <input type="date" id="endDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
+                <button onclick="applyCustomRange()" class="ml-2 text-orange-500 hover:text-white transition-colors">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass-card">
+                <p class="metric-title">Total Revenue</p>
+                <p class="metric-value" id="totalRevenue">₹0</p>
+                <span class="metric-trend trend-up">
+                    <i class="fas fa-arrow-up"></i> Collected
+                </span>
+                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-orange-500 w-[75%] rounded-full shadow-[0_0_10px_rgba(255,90,31,0.5)]"></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <p class="metric-title">Total Orders</p>
+                <p class="metric-value" id="totalOrders">0</p>
+                <span class="metric-trend trend-down">
+                    <i class="fas fa-shopping-bag"></i> Count
+                </span>
+                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 w-[60%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <p class="metric-title">Avg. Order Value</p>
+                <p class="metric-value" id="avgOrderValue">₹0</p>
+                <span class="metric-trend trend-up">
+                    <i class="fas fa-chart-bar"></i> Efficiency
+                </span>
+                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-green-500 w-[85%] rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <p class="metric-title">Items Sold</p>
+                <p class="metric-value" id="totalItemsSold">0</p>
+                <span class="metric-trend trend-up">
+                    <i class="fas fa-box-open"></i> Volume
+                </span>
+                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-500 w-[45%] rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 glass-card p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-xl font-black">Sales over Time</h2>
+                        <p class="text-xs opacity-40 mt-1">Revenue performance for current period</p>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card p-8">
+                <h2 class="text-xl font-black mb-8">Sales by Category</h2>
+                <div class="h-[250px] relative">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="mt-8 space-y-3" id="categoryBreakdown">
+                    <!-- Dynamic Categories -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="glass-card mb-12">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-black">Top Selling Products</h2>
+                <a href="/admin/products"
+                    class="text-orange-500 text-xs font-bold uppercase tracking-widest hover:underline">View All
+                    Products</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                            <th>Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topSellingTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let salesChart, categoryChart;
+        let currentPeriod = 'today';
+        let currentStartDate = null;
+        let currentEndDate = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            fetchReportData('today');
+
+            // Filter Click Handlers
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const period = btn.getAttribute('data-period');
+                    if(period) fetchReportData(period);
+                });
+            });
+        });
+
+        function initCharts() {
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [],
+                        borderColor: '#FF5A1F',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#FF5A1F',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(255, 90, 31, 0.05)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)' } },
+                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)' } }
+                    }
+                }
+            });
+
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#FF5A1F', '#3B82F6', '#A855F7', '#2ED573', '#FF4757'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '85%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        async function fetchReportData(period, start = null, end = null) {
+            try {
+                // Update local state
+                currentPeriod = period;
+                currentStartDate = start;
+                currentEndDate = end;
+
+                const query = new URLSearchParams({ period });
+                if (start) query.append('startDate', start);
+                if (end) query.append('endDate', end);
+
+                const response = await fetch(`/admin/api/reportData?${query.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    updateDashboard(result.data);
+                } else {
+                    console.error('Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+            }
+        }
+
+        function applyCustomRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (!start || !end) {
+                Swal.fire('Oops!', 'Please select both start and end dates', 'warning');
+                return;
+            }
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            fetchReportData('custom', start, end);
+        }
+
+        function updateDashboard(data) {
+            const { metrics, salesOverTime, topProducts, categoryWiseSales } = data;
+
+            // 1. Update Metrics
+            document.getElementById('totalRevenue').innerText = `₹${Math.round(metrics.totalRevenue).toLocaleString()}`;
+            document.getElementById('totalOrders').innerText = metrics.totalOrders;
+            document.getElementById('avgOrderValue').innerText = `₹${Math.round(metrics.avgOrderValue).toLocaleString()}`;
+            document.getElementById('totalItemsSold').innerText = metrics.totalItemsSold;
+
+            // 2. Update Sales Chart
+            salesChart.data.labels = salesOverTime.map(d => d.date);
+            salesChart.data.datasets[0].data = salesOverTime.map(d => d.revenue);
+            salesChart.update();
+
+            // 3. Update Category Chart & Breakdown
+            categoryChart.data.labels = categoryWiseSales.map(c => c.category || 'Uncategorized');
+            categoryChart.data.datasets[0].data = categoryWiseSales.map(c => c.revenue);
+            categoryChart.update();
+
+            const breakdownHtml = categoryWiseSales.map((c, i) => `
+                <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full" style="background: ${categoryChart.data.datasets[0].backgroundColor[i % 5]}"></div>
+                        <span class="text-xs font-bold">${c.category || 'Uncategorized'}</span>
+                    </div>
+                    <span class="text-xs font-black">₹${Math.round(c.revenue).toLocaleString()}</span>
+                </div>
+            `).join('');
+            document.getElementById('categoryBreakdown').innerHTML = breakdownHtml;
+
+            // 4. Update Top Products Table
+            const tableBody = document.getElementById('topSellingTableBody');
+            tableBody.innerHTML = topProducts.map(p => `
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-4">
+                            <img src="${p.image || '/public/landing/watch_pro.png'}" alt="Product" class="product-thumb">
+                            <span class="font-bold">${p.productName}</span>
+                        </div>
+                    </td>
+                    <td class="opacity-40 font-bold text-xs uppercase tracking-widest">${p.category || 'Uncategorized'}</td>
+                    <td class="font-black">${p.unitsSold}</td>
+                    <td class="text-orange-500 font-black">₹${Math.round(p.revenue).toLocaleString()}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <span class="font-black text-sm">${p.stock}</span>
+                            <span class="px-2 py-0.5 ${p.stock > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} text-[8px] font-black rounded uppercase">
+                                ${p.stock > 0 ? 'In Stock' : 'Out'}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportReport(format) {
+            const query = new URLSearchParams({ 
+                period: currentPeriod 
+            });
+            if (currentStartDate) query.append('startDate', currentStartDate);
+            if (currentEndDate) query.append('endDate', currentEndDate);
+
+            const exportUrl = `/export/${format}?${query.toString()}`;
+            
+            Swal.fire({
+                title: `Export as ${format.toUpperCase()}?`,
+                text: "Generating your report based on the current filters...",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#FF5A1F',
+                confirmButtonText: 'Download',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    window.location.href = exportUrl;
+                    return true;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

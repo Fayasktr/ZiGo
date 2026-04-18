@@ -313,7 +313,11 @@
                                 const variantIdStr = item.variantId ? item.variantId.toString() : '';
                                 const isAvailable = !!item.isAvailable;
                             %>
-                            <div class="cart-item" data-item-id="<%= item._id %>" data-price="<%= currentPrice %>" data-available="<%= isAvailable %>">
+                            <div class="cart-item" 
+                                 data-item-id="<%= item._id %>" 
+                                 data-price="<%= cartVariant ? (cartVariant.price || 0) : 0 %>" 
+                                 data-final-price="<%= item.finalPrice || currentPrice %>"
+                                 data-available="<%= isAvailable %>">
                                 <div class="item-img <%= !isAvailable ? 'item-unavailable' : '' %>" 
                                      <% if (hasProduct && isAvailable) { %> onclick="window.location.href='/productDetailse/<%= prodIdStr %>'" <% } %>>
                                     <img src="<%= cartImg %>" alt="<%= hasProduct ? item.product.productName : 'Product Unavailable' %>">
@@ -340,7 +344,19 @@
                                         <span>Brand: <%= (hasProduct && item.product.brand) ? item.product.brand : 'ZiGo' %></span>
                                         <span>Category: <%= (item.category) ? item.category.categoryName : 'N/A' %></span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-2">Unit Price: ₹<%= currentPrice.toLocaleString() %></p>
+                                    
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <% if (item.offerDiscount > 0) { %>
+                                            <span class="text-lg font-black text-[#0F0F0F]">₹<%= item.finalPrice.toLocaleString() %></span>
+                                            <span class="text-sm text-gray-400 line-through">₹<%= currentPrice.toLocaleString() %></span>
+                                            <span class="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100 uppercase tracking-tighter">
+                                                <%= Math.round((item.offerDiscount / currentPrice) * 100) %>% OFF
+                                            </span>
+                                        <% } else { %>
+                                            <span class="text-lg font-black text-[#0F0F0F]">₹<%= currentPrice.toLocaleString() %></span>
+                                        <% } %>
+                                    </div>
+
                                     <% if (!isAvailable) { %>
                                         <span class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full mt-2 inline-block">
                                             ⚠ <%= (cartVariant && cartVariant.stock <= 0) ? 'Out of Stock' : 'Currently Unavailable' %>
@@ -360,7 +376,9 @@
                                             onclick="updateQuantity('<%= prodIdStr %>', 1, '<%= item.quantity %>', '<%= variantIdStr %>')">+</button>
                                     </div>
                                     <div class="item-price-block">
-                                        <p class="item-price" id="itemTotal-<%= variantIdStr %>">₹<%= itemTotal.toLocaleString() %></p>
+                                        <p class="item-price" id="itemTotal-<%= variantIdStr %>">
+                                            ₹<%= ((item.finalPrice || currentPrice) * item.quantity).toLocaleString() %>
+                                        </p>
                                         <button class="remove-btn mt-2 ml-auto"
                                             onclick="removeFromCart('<%= prodIdStr %>', '<%= variantIdStr %>')">
                                             <i class="fas fa-trash-alt"></i>
@@ -394,6 +412,19 @@
 
                 <div class="space-y-4">
                     <div class="summary-row">
+                        <span>Bag Total</span>
+                        <% 
+                            const rawSubtotal = cart && cart.items ? cart.items.reduce((acc, i) => acc + ( (i.matchedVariant ? i.matchedVariant.price : 0) * i.quantity), 0) : 0;
+                        %>
+                        <span class="font-bold" id="cartRawSubtotal">₹<%= rawSubtotal.toLocaleString() %></span>
+                    </div>
+
+                    <div class="summary-row text-orange-500 font-bold">
+                        <span>Offer Savings</span>
+                        <span id="cartOfferDiscount">-₹<%= (cart && cart.totalSavings ? cart.totalSavings : 0).toLocaleString() %></span>
+                    </div>
+
+                    <div class="summary-row border-t border-gray-100 pt-4">
                         <span>Subtotal</span>
                         <span class="font-bold" id="cartSubtotal">₹<%= (typeof cart !== 'undefined' && cart) ?
                                 cart.totalPrice.toLocaleString() : '0.00' %></span>
@@ -443,16 +474,12 @@
                     <% } %>
                 </div>
 
-                <div class="coupon-box">
-                    <p class="text-sm font-bold mb-3 opacity-60">PROMO CODE</p>
-                    <input type="text" placeholder="Enter code" class="coupon-input">
-                    <button class="coupon-btn">Apply Coupon</button>
-                </div>
+               
             </div>
             </div>
         </main>
 
-        <%- include('../../partials/footer') %>
+        <%- include('../../partials/header') %>
 
             <script>
                 // Placeholder for the logic you will implement
@@ -511,6 +538,7 @@
                 }
 
                 function updateFrontendTotals() {
+                    let rawSubtotal = 0;
                     let subtotal = 0;
                     let totalItemsCount = 0;
                     const items = document.querySelectorAll('.cart-item');
@@ -518,9 +546,11 @@
                     items.forEach(item => {
                         const variantId = item.querySelector('[id^="qtyValue-"]').id.split('-')[1];
                         const isAvailable = item.getAttribute('data-available') === 'true';
-                        const price = parseFloat(item.getAttribute('data-price'));
+                        const originalPrice = parseFloat(item.getAttribute('data-price'));
+                        const finalPrice = parseFloat(item.getAttribute('data-final-price'));
                         const quantity = parseInt(document.getElementById(`qtyValue-${variantId}`).innerText);
-                        const itemTotal = price * quantity;
+                        
+                        const itemTotal = finalPrice * quantity;
                         
                         // Update item total display
                         const itemTotalElement = document.getElementById(`itemTotal-${variantId}`);
@@ -529,6 +559,7 @@
                         }
                         
                         if (isAvailable) {
+                            rawSubtotal += (originalPrice * quantity);
                             subtotal += itemTotal;
                             totalItemsCount += quantity;
                         }
@@ -539,12 +570,16 @@
                         window.updateCartCount(totalItemsCount);
                     }
 
+                    const savings = rawSubtotal - subtotal;
+
                     // Dynamic Shipping Logic
                     const shippingCharge = (subtotal > 1000 || subtotal === 0) ? 0 : 40;
                     const tax = subtotal * 0.18;
                     const total = subtotal + tax + shippingCharge;
 
                     // Update summary display
+                    document.getElementById('cartRawSubtotal').innerText = `₹${rawSubtotal.toLocaleString()}`;
+                    document.getElementById('cartOfferDiscount').innerText = `-₹${savings.toLocaleString()}`;
                     document.getElementById('cartSubtotal').innerText = `₹${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     
                     const shippingEl = document.getElementById('cartShipping');
@@ -611,7 +646,7 @@
             </script>
 
     <!-- Flash Message Alerts -->
-    <% if (success && success.length > 0) { %>
+    <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
         <script>
             window.addEventListener('DOMContentLoaded', () => {
                 Swal.fire({
@@ -624,7 +659,7 @@
             });
         </script>
     <% } %>
-    <% if (error && error.length > 0) { %>
+    <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
         <script>
             window.addEventListener('DOMContentLoaded', () => {
                 Swal.fire({

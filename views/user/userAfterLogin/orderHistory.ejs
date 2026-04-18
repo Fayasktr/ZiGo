@@ -382,6 +382,9 @@
                                         </div>
                                         <span class="order-status status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
                                         <a href="/user/order/<%= order._id %>" class="block mt-4 text-xs font-bold text-orange-500 hover:underline">View Details</a>
+                                        <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay' && order.orderStatus !== 'cancelled') { %>
+                                            <button onclick="retryPayment('<%= order._id %>', '<%= order.shippingAddress.phone %>', event)" class="block w-full mt-2 text-xs font-bold text-orange-600 hover:underline">Pay Now</button>
+                                        <% } %>
                                         <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
                                             <button onclick="cancelOrder('<%= order._id %>')" class="block w-full mt-2 text-xs font-bold text-red-500 hover:underline">Cancel Order</button>
                                         <% } %>
@@ -488,6 +491,9 @@
             }
         }
     </script>
+
+    <script src="/public/frentend.js/retryPayment.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <%- include('../../partials/footer') %>
 </body>

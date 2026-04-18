@@ -1,29 +1,32 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const categorySchema = mongoose.Schema({
-    categoryName:{
+const categorySchema = mongoose.Schema(
+  {
+    categoryName: {
+      type: String,
+      required: true,
+    },
+    iconClass: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: false,
+    },
+    variantAttributes: [
+      {
         type: String,
-        required:true
+      },
+    ],
+    isListed: {
+      type: Boolean,
+      default: true,
     },
-    iconClass:{
-        type:String,
-        required:true
-    },
-    description:{
-        type:String,
-        required:false
-    },
-    variantAttributes:[{
-        type:String
-    }],
-    isListed:{
-        type:Boolean,
-        default:true
-    }
-},
-{ timestamps:true })
+  },
+  { timestamps: true }
+);
 
-
-const categoryModle = mongoose.model("category", categorySchema);
+const categoryModle = mongoose.model('category', categorySchema);
 
 export default categoryModle;

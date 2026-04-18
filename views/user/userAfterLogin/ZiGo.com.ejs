@@ -648,148 +648,142 @@
 
     <%- include('../../partials/header') %>
 
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="fixed inset-0 z-[2000] hidden">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleMenu()"></div>
+        <div class="fixed top-0 right-0 bottom-0 w-[280px] bg-white p-8 flex flex-col gap-8 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-4">
+                <span class="font-black text-2xl tracking-tighter">Zi<span class="text-orange-500">Go</span></span>
+                <button onclick="toggleMenu()" class="text-3xl text-gray-400 hover:text-black">&times;</button>
+            </div>
+            <ul class="flex flex-col gap-6 font-bold text-lg">
+                <li><a href="/ZiGo.com" class="hover:text-orange-500 transition-colors">Home</a></li>
+                <li><a href="/shop" class="hover:text-orange-500 transition-colors">Shop</a></li>
+                <li><a href="/user/orders" class="hover:text-orange-500 transition-colors">Orders</a></li>
+                <li><a href="/user/profile" class="hover:text-orange-500 transition-colors">Profile</a></li>
+                <li><a href="/logout" class="text-red-500">Logout</a></li>
+            </ul>
+        </div>
+    </div>
 
-        <main>
-            <!-- Hero Section -->
-            <section class="hero flex flex-col lg:flex-row items-center text-center lg:text-left pt-48 pb-32">
-                <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
-                    <div class="hero-content">
-                        <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
-                        <p class="mx-auto lg:mx-0">Phones, smart watches & accessories — delivered faster than you
-                            expect.
-                            Premium quality at prices
-                            that make sense.</p>
-                        <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start">
-                            <a href="/shop" class="btn btn-primary">Shop Now</a>
-                            <a href="/shop" class="btn btn-secondary">Browse Categories</a>
-                        </div>
-                    </div>
-                    <div class="hero-visual w-full flex justify-center lg:justify-end">
-                        <img src="/public/landing/hero_premium.png" alt="Premium Tech Showcase"
-                            class="w-[85%] max-w-[500px]">
+    <main>
+        <!-- Hero Section -->
+        <section class="hero flex flex-col lg:flex-row items-center text-center lg:text-left pt-48 pb-32">
+            <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
+                <div class="hero-content">
+                    <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
+                    <p class="mx-auto lg:mx-0">Phones, smart watches & AirPods — delivered faster than you expect.
+                        Premium quality at prices
+                        that make sense.</p>
+                    <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start">
+                        <a href="/shop" class="btn btn-primary">Shop Now</a>
+                        <a href="/shop" class="btn btn-secondary">Browse Collections</a>
                     </div>
                 </div>
-            </section>
-
-            <!-- Brands Strip -->
-            <section class="brands-strip overflow-hidden">
-                <div class="max-w-6xl mx-auto px-5">
-                    <div class="brands-container flex flex-wrap justify-center gap-8 md:gap-16 items-center">
-                        <img src="https://placehold.co/120x40/transparent/333?text=APPLE" alt="Apple"
-                            class="h-8 md:h-10 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                        <img src="https://placehold.co/120x40/transparent/333?text=SAMSUNG" alt="Samsung"
-                            class="h-8 md:h-10 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                        <img src="https://placehold.co/120x40/transparent/333?text=NOISE" alt="Noise"
-                            class="h-8 md:h-10 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                        <img src="https://placehold.co/120x40/transparent/333?text=BOAT" alt="Boat"
-                            class="h-8 md:h-10 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                        <img src="https://placehold.co/120x40/transparent/333?text=ONEPLUS" alt="OnePlus"
-                            class="h-8 md:h-10 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                    </div>
+                <div class="hero-visual w-full flex justify-center lg:justify-end">
+                    <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
+                         alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                         class="w-[85%] max-w-[500px]">
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Category Showcase -->
-            <section class="categories reveal">
-                <div class="max-w-6xl mx-auto px-5">
-                    <div class="section-header">
-                        <h2>Shop by Category</h2>
-                        <p>Everything you need, organized perfectly.</p>
-                    </div>
-                    <div class="category-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <a href="/shop?category=smartphones" class="category-card">
-                            <div class="category-image">
-                                <img src="/public/landing/smartphone.png" alt="Smartphones">
-                            </div>
-                            <h3>Smartphones</h3>
-                        </a>
-                        <a href="/shop?category=watches" class="category-card">
-                            <div class="category-image">
-                                <img src="/public/landing/watch.png" alt="Smart Watches">
-                            </div>
-                            <h3>Smart Watches</h3>
-                        </a>
-                        <a href="/shop?category=headsets" class="category-card">
-                            <div class="category-image">
-                                <img src="/public/landing/headset.png" alt="Headsets">
-                            </div>
-                            <h3>Headsets</h3>
-                        </a>
-                        <a href="/shop?category=accessories" class="category-card">
-                            <div class="category-image">
-                                <img src="/public/landing/accessories.png" alt="Accessories">
-                            </div>
-                            <h3>Accessories</h3>
-                        </a>
-                    </div>
+        <!-- Category Grid -->
+        <section class="py-24 bg-white reveal">
+            <div class="max-w-6xl mx-auto px-5">
+                <div class="section-header text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-black mb-4">Shop by Category</h2>
+                    <p class="opacity-60 max-w-xl mx-auto">Everything you need, organized perfectly by our tech curators.</p>
                 </div>
-            </section>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                    <!-- Smartphones -->
+                    <a href="/shop?category=Smartphones" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                        <div class="h-40 flex items-center justify-center mb-6">
+                            <img src="/public/landing/smartphone.png" alt="Phones" class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smartphones</h3>
+                    </a>
+                    <!-- Watches -->
+                    <a href="/shop?category=Smart%20Watches" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                        <div class="h-40 flex items-center justify-center mb-6">
+                            <img src="/public/landing/watch.png" alt="Watches" class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smart Watches</h3>
+                    </a>
+                    <!-- Audio -->
+                    <a href="/shop?category=Headsets" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                        <div class="h-40 flex items-center justify-center mb-6">
+                            <img src="/public/landing/headset.png" alt="Audio" class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Headsets</h3>
+                    </a>
+                    <!-- Accessories -->
+                    <a href="/shop?category=AirPods" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                        <div class="h-40 flex items-center justify-center mb-6">
+                            <img src="/public/landing/airpods.png" alt="AirPods" class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">AirPods</h3>
+                    </a>
+                </div>
+            </div>
+        </section>
 
-            <!-- Featured Products -->
-            <section class="featured-products reveal">
-                <div class="max-w-6xl mx-auto px-5">
-                    <div class="section-header">
-                        <h2>Featured Products</h2>
-                        <p>Handpicked tech for your lifestyle.</p>
+        <!-- Featured Products -->
+        <section class="py-24 bg-gray-50 reveal">
+            <div class="max-w-6xl mx-auto px-5">
+                <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-6">
+                    <div class="text-center md:text-left">
+                        <h2 class="text-4xl md:text-5xl font-black mb-4">Featured Deals</h2>
+                        <p class="opacity-60">Handpicked premium tech just for you.</p>
                     </div>
-                    <div class="product-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <!-- Product 1 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/neo2.png" alt="ZiGo Neo 1 Flagship">
-                            </div>
-                            <div class="product-info">
-                                <span class="product-category">Smartphone</span>
-                                <h3 class="product-title">ZiGo Neo 1 Flagship</h3>
-                                <p class="product-price">₹82,339.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Product 2 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/watch_pro.png" alt="ZiGo Watch S Series">
-                            </div>
-                            <div class="product-info">
-                                <span class="product-category">Smart Watch</span>
-                                <h3 class="product-title">ZiGo Watch S Series</h3>
-                                <p class="product-price">₹22,805.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Product 3 -->
-                        <div class="product-card">
-                            <div class="product-img-wrapper">
-                                <img src="/public/landing/headset_elite.png" alt="ZiGo Aura Elite">
-                            </div>
-                            <div class="product-info">
-                                <span class="product-category">Audio</span>
-                                <h3 class="product-title">ZiGo Aura Elite</h3>
-                                <p class="product-price">₹18,226.00</p>
-                                <button class="add-to-cart-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <a href="/shop" class="btn btn-secondary border-none bg-orange-500/10 text-orange-500 px-8 py-3 rounded-xl hover:bg-orange-500 hover:text-white">View All Products</a>
                 </div>
-            </section>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <% if (locals.showProducts && showProducts.length > 0) { %>
+                        <% showProducts.forEach(product => { %>
+                            <% if (product) { %>
+                                <!-- Featured Product Card -->
+                                <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
+                                    <a href="/productDetailse/<%= product._id %>" class="block">
+                                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
+                                            <% const displayImg = (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images[0]) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>
+                                            <img src="<%= displayImg %>" alt="<%= product.productName %>" class="max-h-full group-hover:scale-110 transition-transform duration-700">
+                                        </div>
+                                    </a>
+                                    <div class="p-8">
+                                        <% 
+                                            let catName = 'Tech';
+                                            if (product.category) {
+                                                catName = product.category.categoryName || (typeof product.category === 'string' ? 'Premium' : 'Tech');
+                                            }
+                                        %>
+                                        <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block"><%= catName %></span>
+                                        <h3 class="text-2xl font-black mb-4"><%= product.productName || 'ZiGo Premium' %></h3>
+                                        <div class="flex justify-between items-center">
+                                            <% 
+                                                let displayPrice = '0';
+                                                if (product.variants && product.variants[0] && product.variants[0].price != null) {
+                                                    displayPrice = product.variants[0].price.toLocaleString('en-IN');
+                                                }
+                                            %>
+                                            <p class="text-2xl font-black">₹<%= displayPrice %></p>
+                                            <button onclick="addToCartAjax('<%= product._id %>', '<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
+                                                <i class="fas fa-plus text-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="col-span-full py-20 text-center opacity-40">
+                            <p class="text-xl font-bold">Featured deals loading...</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </section>
 
             <!-- Why ZiGo -->
             <section class="why-zigo reveal">
@@ -906,32 +900,58 @@
 
         </main>
         <%- include('../../partials/footer') %>
-            <script>
-                // Header Scroll Effect
-                window.addEventListener('scroll', () => {
-                    const header = document.getElementById('main-header');
-                    if (window.scrollY > 50) {
-                        header.classList.add('scrolled');
-                    } else {
-                        header.classList.remove('scrolled');
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            // Toggle Mobile Menu
+            function toggleMenu() {
+                const menu = document.getElementById('mobile-menu');
+                menu.classList.toggle('hidden');
+                document.body.classList.toggle('overflow-hidden');
+            }
+
+            // Scroll Reveal Logic
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
                     }
                 });
+            }, { threshold: 0.1 });
 
-                // Scroll Reveal Animation
-                const observerOptions = {
-                    threshold: 0.1
-                };
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('active');
-                        }
+            // AJAX Add to Cart
+            async function addToCartAjax(productId, variantId = null) {
+                // If ID is a placeholder, redirect to shop
+                if (productId.includes('placeholder')) {
+                    location.href = '/shop';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/shop/cart/${productId}${variantId ? '?variantId='+variantId : ''}`, {
+                        method: 'POST'
                     });
-                }, observerOptions);
-
-                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-            </script>
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Added to Cart',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        if (window.updateCartCount) window.updateCartCount(data.cartCount);
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Action failed', 'error');
+                }
+            }
+        </script>
 </body>
 
 </html>
