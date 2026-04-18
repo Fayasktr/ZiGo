@@ -12,9 +12,7 @@ export const landingPage = async () => {
   let banner = await bannerModel.findOne({ isActive: true });
   const [phone, watch, headset] = await Promise.all([
     productModel.findOne({ category: '69a0eb22ed2d4c66fb4fc85c' }),
-    productModel.findOne({
-      category: new mongoose.Types.ObjectId('699f51c3ff79d682af33bc87'),
-    }),
+    productModel.findOne({ category: '699f51c3ff79d682af33bc87' }),
     productModel.findOne({ category: '69a0ebed6da7adfa1aab5a05' }),
   ]);
 
