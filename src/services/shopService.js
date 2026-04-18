@@ -132,124 +132,6 @@ export const productDetailsePage = async (productId, userId) => {
   product.offerDiscount = offerDiscount;
   product.finalPrice = finalPrice;
 
-<<<<<<< HEAD
-export const placeOrder = async (userId, addressId, paymentMethod, cartItems) => {
-
-    const user = await userModel.findById(userId);
-    if (!user || user.isBlocked) {
-        throw new Error("Account not authorized");
-    }
-
-    if (!cartItems.length) {
-        throw new Error("Cart is empty");
-    }
-
-    const address = await addressModel.findOne({
-        userId,
-        _id: addressId
-    });
-
-    if (!address) {
-        throw new Error("Invalid shipping address");
-    }
-
-    let orderItems = [];
-    let subTotal = 0;
-
-    for (let item of cartItems) {
-
-        const productId = new mongoose.Types.ObjectId(item.productId);
-        const variantId = new mongoose.Types.ObjectId(item.variantId);
-
-        const product = await productModel.findOne({
-            _id: productId,
-            "variants._id": variantId
-        });
-
-        if (!product) {
-            throw new Error("Product or variant not found");
-        }
-
-        const variant = product.variants.find(v =>
-            v._id.toString() === variantId.toString()
-        );
-
-        if (!variant) {
-            throw new Error("Variant not found");
-        }
-
-        if (!variant.isListed) {
-            throw new Error("Variant not available");
-        }
-
-        const result = await productModel.updateOne(
-            {
-                _id: productId,
-                "variants._id": variantId,
-                "variants.stock": { $gte: item.quantity } // ✅ prevent oversell
-            },
-            {
-                $inc: { "variants.$.stock": -item.quantity }
-            }
-        );
-
-        if (result.modifiedCount === 0) {
-            throw new Error(`${product.productName} out of stock`);
-        }
-
-        const itemTotal = variant.price * item.quantity;
-        subTotal += itemTotal;
-
-        orderItems.push({
-            productId,
-            variantId,
-            productName: product.productName,
-            variantAttributes: variant.attributes || {},
-            price: variant.price,
-            quantity: item.quantity,
-            itemTotal,
-            image: variant.images?.[0] || "/public/no-image.jpg",
-            itemStatus: "active"
-        });
-    }
-
-    const tax = parseFloat((subTotal * 0.18).toFixed(2));
-    const shippingCharge = subTotal < 1000 ? 40 : 0;
-    const total = parseFloat((subTotal + tax + shippingCharge).toFixed(2));
-
-    const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-    const order = await orderModel.create({
-        orderNumber,
-        userId,
-        shippingAddress: {
-            fullName: address.userName,
-            phone: address.phoneNumber,
-            addressLine: address.detailedAddress,
-            city: address.city,
-            state: address.state || "N/A",
-            pincode: address.pincode,
-            country: address.country || "India"
-        },
-        items: orderItems,
-        pricing: {
-            subTotal,
-            tax,
-            shipping: shippingCharge,
-            discount: 0,
-            total
-        },
-        paymentMethod,
-        paymentStatus: "pending",
-        orderStatus: "pending"
-    });
-
-    await cartModel.deleteMany({ userId });
-
-    return order;
-};
-
-=======
   const relatedProductsWithOffers = await Promise.all(
     relatedProducts.map(async (rel) => {
       const relBasePrice = rel.variants?.[0]?.price || 0;
@@ -309,7 +191,6 @@ export const wishlistUpdate = async (productId, userId, variantId) => {
     return { action: 'added', wishlistCount };
   }
 };
->>>>>>> week16
 
 export const addToCart = async (userId, productId, variantId, quantity = 1) => {
   if (!userId) {
@@ -340,15 +221,6 @@ export const addToCart = async (userId, productId, variantId, quantity = 1) => {
     if (newQuantity > 10) {
       throw new Error('Maximum cart limit reached (10 per item)');
     }
-<<<<<<< HEAD
-    const stockUpdate = await productModel.updateOne(
-        {
-        _id: buyNowItem.productId,
-        "variants._id": new mongoose.Types.ObjectId(buyNowItem.variantId),
-        // "variants.stock": { $gte: buyNowItem.quantity },
-        },
-        { $inc: { "variants.$.stock": -buyNowItem.quantity } }
-=======
     await cartModel.updateOne(
       { userId, productId, variantId },
       { $inc: { quantity: qty } },
@@ -608,7 +480,6 @@ export const placeOrder = async (
         'variants.stock': { $gte: item.quantity },
       },
       { $inc: { 'variants.$.stock': -item.quantity } }
->>>>>>> week16
     );
 
     if (stockUpdate.modifiedCount === 0) {
