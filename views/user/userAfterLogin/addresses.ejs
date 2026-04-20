@@ -204,6 +204,151 @@
             border-radius: 100px;
             font-weight: 700;
         }
+    
+
+        .profile-content {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .mobile-sidebar-toggle,
+        .mobile-sidebar-close,
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .profile-container {
+                padding: 108px 0.9rem 40px;
+            }
+
+            .profile-layout {
+                display: block;
+            }
+
+            .profile-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: min(84vw, 320px);
+                height: 100dvh;
+                padding: 1rem;
+                border-radius: 0 22px 22px 0;
+                transform: translateX(-104%);
+                transition: transform 0.28s ease;
+                z-index: 1200;
+                overflow-y: auto;
+                box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+            }
+
+            .profile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-sidebar-close {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 34px;
+                height: 34px;
+                margin-left: auto;
+                margin-bottom: 0.8rem;
+                border-radius: 10px;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                cursor: pointer;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 15, 15, 0.45);
+                backdrop-filter: blur(2px);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: var(--transition);
+                z-index: 1100;
+            }
+
+            .sidebar-backdrop.active {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+
+            .mobile-sidebar-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                border-radius: 12px;
+                padding: 0.6rem 0.9rem;
+                font-size: 0.82rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                cursor: pointer;
+            }
+
+            .panel-title {
+                font-size: 1.8rem;
+            }
+
+            .user-info {
+                margin-bottom: 1.25rem;
+                padding-bottom: 1rem;
+            }
+
+            .user-avatar-large {
+                width: 72px;
+                height: 72px;
+                margin-bottom: 0.7rem;
+            }
+
+            .user-name {
+                font-size: 1.1rem;
+            }
+
+            .user-email {
+                font-size: 0.78rem;
+            }
+
+            .sidebar-nav {
+                gap: 0.35rem;
+            }
+
+            .sidebar-link {
+                padding: 0.72rem 0.8rem;
+                font-size: 0.84rem;
+                border-radius: 12px;
+                gap: 0.6rem;
+            }
+
+            .sidebar-link i {
+                font-size: 0.92rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .profile-container {
+                padding: 96px 0.65rem 34px;
+            }
+
+            .mobile-sidebar-toggle {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.85rem;
+            }
+
+            .panel-title {
+                font-size: 1.5rem;
+            }
+        }
+
     </style>
 </head>
 
@@ -213,7 +358,10 @@
         <main class="profile-container">
             <div class="profile-layout">
                 <!-- Sidebar -->
-                <aside class="profile-sidebar">
+                <aside class="profile-sidebar" id="profileSidebar">
+                    <button type="button" class="mobile-sidebar-close" id="profileSidebarClose" aria-label="Close menu">
+                        <i class="fas fa-times"></i>
+                    </button>
                     <div class="user-info">
                         <div class="user-avatar-large">
                             <img src="<%= (user.profileImage) ? user.profileImage : 'https://ui-avatars.com/api/?name=' + user.userName + '&background=FF5A1F&color=fff' %>"
@@ -252,8 +400,14 @@
                     </nav>
                 </aside>
 
+                <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
                 <!-- Main Content Area -->
                 <div class="profile-content">
+                    <button type="button" class="mobile-sidebar-toggle" id="profileSidebarToggle" aria-controls="profileSidebar" aria-expanded="false">
+                        <i class="fas fa-bars"></i>
+                        <span>Profile Menu</span>
+                    </button>
 
                     <!-- Addresses Panel -->
                     <div id="addresses-panel">
@@ -389,6 +543,51 @@
                         });
                     }
                 </script>
+
+    <script>
+        (() => {
+            const sidebar = document.getElementById('profileSidebar');
+            const toggleBtn = document.getElementById('profileSidebarToggle');
+            const closeBtn = document.getElementById('profileSidebarClose');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            if (!sidebar || !toggleBtn || !closeBtn || !backdrop) return;
+
+            const mobileMedia = window.matchMedia('(max-width: 1024px)');
+
+            const setSidebarState = (isOpen) => {
+                if (!mobileMedia.matches) {
+                    sidebar.classList.remove('active');
+                    backdrop.classList.remove('active');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                    return;
+                }
+
+                sidebar.classList.toggle('active', isOpen);
+                backdrop.classList.toggle('active', isOpen);
+                toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                document.body.style.overflow = isOpen ? 'hidden' : '';
+            };
+
+            toggleBtn.addEventListener('click', () => setSidebarState(true));
+            closeBtn.addEventListener('click', () => setSidebarState(false));
+            backdrop.addEventListener('click', () => setSidebarState(false));
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') setSidebarState(false);
+            });
+
+            window.addEventListener('resize', () => {
+                if (!mobileMedia.matches) setSidebarState(false);
+            });
+
+            sidebar.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => setSidebarState(false));
+            });
+        })();
+    </script>
+
 </body>
 
 </html>

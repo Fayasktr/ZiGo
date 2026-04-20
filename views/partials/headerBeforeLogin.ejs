@@ -1,174 +1,347 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
     :root {
         --primary-orange: #FF5A1F;
         --primary-orange-hover: #E44D18;
         --deep-black: #0F0F0F;
         --white: #FFFFFF;
-        --transition: all 0.3s ease;
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     header {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
+        inset: 0 0 auto 0;
+        width: auto;
+        max-width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.92rem 5%;
+        padding: 1.25rem 5%;
         z-index: 1000;
-        background-color: rgba(15, 15, 15, 0.7);
-        backdrop-filter: blur(8px);
+        background-color: rgba(15, 15, 15, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         transition: var(--transition);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     header.scrolled {
-        padding: 0.63rem 5%;
-        background-color: rgba(15, 15, 15, 0.95);
-        box-shadow: 0 4px 40px rgba(255, 90, 31, 0.4);
+        padding: 0.85rem 5%;
+        background-color: rgba(15, 15, 15, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
     .logo {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        text-decoration: none;
+        transition: var(--transition);
     }
 
-    .logo img.icon { height: 100px; }
-    .logo img.name { height: 70px; }
+    .logo:hover {
+        transform: scale(1.02);
+    }
+
+    .logo img.icon { height: 72px; width: auto; }
+    .logo img.name { height: 34px; width: auto; margin-top: 2px; }
 
     .nav-links {
         display: flex;
-        gap: 2rem;
+        gap: 2.5rem;
         list-style: none;
+        margin: 0 auto 0 3rem;
     }
 
     .nav-links a {
         color: white;
         text-decoration: none;
-        opacity: 0.8;
+        font-weight: 500;
+        font-size: 0.95rem;
+        opacity: 0.7;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-orange);
+        transition: var(--transition);
     }
 
     .nav-links a:hover {
-        color: var(--primary-orange);
         opacity: 1;
+        color: var(--primary-orange);
+    }
+
+    .nav-links a:hover::after {
+        width: 100%;
     }
 
     .header-actions {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
-    .profile-link {
-        background: var(--primary-orange);
-        color: white;
-        padding: 0.6rem 1.2rem;
-        border-radius: 6px;
-        text-decoration: none;
+    .action-btn {
+        padding: 0.7rem 1.5rem;
+        border-radius: 10px;
         font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .login-link {
+        color: white;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .login-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
     }
 
     .signup-link {
-        border: 1px solid var(--primary-orange);
-        color: var(--primary-orange);
-        padding: 0.6rem 1.2rem;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 0.9rem;
+        background: var(--primary-orange);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 90, 31, 0.2);
     }
 
-    /* MOBILE FIXES */
-    @media (max-width: 768px) {
+    .signup-link:hover {
+        background: var(--primary-orange-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 90, 31, 0.4);
+    }
 
-        .nav-links {
-            display: none;
-        }
+    .menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: white;
+    }
 
-        .logo img.icon { height: 55px; }
-        .logo img.name { height: 35px; }
+    /* Breakpoints */
+    @media (max-width: 1200px) {
+        .nav-links { gap: 1.5rem; margin-left: 2rem; }
+    }
 
-        .profile-link,
-        .signup-link {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.75rem;
-        }
+    @media (max-width: 1024px) {
+        .nav-links { display: none; }
+        .menu-btn { display: flex; }
+        
+        header { padding: 0.9rem 4%; }
+        header.scrolled { padding: 0.7rem 4%; }
+        
+        .logo img.icon { height: 56px; }
+        .logo img.name { height: 28px; }
+    }
+
+    @media (max-width: 640px) {
+        .header-actions a { display: none; }
+        .header-actions a.signup-link { display: inline-flex; padding: 0.6rem 1.1rem; font-size: 0.8rem; }
+        
+        .logo img.icon { height: 48px; }
+        .logo img.name { height: 24px; }
+    }
+
+    @media (max-width: 420px) {
+        .logo img.name { display: none; }
+        .header-actions { gap: 0.75rem; }
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+    }
+
+    .mobile-menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        right: -300px;
+        width: 280px;
+        height: 100%;
+        background: #0F0F0F;
+        z-index: 2001;
+        padding: 6rem 2rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-menu-overlay.active .mobile-sidebar {
+        right: 0;
+    }
+
+    .mobile-sidebar a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 500;
+        opacity: 0.8;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mobile-sidebar a:hover {
+        color: var(--primary-orange);
+        opacity: 1;
+        padding-left: 8px;
+    }
+
+    .close-menu {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
     }
 </style>
 
 <header id="main-header">
     <a href="/" class="logo">
-        <img src="/public/public/logo-icon.png" class="icon">
-        <img src="/public/public/logo-name.png" class="name">
+        <img src="/public/public/logo-icon.png" class="icon" alt="ZiGo Icon">
+        <img src="/public/public/logo-name.png" class="name" alt="ZiGo">
     </a>
 
     <ul class="nav-links">
         <li><a href="/">Home</a></li>
         <li><a href="/shop">Shop</a></li>
+        <li><a href="/categories">Categories</a></li>
+        <li><a href="/orders">Orders</a></li>
         <li><a href="/about">About</a></li>
         <li><a href="/contact">Contact</a></li>
     </ul>
 
     <div class="header-actions">
+        <% if (typeof hideLogin === 'undefined' || !hideLogin) { %>
+            <a href="/login" class="action-btn login-link">Login</a>
+        <% } %>
+        <% if (typeof hideSignUp === 'undefined' || !hideSignUp) { %>
+            <a href="/signUp" class="action-btn signup-link">Sign Up</a>
+        <% } %>
 
-        <!-- KEEP THESE VISIBLE -->
-        <a href="/login" class="profile-link">Login</a>
-        <a href="/signUp" class="signup-link">Sign Up</a>
+        <!-- Wishlist -->
+        <a href="/login" class="action-icon text-white/70 hover:text-[#FF5A1F] transition-all" title="Wishlist">
+            <i class="fas fa-heart text-xl"></i>
+        </a>
 
-        <!-- HAMBURGER -->
-        <button id="menu-btn" class="lg:hidden text-white">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 6h16M4 12h16M4 18h16"></path>
+        <!-- Cart -->
+        <a href="/login" class="action-icon text-white/70 hover:text-[#FF5A1F] transition-all" title="Shopping Cart">
+            <i class="fas fa-shopping-cart text-xl"></i>
+        </a>
+
+        <button id="menu-btn" class="menu-btn" aria-label="Open navigation menu">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
         </button>
     </div>
 </header>
 
-<!-- MOBILE MENU -->
-<div id="mobile-menu" class="fixed top-0 left-0 w-full h-full bg-black/80 hidden z-[999]">
-
-    <!-- padding-top FIX -->
-    <div class="bg-[#0F0F0F] w-[75%] max-w-[280px] h-full pt-24 p-6 flex flex-col gap-6">
-
-        <a href="/" class="text-white text-lg">Home</a>
-        <a href="/shop" class="text-white text-lg">Shop</a>
-        <a href="/about" class="text-white text-lg">About</a>
-        <a href="/contact" class="text-white text-lg">Contact</a>
-
-    </div>
+<div id="mobile-menu-overlay" class="mobile-menu-overlay">
+    <aside class="mobile-sidebar" id="mobile-sidebar">
+        <button id="close-menu" class="close-menu">&times;</button>
+        <a href="/">Home <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <a href="/shop">Shop <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <a href="/categories">Categories <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <a href="/orders">Orders <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <a href="/about">About <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <a href="/contact">Contact <i class="fas fa-chevron-right text-xs opacity-30"></i></a>
+        <hr class="border-white/5 my-2">
+        <% if (typeof hideLogin === 'undefined' || !hideLogin) { %>
+            <a href="/login" class="text-white/60">Login</a>
+        <% } %>
+        <% if (typeof hideSignUp === 'undefined' || !hideSignUp) { %>
+            <a href="/signUp" class="text-[#FF5A1F] font-bold">Create Account</a>
+        <% } %>
+    </aside>
 </div>
 
 <%- include('flashAlert') %>
 
 <script>
-    const header = document.getElementById('main-header');
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
+    (function() {
+        const header = document.getElementById('main-header');
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-menu');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const sidebar = document.getElementById('mobile-sidebar');
 
-    // scroll effect
-    window.addEventListener('scroll', () => {
-        window.scrollY > 50
-            ? header.classList.add('scrolled')
-            : header.classList.remove('scrolled');
-    });
-
-    // toggle menu
-    menuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    // close outside
-    mobileMenu.addEventListener('click', (e) => {
-        if (e.target === mobileMenu) {
-            mobileMenu.classList.add('hidden');
-        }
-    });
-
-    // close on link click
-    document.querySelectorAll('#mobile-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
+        // Scroll Effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 30) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         });
-    });
+
+        // Initialize scroll state
+        if (window.scrollY > 30) header.classList.add('scrolled');
+
+        // Menu Toggle Logic
+        const toggleMenu = (show) => {
+            overlay.classList.toggle('active', show);
+            document.body.style.overflow = show ? 'hidden' : '';
+        };
+
+        menuBtn.addEventListener('click', () => toggleMenu(true));
+        closeBtn.addEventListener('click', () => toggleMenu(false));
+        
+        // Close on overlay click (outside sidebar)
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) toggleMenu(false);
+        });
+
+        // Close on link click
+        overlay.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => toggleMenu(false));
+        });
+    })();
 </script>

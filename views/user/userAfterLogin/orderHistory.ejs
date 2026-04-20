@@ -42,15 +42,22 @@
 
         /* --- Profile Container --- */
         .profile-container {
-            padding: 140px 5% 80px;
+            padding: clamp(108px, 9vw, 140px) 4% 72px;
             max-width: 1400px;
             margin: 0 auto;
         }
 
         .profile-layout {
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 3rem;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .profile-layout {
+                grid-template-columns: 260px minmax(0, 1fr);
+                gap: 1.2rem;
+            }
         }
 
         @media (max-width: 1024px) {
@@ -184,6 +191,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 2rem;
             transition: var(--transition);
         }
 
@@ -197,6 +205,7 @@
             border-radius: 100px;
             font-size: 0.75rem;
             font-weight: 700;
+            text-transform: uppercase;
         }
 
         .status-delivered { background: #E7F9F0; color: #2ED573; }
@@ -205,72 +214,6 @@
         .status-cancelled { background: #FFEEEE; color: #FF4757; }
         .status-returned { background: #F3E8FF; color: #A855F7; }
         .status-pending { background: #F1F5F9; color: #64748B; }
-
-        /* Pagination Bar Overrides for Light Theme */
-        .pagination-bar {
-            background: white !important;
-            border: 1px solid var(--gray-light) !important;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
-            border-radius: 20px;
-            padding: 1.25rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 2rem;
-        }
-
-        .pagination-info {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #94A3B8 !important; /* Muted Slate */
-        }
-
-        .pagination-info span {
-            color: var(--dark-navy) !important;
-        }
-
-        .pagination-buttons {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .page-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: var(--off-white) !important;
-            color: var(--dark-navy) !important;
-            font-size: 0.85rem;
-            font-weight: 800;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: 1px solid var(--gray-light);
-        }
-
-        .page-btn:hover {
-            border-color: var(--primary-orange);
-            color: var(--primary-orange) !important;
-            background: white !important;
-        }
-
-        .page-btn.active {
-            background: var(--primary-orange) !important;
-            color: white !important;
-            border-color: var(--primary-orange);
-            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2);
-        }
-
-        .page-btn.disabled {
-            opacity: 0.3;
-            pointer-events: none;
-            background: #F1F5F9 !important;
-        }
 
         .order-mrp {
             font-size: 0.75rem;
@@ -284,6 +227,139 @@
             color: #ff4757;
             font-weight: 700;
         }
+
+        .profile-content {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .mobile-sidebar-toggle,
+        .mobile-sidebar-close,
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .profile-container {
+                padding: 108px 0.9rem 40px;
+            }
+
+            .profile-layout {
+                display: block;
+            }
+
+            .profile-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: min(84vw, 320px);
+                height: 100dvh;
+                padding: 1rem;
+                border-radius: 0 22px 22px 0;
+                transform: translateX(-104%);
+                transition: transform 0.28s ease;
+                z-index: 1200;
+                overflow-y: auto;
+                box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+            }
+
+            .profile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-sidebar-close {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 34px;
+                height: 34px;
+                margin-left: auto;
+                margin-bottom: 0.8rem;
+                border-radius: 10px;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                cursor: pointer;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 15, 15, 0.45);
+                backdrop-filter: blur(2px);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: var(--transition);
+                z-index: 1100;
+            }
+
+            .sidebar-backdrop.active {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+
+            .mobile-sidebar-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                border-radius: 12px;
+                padding: 0.6rem 0.9rem;
+                font-size: 0.82rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                cursor: pointer;
+            }
+
+            .panel-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.5rem;
+                padding: 1.25rem;
+            }
+
+            .order-card > div {
+                width: 100%;
+                text-align: left !important;
+            }
+
+            .order-card .text-right {
+                text-align: left !important;
+                border-top: 1px solid var(--gray-light);
+                padding-top: 1.25rem;
+            }
+
+            .flex-col.items-end {
+                align-items: flex-start !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .profile-container {
+                padding: 96px 0.65rem 34px;
+            }
+
+            .mobile-sidebar-toggle {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.85rem;
+            }
+
+            .panel-title {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -293,7 +369,10 @@
     <main class="profile-container">
         <div class="profile-layout">
             <!-- Sidebar -->
-            <aside class="profile-sidebar">
+            <aside class="profile-sidebar" id="profileSidebar">
+                <button type="button" class="mobile-sidebar-close" id="profileSidebarClose" aria-label="Close menu">
+                    <i class="fas fa-times"></i>
+                </button>
                 <div class="user-info">
                     <div class="user-avatar-large">
                         <% if (user && user.profileImage) { %>
@@ -331,8 +410,14 @@
                 </nav>
             </aside>
 
+            <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
             <!-- Main Content Area -->
             <div class="profile-content">
+                <button type="button" class="mobile-sidebar-toggle" id="profileSidebarToggle" aria-controls="profileSidebar" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                    <span>Profile Menu</span>
+                </button>
                 <div id="orders-panel">
                     <div class="panel-header flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h1 class="panel-title">Order <span class="text-orange-500">History</span></h1>
@@ -352,16 +437,16 @@
                         <% if (typeof orders !== 'undefined' && orders && orders.length > 0) { %>
                             <% orders.forEach(order => { %>
                                 <div class="order-card p-6 md:p-8">
-                                    <div class="flex items-center gap-6 md:gap-8">
-                                        <div class="w-20 h-20 bg-gray-50 rounded-2xl p-2 flex items-center justify-center overflow-hidden">
+                                    <div class="flex items-center gap-6 md:gap-8 min-w-0">
+                                        <div class="flex-shrink-0 w-20 h-20 bg-gray-50 rounded-2xl p-2 flex items-center justify-center overflow-hidden border border-gray-100">
                                             <% if (order.items && order.items[0] && order.items[0].image) { %>
                                                 <img src="<%= order.items[0].image %>" alt="<%= order.items[0].productName %>" class="max-w-full max-h-full object-contain">
                                             <% } else { %>
                                                 <img src="/public/landing/no-image.png" alt="No image" class="max-w-full max-h-full object-contain">
                                             <% } %>
                                         </div>
-                                        <div>
-                                            <p class="font-bold text-lg md:text-xl">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-bold text-lg md:text-xl truncate">
                                                 <% if (order.items && order.items.length > 0) { %>
                                                     <%= order.items[0].productName %>
                                                     <%= order.items.length > 1 ? '(and ' + (order.items.length - 1) + ' more)' : '' %>
@@ -369,10 +454,10 @@
                                                     Order #<%= order.orderNumber %>
                                                 <% } %>
                                             </p>
-                                            <p class="text-sm opacity-50 mt-1">Order #<%= order.orderNumber %> | <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></p>
+                                            <p class="text-xs opacity-50 mt-1 uppercase tracking-wider font-bold">Order #<%= order.orderNumber %> | <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></p>
                                         </div>
                                     </div>
-                                    <div class="text-right">
+                                    <div class="text-right flex-shrink-0">
                                         <p class="text-xl font-black mb-0">₹<%= order.pricing.total.toLocaleString() %></p>
                                         <div class="flex flex-col items-end mb-2">
                                             <% if (order.pricing.discound && order.pricing.discound > 0) { %>
@@ -381,16 +466,18 @@
                                             <% } %>
                                         </div>
                                         <span class="order-status status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
-                                        <a href="/user/order/<%= order._id %>" class="block mt-4 text-xs font-bold text-orange-500 hover:underline">View Details</a>
-                                        <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay' && order.orderStatus !== 'cancelled') { %>
-                                            <button onclick="retryPayment('<%= order._id %>', '<%= order.shippingAddress.phone %>', event)" class="block w-full mt-2 text-xs font-bold text-orange-600 hover:underline">Pay Now</button>
-                                        <% } %>
-                                        <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
-                                            <button onclick="cancelOrder('<%= order._id %>')" class="block w-full mt-2 text-xs font-bold text-red-500 hover:underline">Cancel Order</button>
-                                        <% } %>
-                                        <% if (order.orderStatus === 'Delivered') { %>
-                                            <a href="/user/order/<%= order._id %>/invoice" class="block w-full mt-2 text-xs font-bold text-orange-500 hover:underline">Download Invoice</a>
-                                        <% } %>
+                                        <div class="flex flex-col gap-2 mt-4">
+                                            <a href="/user/order/<%= order._id %>" class="text-xs font-bold text-orange-500 hover:underline">View Details</a>
+                                            <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay' && order.orderStatus !== 'cancelled') { %>
+                                                <button onclick="retryPayment('<%= order._id %>', '<%= order.shippingAddress.phone %>', event)" class="text-xs font-bold text-orange-600 hover:underline">Pay Now</button>
+                                            <% } %>
+                                            <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
+                                                <button onclick="cancelOrder('<%= order._id %>')" class="text-xs font-bold text-red-500 hover:underline">Cancel Order</button>
+                                            <% } %>
+                                            <% if (order.orderStatus === 'Delivered') { %>
+                                                <a href="/user/order/<%= order._id %>/invoice" class="text-xs font-bold text-orange-500 hover:underline">Download Invoice</a>
+                                            <% } %>
+                                        </div>
                                     </div>
                                 </div>
                             <% }) %>
@@ -496,6 +583,51 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <%- include('../../partials/footer') %>
+
+    <script>
+        (() => {
+            const sidebar = document.getElementById('profileSidebar');
+            const toggleBtn = document.getElementById('profileSidebarToggle');
+            const closeBtn = document.getElementById('profileSidebarClose');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            if (!sidebar || !toggleBtn || !closeBtn || !backdrop) return;
+
+            const mobileMedia = window.matchMedia('(max-width: 1024px)');
+
+            const setSidebarState = (isOpen) => {
+                if (!mobileMedia.matches) {
+                    sidebar.classList.remove('active');
+                    backdrop.classList.remove('active');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                    return;
+                }
+
+                sidebar.classList.toggle('active', isOpen);
+                backdrop.classList.toggle('active', isOpen);
+                toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                document.body.style.overflow = isOpen ? 'hidden' : '';
+            };
+
+            toggleBtn.addEventListener('click', () => setSidebarState(true));
+            closeBtn.addEventListener('click', () => setSidebarState(false));
+            backdrop.addEventListener('click', () => setSidebarState(false));
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') setSidebarState(false);
+            });
+
+            window.addEventListener('resize', () => {
+                if (!mobileMedia.matches) setSidebarState(false);
+            });
+
+            sidebar.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => setSidebarState(false));
+            });
+        })();
+    </script>
+
 </body>
 
 </html>

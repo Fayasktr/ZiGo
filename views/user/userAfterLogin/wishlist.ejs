@@ -33,24 +33,34 @@
             font-family: 'Inter', sans-serif;
         }
 
+        html,
         body {
+            width: 100%;
+            max-width: 100%;
             background-color: var(--off-white);
             color: var(--dark-navy);
-            overflow-x: hidden;
+            overflow-x: clip;
             line-height: 1.6;
         }
 
         /* --- Profile Container --- */
         .profile-container {
-            padding: 140px 5% 80px;
+            padding: clamp(108px, 9vw, 140px) 4% 72px;
             max-width: 1400px;
             margin: 0 auto;
         }
 
         .profile-layout {
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 3rem;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .profile-layout {
+                grid-template-columns: 260px minmax(0, 1fr);
+                gap: 1.2rem;
+            }
         }
 
         @media (max-width: 1024px) {
@@ -174,17 +184,275 @@
             color: var(--dark-navy);
         }
 
+        .profile-content {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .mobile-sidebar-toggle,
+        .mobile-sidebar-close,
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        .wishlist-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
         .wishlist-card {
+            display: grid;
+            grid-template-columns: 110px minmax(0, 1fr) minmax(170px, 220px);
+            column-gap: 1.5rem;
+            row-gap: 0.35rem;
+            align-items: center;
+            background: white;
+            border-radius: 24px;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--gray-light);
             transition: var(--transition);
+            position: relative;
         }
 
         .wishlist-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .wishlist-remove {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(255, 71, 87, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff4757;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .wishlist-remove:hover {
+            background: #ff4757;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .wishlist-media {
+            grid-column: 1;
+            grid-row: 1 / span 4;
+            width: 110px;
+            height: 110px;
+            background: var(--off-white);
+            border-radius: 16px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .wishlist-media img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .wishlist-name {
+            grid-column: 2;
+            grid-row: 1;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-navy);
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .wishlist-meta {
+            grid-column: 2;
+            grid-row: 2;
+            font-size: 0.85rem;
+            color: rgba(30, 41, 59, 0.5);
+            margin: 0;
+        }
+
+        .wishlist-stock {
+            grid-column: 2;
+            grid-row: 3;
+            margin-top: 0.25rem;
+        }
+
+        .wishlist-price {
+            grid-column: 2;
+            grid-row: 4;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-orange);
+            margin: 0.25rem 0 0;
+        }
+
+        .wishlist-actions {
+            grid-column: 3;
+            grid-row: 1 / span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem;
+            padding-right: 3rem; /* Space for remove button */
+        }
+
+        .wishlist-cta {
+            background: var(--deep-black);
+            color: white;
+            padding: 0.9rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            width: 100%;
+        }
+
+        .wishlist-cta:hover:not(:disabled) {
+            background: var(--primary-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 31, 0.2);
+        }
+
+        .wishlist-cta:disabled {
+            background: var(--gray-light);
+            color: rgba(30, 41, 59, 0.3);
+            cursor: not-allowed;
         }
 
         .item-unavailable {
             filter: grayscale(1) opacity(0.6);
+        }
+
+        @media (max-width: 1200px) {
+            .wishlist-card {
+                grid-template-columns: 100px minmax(0, 1fr) 200px;
+                gap: 1.25rem;
+            }
+            .wishlist-media { width: 100px; height: 100px; }
+            .wishlist-actions { padding-right: 2.5rem; }
+        }
+
+        @media (max-width: 1024px) {
+            .profile-container {
+                padding: 108px 0.9rem 40px;
+            }
+
+            .profile-layout {
+                display: block;
+            }
+
+            .profile-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: min(84vw, 320px);
+                height: 100dvh;
+                padding: 1rem;
+                border-radius: 0 22px 22px 0;
+                transform: translateX(-104%);
+                transition: transform 0.28s ease;
+                z-index: 1200;
+                overflow-y: auto;
+                box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+            }
+
+            .profile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-sidebar-close {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 34px;
+                height: 34px;
+                margin-left: auto;
+                margin-bottom: 0.8rem;
+                border-radius: 10px;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                cursor: pointer;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 15, 15, 0.45);
+                backdrop-filter: blur(2px);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: var(--transition);
+                z-index: 1100;
+            }
+
+            .sidebar-backdrop.active {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+
+            .mobile-sidebar-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                border: 1px solid var(--gray-light);
+                background: #fff;
+                color: var(--dark-navy);
+                border-radius: 12px;
+                padding: 0.6rem 0.9rem;
+                font-size: 0.82rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                cursor: pointer;
+            }
+
+            .panel-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .panel-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wishlist-card {
+                grid-template-columns: 80px minmax(0, 1fr) auto;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .wishlist-media { width: 80px; height: 80px; padding: 0.5rem; }
+            .wishlist-name { font-size: 1rem; }
+            .wishlist-price { font-size: 1rem; }
+            .wishlist-actions { padding-right: 0; grid-column: 1 / -1; grid-row: 5; margin-top: 0.5rem; }
+            .wishlist-remove { top: 0.75rem; right: 0.75rem; width: 28px; height: 28px; }
+        }
+
+        @media (max-width: 480px) {
+            .profile-container {
+                padding: 96px 0.65rem 34px;
+            }
+            .wishlist-card { border-radius: 16px; }
+            .wishlist-media { width: 70px; height: 70px; }
+            .wishlist-name { font-size: 0.9rem; }
+            .wishlist-meta { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -195,7 +463,10 @@
         <main class="profile-container">
             <div class="profile-layout">
                 <!-- Sidebar -->
-                <aside class="profile-sidebar">
+                <aside class="profile-sidebar" id="profileSidebar">
+                    <button type="button" class="mobile-sidebar-close" id="profileSidebarClose" aria-label="Close menu">
+                        <i class="fas fa-times"></i>
+                    </button>
                     <div class="user-info">
                         <div class="user-avatar-large">
                             <% if (user && user.profileImage) { %>
@@ -238,17 +509,23 @@
                     </nav>
                 </aside>
 
+                <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
                 <!-- Main Content Area -->
                 <div class="profile-content">
+                    <button type="button" class="mobile-sidebar-toggle" id="profileSidebarToggle" aria-controls="profileSidebar" aria-expanded="false">
+                        <i class="fas fa-bars"></i>
+                        <span>Profile Menu</span>
+                    </button>
                     <!-- Wishlist Panel -->
                     <div id="wishlist-panel">
                         <div class="panel-header">
                             <h1 class="panel-title">My <span class="text-orange-500">Wishlist</span></h1>
                         </div>
 
-                        <% if (wishlist && wishlist.length> 0) { %>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <% wishlist.forEach(item=> { %>
+                        <% if (wishlist && wishlist.length > 0) { %>
+                            <div class="wishlist-grid">
+                                <% wishlist.forEach(item => { %>
                                     <% 
                                         const hasProduct = !!item.product;
                                         const wishlistVariant = item.matchedVariant;
@@ -262,76 +539,66 @@
                                         }
                                     %>
                                     <% if (hasProduct) { %>
-                                        <div
-                                            class="wishlist-card bg-white p-6 rounded-[32px] border border-gray-100 flex flex-col items-center relative group">
+                                        <div class="wishlist-card">
                                             <!-- Remove Button -->
                                             <button
                                                 onclick="removeFromWishlist('<%= item.product._id %>', '<%= item.variantId %>')"
-                                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors z-10">
+                                                class="wishlist-remove" title="Remove from wishlist">
                                                 <i class="fas fa-times"></i>
                                             </button>
 
-                                            <div class="w-40 h-40 flex items-center justify-center mb-4 cursor-pointer <%= !isAvailable ? 'item-unavailable' : '' %>"
+                                            <div class="wishlist-media <%= !isAvailable ? 'item-unavailable' : '' %>"
                                                 <% if (isAvailable) { %> onclick="window.location.href='/productDetailse/<%= item.product._id %>'" <% } %>>
-                                                <img src="<%= wishlistImg %>" alt="<%= item.product.productName %>"
-                                                    class="max-w-full max-h-full object-contain">
+                                                <img src="<%= wishlistImg %>" alt="<%= item.product.productName %>">
                                             </div>
 
-                                            <h4 class="font-bold text-center mb-1 text-lg">
+                                            <h4 class="wishlist-name" <% if (isAvailable) { %> onclick="window.location.href='/productDetailse/<%= item.product._id %>'" <% } %>>
                                                 <%= item.product.productName %>
                                             </h4>
-                                            <p class="text-gray-400 text-xs mb-1 uppercase tracking-wider font-bold">
-                                                <%= item.product.brand || 'Premium Tech' %> | <%= (item.category) ?
-                                                        item.category.categoryName : 'Electronics' %>
+                                            
+                                            <p class="wishlist-meta">
+                                                <%= item.product.brand || 'Premium Tech' %> | <%= (item.category) ? item.category.categoryName : 'Electronics' %>
                                             </p>
 
-                                            <% if (!isAvailable) { %>
-                                                <span class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full mb-3 uppercase tracking-tighter">
-                                                    ⚠ <%= (wishlistVariant && wishlistVariant.stock <= 0) ? 'Out of Stock' : 'Currently Unavailable' %>
-                                                </span>
-                                            <% } else { %>
-                                                <div class="h-6 mb-3"></div> <!-- Spacer -->
-                                            <% } %>
+                                            <div class="wishlist-stock">
+                                                <% if (!isAvailable) { %>
+                                                    <span class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-tighter">
+                                                        ⚠ <%= (wishlistVariant && wishlistVariant.stock <= 0) ? 'Out of Stock' : 'Currently Unavailable' %>
+                                                    </span>
+                                                <% } %>
+                                            </div>
 
-                                            <p class="text-orange-500 font-extrabold text-xl mb-6">
+                                            <p class="wishlist-price">
                                                 ₹<%= wishlistVariant ? wishlistVariant.price.toLocaleString() : 'N/A' %>
                                             </p>
 
-                                            <div class="flex flex-col gap-2 w-full mt-auto">
+                                            <div class="wishlist-actions">
                                                 <% if (isAvailable) { %>
                                                     <button
                                                         onclick="moveToCart('<%= item.product._id %>', '<%= item.variantId %>')"
-                                                        class="w-full bg-black text-white py-4 rounded-2xl font-bold text-sm hover:bg-orange-600 transition-all duration-300">
+                                                        class="wishlist-cta">
                                                         Move to Cart
                                                     </button>
                                                 <% } else { %>
-                                                    <button
-                                                        class="w-full bg-gray-100 text-gray-400 py-4 rounded-2xl font-bold text-sm cursor-not-allowed"
-                                                        disabled>
-                                                        Currently Unavailable
-                                                    </button>
+                                                    <button class="wishlist-cta" disabled>Unavailable</button>
                                                 <% } %>
                                             </div>
                                         </div>
                                     <% } %>
                                 <% }) %>
                             </div>
-                            <% } else { %>
-                                <div
-                                    class="text-center py-20 bg-white rounded-[40px] border border-dashed border-gray-300">
-                                    <div
-                                        class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-200">
-                                        <i class="fas fa-heart text-4xl"></i>
-                                    </div>
-                                    <h3 class="text-2xl font-bold mb-2">Your wishlist is empty</h3>
-                                    <p class="text-gray-500 mb-8">Save items you like in your wishlist to buy them
-                                        later.</p>
-                                    <a href="/shop"
-                                        class="inline-block bg-orange-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">
-                                        Start Shopping
-                                    </a>
+                        <% } else { %>
+                            <div class="text-center py-20 bg-white rounded-[40px] border border-dashed border-gray-300">
+                                <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-200">
+                                    <i class="fas fa-heart text-4xl"></i>
                                 </div>
-                                <% } %>
+                                <h3 class="text-2xl font-bold mb-2">Your wishlist is empty</h3>
+                                <p class="text-gray-500 mb-8">Save items you like in your wishlist to buy them later.</p>
+                                <a href="/shop" class="inline-block bg-orange-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">
+                                    Start Shopping
+                                </a>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -416,6 +683,48 @@
                     });
                 }
             }
+
+            (() => {
+                const sidebar = document.getElementById('profileSidebar');
+                const toggleBtn = document.getElementById('profileSidebarToggle');
+                const closeBtn = document.getElementById('profileSidebarClose');
+                const backdrop = document.getElementById('sidebarBackdrop');
+
+                if (!sidebar || !toggleBtn || !closeBtn || !backdrop) return;
+
+                const mobileMedia = window.matchMedia('(max-width: 1024px)');
+
+                const setSidebarState = (isOpen) => {
+                    if (!mobileMedia.matches) {
+                        sidebar.classList.remove('active');
+                        backdrop.classList.remove('active');
+                        toggleBtn.setAttribute('aria-expanded', 'false');
+                        document.body.style.overflow = '';
+                        return;
+                    }
+
+                    sidebar.classList.toggle('active', isOpen);
+                    backdrop.classList.toggle('active', isOpen);
+                    toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    document.body.style.overflow = isOpen ? 'hidden' : '';
+                };
+
+                toggleBtn.addEventListener('click', () => setSidebarState(true));
+                closeBtn.addEventListener('click', () => setSidebarState(false));
+                backdrop.addEventListener('click', () => setSidebarState(false));
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') setSidebarState(false);
+                });
+
+                window.addEventListener('resize', () => {
+                    if (!mobileMedia.matches) setSidebarState(false);
+                });
+
+                sidebar.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', () => setSidebarState(false));
+                });
+            })();
         </script>
 </body>
 

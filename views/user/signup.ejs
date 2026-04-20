@@ -7,8 +7,7 @@
     <title>ZiGo | Join the Revolution</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
@@ -20,7 +19,7 @@
             --dark-navy: #1E293B;
             --gray-light: #E2E8F0;
             --white: #FFFFFF;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -30,66 +29,40 @@
             font-family: 'Inter', sans-serif;
         }
 
+        html,
         body {
+            width: 100%;
+            height: 100%;
             background-color: var(--deep-black);
             color: var(--white);
-            overflow-x: hidden;
+            overflow-x: clip;
             line-height: 1.6;
         }
 
-        /* --- Global Header --- */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.28rem 5%;
-            z-index: 1000;
-            transition: var(--transition);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .logo img.icon {
-            height: 95px;
-            width: auto;
-        }
-
-        .logo img.name {
-            height: 47px;
-            width: auto;
-            margin-top: 2px;
-        }
-
-        /* --- Signup Section --- */
         .signup-container {
-            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             background-color: var(--deep-black);
             padding: 2rem;
             position: relative;
-            padding-top: 100px;
+            padding-top: clamp(82px, 10vh, 110px);
+            overflow: hidden;
         }
 
         .signup-container::before {
             content: '';
             position: absolute;
-            width: 1000px;
-            height: 1000px;
-            background: radial-gradient(circle, rgba(255, 90, 31, 0.1) 0%, transparent 70%);
-            bottom: -500px;
-            left: -500px;
+            width: 80vw;
+            height: 80vw;
+            max-width: 1200px;
+            max-height: 1200px;
+            background: radial-gradient(circle, rgba(255, 90, 31, 0.08) 0%, transparent 70%);
+            bottom: -20%;
+            left: -20%;
             z-index: 1;
+            pointer-events: none;
         }
 
         .signup-card {
@@ -97,15 +70,16 @@
             max-width: 1200px;
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 32px;
             display: flex;
             overflow: hidden;
             z-index: 2;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .signup-card.active {
@@ -118,54 +92,46 @@
             background: url('/public/signup/signup-bg.png') center/cover no-repeat;
             display: none;
             position: relative;
+            min-height: 600px;
         }
 
         .signup-visual::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to right, rgba(15, 15, 15, 0.9), transparent);
-        }
-
-        @media (min-width: 1024px) {
-            .signup-visual {
-                display: block;
-            }
+            background: linear-gradient(to right, rgba(15, 15, 15, 0.85), transparent);
         }
 
         .signup-form-side {
             flex: 1.2;
-            padding: 3rem 4rem;
+            padding: 3.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            background: rgba(255, 255, 255, 0.01);
         }
 
         .signup-header h2 {
-            font-size: 2.5rem;
+            font-size: clamp(2rem, 5vw, 2.75rem);
             font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #fff, var(--primary-orange));
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary-orange) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
         }
 
         .signup-header p {
-            opacity: 0.6;
+            opacity: 0.5;
             margin-bottom: 2rem;
+            font-size: 1.05rem;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (max-width: 640px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+            gap: 1.25rem;
         }
 
         .form-group {
@@ -176,25 +142,21 @@
             grid-column: span 2;
         }
 
-        @media (max-width: 640px) {
-            .form-group.full-width {
-                grid-column: span 1;
-            }
-        }
-
         .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            opacity: 0.8;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .input-wrapper input {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.9rem 1.2rem;
+            padding: 1rem 1.2rem;
             border-radius: 12px;
             color: white;
             font-size: 0.95rem;
@@ -204,8 +166,8 @@
 
         .input-wrapper input:focus {
             border-color: var(--primary-orange);
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.15);
         }
 
         .terms-check {
@@ -214,7 +176,7 @@
             gap: 0.75rem;
             margin: 1rem 0;
             font-size: 0.85rem;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         .terms-check input {
@@ -234,29 +196,31 @@
             cursor: pointer;
             transition: var(--transition);
             margin-top: 1rem;
+            box-shadow: 0 8px 25px rgba(255, 90, 31, 0.25);
         }
 
-        .signup-btn:hover {
+        .signup-btn:hover:not(:disabled) {
             background: var(--primary-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(255, 90, 31, 0.3);
+            box-shadow: 0 12px 30px rgba(255, 90, 31, 0.4);
         }
 
         .signup-btn:disabled {
             background: #4B5563;
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .social-divider {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            opacity: 0.3;
+            gap: 1.25rem;
+            margin: 1.75rem 0;
+            opacity: 0.2;
             font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .social-divider::before,
@@ -270,21 +234,23 @@
         .login-link {
             text-align: center;
             margin-top: 2rem;
-            opacity: 0.7;
+            opacity: 1; /* Increased visibility */
             font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .login-link a {
             color: var(--primary-orange);
             text-decoration: none;
             font-weight: 700;
+            transition: var(--transition);
         }
 
         .login-link a:hover {
+            color: var(--primary-orange-hover);
             text-decoration: underline;
         }
 
-        /* --- Error Alert Styling --- */
         .error-alert {
             background: rgba(239, 68, 68, 0.1);
             backdrop-filter: blur(8px);
@@ -299,51 +265,40 @@
             animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .error-alert i {
-            font-size: 1.1rem;
+        /* Responsive */
+        @media (min-width: 1024px) {
+            .signup-visual { display: block; }
         }
 
-        .error-alert span {
-            font-size: 0.9rem;
-            font-weight: 600;
+        @media (max-width: 1023px) {
+            .signup-container { padding: 1.5rem; padding-top: 90px; }
+            .signup-card { max-width: 600px; border-radius: 24px; }
+            .signup-form-side { padding: 2.5rem; }
+        }
+
+        @media (max-width: 640px) {
+            .signup-container { padding: 1rem; padding-top: 80px; }
+            .signup-card { border-radius: 20px; border: none; background: transparent; backdrop-filter: none; box-shadow: none; }
+            .signup-form-side { padding: 1.5rem 0.5rem; }
+            .signup-header h2 { font-size: 2.25rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .form-group.full-width { grid-column: span 1; }
+        }
+
+        @media (max-width: 480px) {
+            .signup-container { padding-top: 70px; }
+            .signup-header h2 { font-size: 2rem; }
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <a href="/" class="logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon">
-            <img src="/public/public/logo-name.png" alt="ZiGo" class="name">
-        </a>
-        <ul class="nav-links hidden lg:flex"
-            style="display: flex; gap: 2rem; list-style: none; margin-left: auto; margin-right: 2rem;">
-            <li><a href="/" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">Home</a></li>
-            <li><a href="/shop" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">Shop</a>
-            </li>
-            <li><a href="/categories"
-                    style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">Categories</a>
-            </li>
-            <li><a href="/orders"
-                    style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">Orders</a></li>
-            <li><a href="/about" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">About</a>
-            </li>
-            <li><a href="/contact"
-                    style="color: white; text-decoration: none; font-weight: 500; opacity: 0.8;">Contact</a></li>
-        </ul>
-    </header>
+    <%- include('../partials/headerBeforeLogin', { hideSignUp: true }) %>
 
     <div class="signup-container">
         <div class="signup-card" id="signupCard">
@@ -366,7 +321,7 @@
                                 <%= error %>
                             </span>
                         </div>
-                        <% } %>
+                    <% } %>
                 </div>
 
                 <form action="/signUp" method="POST">
@@ -390,7 +345,7 @@
                         <div class="form-group">
                             <label for="password">Password</label>
                             <div class="input-wrapper" style="position: relative;">
-                                <input type="password" id="password" name="password" placeholder="••••••••"
+                                <input type="password" id="password" name="password" placeholder="********"
                                     style="padding-right: 40px;">
                                 <button type="button" onclick="togglePasswordVisibility('password', this)"
                                     style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: white; opacity: 0.7;">
@@ -418,7 +373,7 @@
                             <label for="confirmPassword">Confirm Password</label>
                             <div class="input-wrapper" style="position: relative;">
                                 <input type="password" id="confirmPassword" name="confirmPassword"
-                                    placeholder="••••••••" style="padding-right: 40px;">
+                                    placeholder="********" style="padding-right: 40px;">
                                 <button type="button" onclick="togglePasswordVisibility('confirmPassword', this)"
                                     style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: white; opacity: 0.7;">
                                     <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -440,17 +395,6 @@
                             <p id="ConfirmPasswordError"
                                 style="color: red; font-size: 0.8rem; margin-top: 5px; display: none;"></p>
                         </div>
-                        <!-- <div class="form-group full-width">
-                            <label for="referralCode">Referral Code (Optional)</label>
-                            <div class="input-wrapper">
-                                <input type="text" id="referralCode" name="referralCode" placeholder="ZIGO-XXXXXX">
-                            </div>
-                            <div class="flex items-center gap-2 mt-2">
-                                <div class="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]"></div>
-                                <p class="text-[0.7rem] font-bold text-[#FF5A1F] uppercase tracking-wider">Friend Bonus:
-                                    Get ₹100</p>
-                            </div>
-                        </div> -->
                     </div>
 
                     <div class="terms-check">
@@ -461,8 +405,7 @@
                                 class="text-[#FF5A1F]">Privacy Policy</a>.</label>
                     </div>
 
-                    <button type="submit" id="signupSubmit" class="signup-btn" disabled>Create Your ZiGo
-                        Account</button>
+                    <button type="submit" id="signupSubmit" class="signup-btn" disabled>Create Your ZiGo Account</button>
                 </form>
 
                 <div class="social-divider">Or join with</div>
@@ -496,115 +439,117 @@
 
     <%- include('../partials/flashAlert') %>
 
-        <script>
-            function togglePasswordVisibility(inputId, btn) {
-                const passwordInput = document.getElementById(inputId);
-                const eyeOpen = btn.querySelector(".eye-open");
-                const eyeClosed = btn.querySelector(".eye-closed");
+    <script>
+        function togglePasswordVisibility(inputId, btn) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeOpen = btn.querySelector(".eye-open");
+            const eyeClosed = btn.querySelector(".eye-closed");
 
-                if (passwordInput.type === "password") {
-                    passwordInput.type = "text";
-                    eyeOpen.style.display = "none";
-                    eyeClosed.style.display = "block";
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeOpen.style.display = "none";
+                eyeClosed.style.display = "block";
+            } else {
+                passwordInput.type = "password";
+                eyeOpen.style.display = "block";
+                eyeClosed.style.display = "none";
+            }
+        }
+
+        window.onload = () => {
+            document.getElementById('signupCard').classList.add('active');
+
+            const signupForm = document.querySelector('form');
+            const signupBtn = document.getElementById('signupSubmit');
+            const termsBox = document.getElementById('terms');
+
+            // Inputs
+            const nameInput = document.getElementById('userName');
+            const emailInput = document.getElementById('email');
+            const passInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirmPassword');
+
+            // Error Elements
+            const nameError = document.getElementById('UserNameError');
+            const emailError = document.getElementById('EmailError');
+            const passError = document.getElementById('PasswordError');
+            const confirmError = document.getElementById('ConfirmPasswordError');
+
+            const validateField = (input, errorEl, message, validator) => {
+                const isValid = validator(input.value.trim());
+                if (!isValid) {
+                    errorEl.textContent = message;
+                    errorEl.style.display = 'block';
+                    input.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                    return false;
                 } else {
-                    passwordInput.type = "password";
-                    eyeOpen.style.display = "block";
-                    eyeClosed.style.display = "none";
+                    errorEl.style.display = 'none';
+                    input.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    return true;
                 }
-            }
+            };
 
-            window.onload = () => {
-                document.getElementById('signupCard').classList.add('active');
+            const validateUsername = () => {
+                if (!validators.name(nameInput.value.trim())) {
+                    return validateField(nameInput, nameError, "Name must be at least 3 characters", () => false);
+                }
+                if (!validators.nameCheckNumber(nameInput.value.trim())) {
+                    return validateField(nameInput, nameError, "Name can't contain numbers", () => false);
+                }
+                return validateField(nameInput, nameError, "", () => true);
+            };
 
-                const signupForm = document.querySelector('form');
-                const signupBtn = document.getElementById('signupSubmit');
-                const termsBox = document.getElementById('terms');
+            const validators = {
+                name: (val) => val.length >= 3,
+                nameCheckNumber: (val) => !/\d/.test(val),
+                email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+                pass: (val) => val.length >= 6
+            };
 
-                // Inputs
-                const nameInput = document.getElementById('userName');
-                const emailInput = document.getElementById('email');
-                const passInput = document.getElementById('password');
-                const confirmInput = document.getElementById('confirmPassword');
+            // Live Validation
+            nameInput.addEventListener('input', validateUsername);
+            emailInput.addEventListener('input', () => validateField(emailInput, emailError, "Please enter a valid email address", validators.email));
+            passInput.addEventListener('input', () => validateField(passInput, passError, "Password must be at least 6 characters", validators.pass));
+            confirmInput.addEventListener('input', () => {
+                if (passInput.value !== confirmInput.value) {
+                    confirmError.textContent = "Passwords do not match";
+                    confirmError.style.display = 'block';
+                    confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                } else {
+                    confirmError.style.display = 'none';
+                    confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }
+            });
 
-                // Error Elements
-                const nameError = document.getElementById('UserNameError');
-                const emailError = document.getElementById('EmailError');
-                const passError = document.getElementById('PasswordError');
-                const confirmError = document.getElementById('ConfirmPasswordError');
+            termsBox.addEventListener('change', () => {
+                signupBtn.disabled = !termsBox.checked;
+                signupBtn.style.opacity = termsBox.checked ? '1' : '0.5';
+            });
 
-                const validateField = (input, errorEl, message, validator) => {
-                    const isValid = validator(input.value.trim());
-                    if (!isValid) {
-                        errorEl.textContent = message;
-                        errorEl.style.display = 'block';
-                        input.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                        return false;
-                    } else {
-                        errorEl.style.display = 'none';
-                        input.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                        return true;
-                    }
-                };
+            signupForm.addEventListener('submit', (e) => {
+                let isFormValid = true;
 
-                const validateUsername = () => {
-                    if (!validators.name(nameInput.value.trim())) {
-                        return validateField(nameInput, nameError, "Name must be at least 3 characters", () => false);
-                    }
-                    if (!validators.nameCheckNumber(nameInput.value.trim())) {
-                        return validateField(nameInput, nameError, "Name can't contain numbers", () => false);
-                    }
-                    return validateField(nameInput, nameError, "", () => true);
-                };
+                if (!validateUsername()) isFormValid = false;
+                if (!validateField(emailInput, emailError, "Please enter a valid email address", validators.email)) isFormValid = false;
+                if (!validateField(passInput, passError, "Password must be at least 6 characters", validators.pass)) isFormValid = false;
 
-                const validators = {
-                    name: (val) => val.length >= 3,
-                    nameCheckNumber: (val) => !/\d/.test(val),
-                    email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-                    pass: (val) => val.length >= 6
-                };
+                if (passInput.value !== confirmInput.value) {
+                    confirmError.textContent = "Passwords do not match";
+                    confirmError.style.display = 'block';
+                    confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                    isFormValid = false;
+                }
 
-                // Live Validation
-                nameInput.addEventListener('input', validateUsername);
-                emailInput.addEventListener('input', () => validateField(emailInput, emailError, "Please enter a valid email address", validators.email));
-                passInput.addEventListener('input', () => validateField(passInput, passError, "Password must be at least 6 characters", validators.pass));
-                confirmInput.addEventListener('input', () => {
-                    if (passInput.value !== confirmInput.value) {
-                        confirmError.textContent = "Passwords do not match";
-                        confirmError.style.display = 'block';
-                        confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                    } else {
-                        confirmError.style.display = 'none';
-                        confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    }
-                });
-
-                termsBox.addEventListener('change', () => {
-                    signupBtn.disabled = !termsBox.checked;
-                    signupBtn.style.opacity = termsBox.checked ? '1' : '0.5';
-                });
-
-                signupForm.addEventListener('submit', (e) => {
-                    let isFormValid = true;
-
-                    if (!validateUsername()) isFormValid = false;
-                    if (!validateField(emailInput, emailError, "Please enter a valid email address", validators.email)) isFormValid = false;
-                    if (!validateField(passInput, passError, "Password must be at least 6 characters", validators.pass)) isFormValid = false;
-
-                    if (passInput.value !== confirmInput.value) {
-                        confirmError.textContent = "Passwords do not match";
-                        confirmError.style.display = 'block';
-                        confirmInput.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                        isFormValid = false;
-                    }
-
-                    if (!isFormValid) {
-                        e.preventDefault();
-                        const firstError = document.querySelector('[id$="Error"][style*="block"]');
-                        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
-        </script>
+                if (!isFormValid) {
+                    e.preventDefault();
+                    const firstError = document.querySelector('[id$="Error"][style*="block"]');
+                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
+
+

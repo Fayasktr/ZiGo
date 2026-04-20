@@ -34,10 +34,13 @@
             font-family: 'Inter', sans-serif;
         }
 
+        html,
         body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: clip;
             background-color: var(--white);
             color: var(--dark-navy);
-            overflow-x: hidden;
             line-height: 1.6;
         }
 
@@ -49,13 +52,14 @@
 
         /* --- Product Detail Section --- */
         .productDetail-container {
-            padding: 160px 5% 80px;
+            padding: clamp(110px, 10vw, 160px) 5% 80px;
+            min-height: 100dvh;
         }
 
         .detail-layout {
             display: grid;
             grid-template-columns: 1fr 1.2fr;
-            gap: 5rem;
+            gap: clamp(1.5rem, 3vw, 5rem);
             margin-bottom: 80px;
         }
 
@@ -69,7 +73,7 @@
         .main-image-wrapper {
             background-color: #fcfcfc;
             border-radius: 32px;
-            padding: 4rem;
+            padding: clamp(1rem, 4vw, 4rem);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -174,11 +178,12 @@
         }
 
         .product-name-title {
-            font-size: 3rem;
+            font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: 800;
             line-height: 1.1;
             margin: 1rem 0;
             color: var(--dark-navy);
+            letter-spacing: -1px;
         }
 
         .stars-active {
@@ -190,10 +195,11 @@
             align-items: center;
             gap: 1.5rem;
             margin: 2rem 0;
+            flex-wrap: wrap;
         }
 
         .current-price {
-            font-size: 3rem;
+            font-size: clamp(1.7rem, 4vw, 3rem);
             font-weight: 800;
         }
 
@@ -283,6 +289,13 @@
             gap: 1.5rem;
         }
 
+        .detail-actions {
+            display: flex;
+            gap: 1rem;
+            min-height: 60px;
+            flex-wrap: wrap;
+        }
+
         .spec-mini-item {
             display: flex;
             align-items: center;
@@ -363,6 +376,9 @@
             margin-bottom: 3rem;
             background: var(--white);
             padding-top: 1rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
         }
 
         .tab-trigger {
@@ -405,6 +421,104 @@
         .reveal.active {
             opacity: 1;
             transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .productDetail-container {
+                padding: 105px 1rem 56px;
+            }
+
+            .thumbnail-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+
+            .tabs-nav {
+                gap: 1.5rem;
+                margin-bottom: 1.8rem;
+            }
+
+            .tab-trigger {
+                padding: 1rem 0;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .product-name-title {
+                margin: 0.5rem 0;
+            }
+
+            .stock-status {
+                margin-left: 0.45rem;
+                font-size: 0.68rem;
+                padding: 2px 8px;
+            }
+
+            .price-container {
+                margin: 1rem 0 1.2rem;
+                gap: 0.7rem;
+            }
+
+            .mrp-price {
+                font-size: 1rem;
+            }
+
+            .discount-badge {
+                font-size: 0.72rem;
+                padding: 4px 10px;
+            }
+
+            .variant-chip {
+                padding: 0.55rem 0.8rem;
+                font-size: 0.84rem;
+                border-width: 1px;
+            }
+
+            .detail-actions {
+                gap: 0.6rem;
+                min-height: auto;
+            }
+
+            .qty-selector {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .qty-btn {
+                width: 42px;
+                height: 48px;
+            }
+
+            .qty-input {
+                width: 100%;
+                max-width: 70px;
+            }
+
+            .add-to-cart-btn-large,
+            .buy-now-btn-large {
+                min-height: 48px;
+                width: 100%;
+                padding: 0 1rem;
+                font-size: 0.92rem;
+            }
+
+            .key-specs-list {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+                margin-top: 1.25rem;
+            }
+
+            .wishlist-btn {
+                width: 40px;
+                height: 40px;
+                top: 0.8rem !important;
+                right: 0.8rem !important;
+            }
+
+            .wishlist-btn i {
+                font-size: 1rem !important;
+            }
         }
     </style>
 </head>
@@ -582,7 +696,7 @@
 
                                         </div>
 
-                                        <div class="flex gap-6 h-[60px]">
+                                        <div class="detail-actions">
                                             <div class="qty-selector">
                                                 <button class="qty-btn" onclick="changeQty(-1)">-</button>
                                                 <input type="number" class="qty-input" value="1" id="qty" min="1" max="10" readonly>
@@ -597,7 +711,7 @@
                                                 onclick="buyNow('<%= product._id %>')" <%- defaultVariant.stock <=0
                                                 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>><%=
                                                     defaultVariant.stock <=0 ? 'Out of Stock'
-                                                    : 'Buy\n                                                Now' %>
+                                                    : 'Buy Now' %>
                                             </button>
                                         </div>
 
@@ -1021,7 +1135,7 @@
                                                 stockEl.className = 'stock-status in-stock';
 
                                                 if (buyNowBtn) {
-                                                    buyNowBtn.innerHTML = 'Buy\n                                                Now';
+                                                    buyNowBtn.innerHTML = 'Buy Now';
                                                     buyNowBtn.disabled = false;
                                                     buyNowBtn.style.opacity = '1';
                                                     buyNowBtn.style.cursor = 'pointer';
@@ -1263,3 +1377,4 @@
 </body>
 
 </html>
+

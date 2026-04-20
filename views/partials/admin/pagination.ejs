@@ -1,25 +1,29 @@
 <style>
     .pagination-bar {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
+        background: rgba(128, 128, 128, 0.05);
+        border: 1px solid rgba(128, 128, 128, 0.1);
+        border-radius: 24px;
         padding: 1.25rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 2rem;
+        margin-top: 3rem;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
     }
 
     .pagination-info {
         font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 1.5px;
+        color: inherit;
+        opacity: 0.4;
     }
 
     .pagination-info span {
-        color: rgba(255, 255, 255, 0.6);
+        opacity: 1;
+        color: var(--primary-orange);
     }
 
     .pagination-buttons {
@@ -29,34 +33,86 @@
     }
 
     .page-btn {
-        width: 36px;
-        height: 36px;
+        width: 42px;
+        height: 42px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 0.85rem;
+        border-radius: 12px;
+        background: rgba(128, 128, 128, 0.08);
+        color: inherit;
+        font-size: 0.9rem;
         font-weight: 800;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
     }
 
     .page-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
+        background: var(--primary-orange);
+        color: white !important;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(255, 90, 31, 0.2);
+        border-color: var(--primary-orange);
     }
 
     .page-btn.active {
         background: var(--primary-orange);
-        color: white;
-        box-shadow: 0 4px 15px rgba(255, 90, 31, 0.3);
+        color: white !important;
+        box-shadow: 0 8px 25px rgba(255, 90, 31, 0.4);
+        border-color: var(--primary-orange);
     }
 
     .page-btn.disabled {
         opacity: 0.2;
         pointer-events: none;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 1024px) {
+        .pagination-bar {
+            padding: 1rem 1.5rem;
+        }
+        .page-btn {
+            width: 38px;
+            height: 38px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pagination-bar {
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            gap: 1.25rem;
+        }
+        .pagination-info:first-child {
+            display: none; 
+        }
+        .pagination-buttons {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pagination-bar {
+            padding: 1.5rem 1rem;
+        }
+        .pagination-buttons {
+            gap: 0.35rem;
+        }
+        .pagination-info {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+        }
+        .page-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 0.75rem;
+            border-radius: 10px;
+        }
     }
 </style>
 

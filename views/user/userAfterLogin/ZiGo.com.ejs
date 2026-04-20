@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
     <style>
         :root {
@@ -31,7 +32,8 @@
         }
 
         /* --- HORIZONTAL SCROLL FIXES APPLIED HERE --- */
-        html, body {
+        html,
+        body {
             max-width: 100%;
             overflow-x: hidden;
         }
@@ -40,6 +42,7 @@
             background-color: var(--off-white);
             color: var(--dark-navy);
         }
+
         /* ------------------------------------------ */
 
         /* --- Hero Section --- */
@@ -177,7 +180,7 @@
             align-items: center;
             gap: 1rem;
             /* Added to prevent flex overflow on tiny screens */
-            min-width: 0; 
+            min-width: 0;
         }
 
         .trust-icon {
@@ -191,7 +194,8 @@
             color: var(--primary-orange);
             font-size: 1.5rem;
             transition: var(--transition);
-            flex-shrink: 0; /* Keeps icon from squishing */
+            flex-shrink: 0;
+            /* Keeps icon from squishing */
         }
 
         .trust-item:hover .trust-icon {
@@ -203,7 +207,7 @@
         /* Added word-break to prevent text from stretching columns */
         .trust-text {
             min-width: 0;
-            word-break: break-word; 
+            word-break: break-word;
         }
 
         .trust-text h4 {
@@ -648,142 +652,146 @@
 
     <%- include('../../partials/header') %>
 
-    <!-- Mobile Navigation Drawer -->
-    <div id="mobile-menu" class="fixed inset-0 z-[2000] hidden">
-        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleMenu()"></div>
-        <div class="fixed top-0 right-0 bottom-0 w-[280px] bg-white p-8 flex flex-col gap-8 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-4">
-                <span class="font-black text-2xl tracking-tighter">Zi<span class="text-orange-500">Go</span></span>
-                <button onclick="toggleMenu()" class="text-3xl text-gray-400 hover:text-black">&times;</button>
-            </div>
-            <ul class="flex flex-col gap-6 font-bold text-lg">
-                <li><a href="/ZiGo.com" class="hover:text-orange-500 transition-colors">Home</a></li>
-                <li><a href="/shop" class="hover:text-orange-500 transition-colors">Shop</a></li>
-                <li><a href="/user/orders" class="hover:text-orange-500 transition-colors">Orders</a></li>
-                <li><a href="/user/profile" class="hover:text-orange-500 transition-colors">Profile</a></li>
-                <li><a href="/logout" class="text-red-500">Logout</a></li>
-            </ul>
-        </div>
-    </div>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero flex flex-col lg:flex-row items-center text-center lg:text-left pt-48 pb-32">
-            <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
-                <div class="hero-content">
-                    <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
-                    <p class="mx-auto lg:mx-0">Phones, smart watches & AirPods — delivered faster than you expect.
-                        Premium quality at prices
-                        that make sense.</p>
-                    <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start">
-                        <a href="/shop" class="btn btn-primary">Shop Now</a>
-                        <a href="/shop" class="btn btn-secondary">Browse Collections</a>
+        <main>
+            <!-- Hero Section -->
+            <section class="hero flex flex-col lg:flex-row items-center text-center lg:text-left pt-48 pb-32">
+                <div class="max-w-6xl mx-auto px-5 w-full flex flex-col lg:flex-row items-center gap-12">
+                    <div class="hero-content">
+                        <h1 class="text-4xl md:text-6xl lg:text-8xl">Fast Tech. <span>Smart Prices.</span></h1>
+                        <p class="mx-auto lg:mx-0">Phones, smart watches & AirPods — delivered faster than you expect.
+                            Premium quality at prices
+                            that make sense.</p>
+                        <div class="hero-btns flex flex-col sm:flex-row justify-center lg:justify-start">
+                            <a href="/shop" class="btn btn-primary">Shop Now</a>
+                            <a href="/shop" class="btn btn-secondary">Browse Collections</a>
+                        </div>
+                    </div>
+                    <div class="hero-visual w-full flex justify-center lg:justify-end">
+                        <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>"
+                            alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                            class="w-[85%] max-w-[500px]">
                     </div>
                 </div>
-                <div class="hero-visual w-full flex justify-center lg:justify-end">
-                    <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
-                         alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
-                         class="w-[85%] max-w-[500px]">
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Category Grid -->
-        <section class="py-24 bg-white reveal">
-            <div class="max-w-6xl mx-auto px-5">
-                <div class="section-header text-center mb-16">
-                    <h2 class="text-4xl md:text-5xl font-black mb-4">Shop by Category</h2>
-                    <p class="opacity-60 max-w-xl mx-auto">Everything you need, organized perfectly by our tech curators.</p>
-                </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-                    <!-- Smartphones -->
-                    <a href="/shop?category=Smartphones" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
-                        <div class="h-40 flex items-center justify-center mb-6">
-                            <img src="/public/landing/smartphone.png" alt="Phones" class="max-h-full group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smartphones</h3>
-                    </a>
-                    <!-- Watches -->
-                    <a href="/shop?category=Smart%20Watches" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
-                        <div class="h-40 flex items-center justify-center mb-6">
-                            <img src="/public/landing/watch.png" alt="Watches" class="max-h-full group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smart Watches</h3>
-                    </a>
-                    <!-- Audio -->
-                    <a href="/shop?category=Headsets" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
-                        <div class="h-40 flex items-center justify-center mb-6">
-                            <img src="/public/landing/headset.png" alt="Audio" class="max-h-full group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Headsets</h3>
-                    </a>
-                    <!-- Accessories -->
-                    <a href="/shop?category=AirPods" class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
-                        <div class="h-40 flex items-center justify-center mb-6">
-                            <img src="/public/landing/airpods.png" alt="AirPods" class="max-h-full group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">AirPods</h3>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Products -->
-        <section class="py-24 bg-gray-50 reveal">
-            <div class="max-w-6xl mx-auto px-5">
-                <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-6">
-                    <div class="text-center md:text-left">
-                        <h2 class="text-4xl md:text-5xl font-black mb-4">Featured Deals</h2>
-                        <p class="opacity-60">Handpicked premium tech just for you.</p>
+            <!-- Category Grid -->
+            <section class="py-24 bg-white reveal">
+                <div class="max-w-6xl mx-auto px-5">
+                    <div class="section-header text-center mb-16">
+                        <h2 class="text-4xl md:text-5xl font-black mb-4">Shop by Category</h2>
+                        <p class="opacity-60 max-w-xl mx-auto">Everything you need, organized perfectly by our tech
+                            curators.</p>
                     </div>
-                    <a href="/shop" class="btn btn-secondary border-none bg-orange-500/10 text-orange-500 px-8 py-3 rounded-xl hover:bg-orange-500 hover:text-white">View All Products</a>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                        <!-- Smartphones -->
+                        <a href="/shop?category=Smartphones"
+                            class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                            <div class="h-40 flex items-center justify-center mb-6">
+                                <img src="/public/landing/smartphone.png" alt="Phones"
+                                    class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smartphones
+                            </h3>
+                        </a>
+                        <!-- Watches -->
+                        <a href="/shop?category=Smart%20Watches"
+                            class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                            <div class="h-40 flex items-center justify-center mb-6">
+                                <img src="/public/landing/watch.png" alt="Watches"
+                                    class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Smart Watches
+                            </h3>
+                        </a>
+                        <!-- Audio -->
+                        <a href="/shop?category=Headsets"
+                            class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                            <div class="h-40 flex items-center justify-center mb-6">
+                                <img src="/public/landing/headset.png" alt="Audio"
+                                    class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">Headsets</h3>
+                        </a>
+                        <!-- Accessories -->
+                        <a href="/shop?category=AirPods"
+                            class="category-card group bg-gray-50 rounded-[32px] p-8 text-center border border-transparent hover:border-orange-500/30 hover:bg-white hover:shadow-2xl transition-all duration-500">
+                            <div class="h-40 flex items-center justify-center mb-6">
+                                <img src="/public/landing/airpods.png" alt="AirPods"
+                                    class="max-h-full group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            <h3 class="font-black text-xl group-hover:text-orange-500 transition-colors">AirPods</h3>
+                        </a>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <% if (locals.showProducts && showProducts.length > 0) { %>
-                        <% showProducts.forEach(product => { %>
-                            <% if (product) { %>
-                                <!-- Featured Product Card -->
-                                <div class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
-                                    <a href="/productDetailse/<%= product._id %>" class="block">
-                                        <div class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
-                                            <% const displayImg = (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images[0]) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>
-                                            <img src="<%= displayImg %>" alt="<%= product.productName %>" class="max-h-full group-hover:scale-110 transition-transform duration-700">
-                                        </div>
-                                    </a>
-                                    <div class="p-8">
-                                        <% 
-                                            let catName = 'Tech';
-                                            if (product.category) {
-                                                catName = product.category.categoryName || (typeof product.category === 'string' ? 'Premium' : 'Tech');
-                                            }
-                                        %>
-                                        <span class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block"><%= catName %></span>
-                                        <h3 class="text-2xl font-black mb-4"><%= product.productName || 'ZiGo Premium' %></h3>
-                                        <div class="flex justify-between items-center">
-                                            <% 
-                                                let displayPrice = '0';
-                                                if (product.variants && product.variants[0] && product.variants[0].price != null) {
-                                                    displayPrice = product.variants[0].price.toLocaleString('en-IN');
-                                                }
-                                            %>
-                                            <p class="text-2xl font-black">₹<%= displayPrice %></p>
-                                            <button onclick="addToCartAjax('<%= product._id %>', '<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>')" class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
-                                                <i class="fas fa-plus text-lg"></i>
-                                            </button>
+            </section>
+
+            <!-- Featured Products -->
+            <section class="py-24 bg-gray-50 reveal">
+                <div class="max-w-6xl mx-auto px-5">
+                    <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-6">
+                        <div class="text-center md:text-left">
+                            <h2 class="text-4xl md:text-5xl font-black mb-4">Featured Deals</h2>
+                            <p class="opacity-60">Handpicked premium tech just for you.</p>
+                        </div>
+                        <a href="/shop"
+                            class="btn btn-secondary border-none bg-orange-500/10 text-orange-500 px-8 py-3 rounded-xl hover:bg-orange-500 hover:text-white">View
+                            All Products</a>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <% if (locals.showProducts && showProducts.length> 0) { %>
+                            <% showProducts.forEach(product=> { %>
+                                <% if (product) { %>
+                                    <!-- Featured Product Card -->
+                                    <div
+                                        class="product-card group bg-white rounded-[40px] overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 relative">
+                                        <a href="/productDetailse/<%= product._id %>" class="block">
+                                            <div
+                                                class="h-80 bg-gray-50 flex items-center justify-center p-12 overflow-hidden">
+                                                <% const displayImg=(product.variants && product.variants[0] &&
+                                                    product.variants[0].images && product.variants[0].images[0]) ?
+                                                    product.variants[0].images[0] : '/public/landing/no-image.png' %>
+                                                    <img src="<%= displayImg %>" alt="<%= product.productName %>"
+                                                        class="max-h-full group-hover:scale-110 transition-transform duration-700">
+                                            </div>
+                                        </a>
+                                        <div class="p-8">
+                                            <% let catName='Tech' ; if (product.category) {
+                                                catName=product.category.categoryName || (typeof
+                                                product.category==='string' ? 'Premium' : 'Tech' ); } %>
+                                                <span
+                                                    class="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">
+                                                    <%= catName %>
+                                                </span>
+                                                <h3 class="text-2xl font-black mb-4">
+                                                    <%= product.productName || 'ZiGo Premium' %>
+                                                </h3>
+                                                <div class="flex justify-between items-center">
+                                                    <% let displayPrice='0' ; if (product.variants &&
+                                                        product.variants[0] && product.variants[0].price !=null) {
+                                                        displayPrice=product.variants[0].price.toLocaleString('en-IN');
+                                                        } %>
+                                                        <p class="text-2xl font-black">₹<%= displayPrice %>
+                                                        </p>
+                                                        <button
+                                                            onclick="addToCartAjax('<%= product._id %>', '<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>')"
+                                                            class="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 hover:rotate-90 transition-all duration-500">
+                                                            <i class="fas fa-plus text-lg"></i>
+                                                        </button>
+                                                </div>
                                         </div>
                                     </div>
-                                </div>
-                            <% } %>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="col-span-full py-20 text-center opacity-40">
-                            <p class="text-xl font-bold">Featured deals loading...</p>
-                        </div>
-                    <% } %>
+                                    <% } %>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <div class="col-span-full py-20 text-center opacity-40">
+                                                    <p class="text-xl font-bold">Featured deals loading...</p>
+                                                </div>
+                                                <% } %>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
             <!-- Why ZiGo -->
             <section class="why-zigo reveal">
@@ -900,58 +908,52 @@
 
         </main>
         <%- include('../../partials/footer') %>
-        <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
-            // Toggle Mobile Menu
-            function toggleMenu() {
-                const menu = document.getElementById('mobile-menu');
-                menu.classList.toggle('hidden');
-                document.body.classList.toggle('overflow-hidden');
-            }
+            <!-- Scripts -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
 
-            // Scroll Reveal Logic
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-            // AJAX Add to Cart
-            async function addToCartAjax(productId, variantId = null) {
-                // If ID is a placeholder, redirect to shop
-                if (productId.includes('placeholder')) {
-                    location.href = '/shop';
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`/shop/cart/${productId}${variantId ? '?variantId='+variantId : ''}`, {
-                        method: 'POST'
+                // Scroll Reveal Logic
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                        }
                     });
-                    const data = await response.json();
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Added to Cart',
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                        if (window.updateCartCount) window.updateCartCount(data.cartCount);
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+                // AJAX Add to Cart
+                async function addToCartAjax(productId, variantId = null) {
+                    // If ID is a placeholder, redirect to shop
+                    if (productId.includes('placeholder')) {
+                        location.href = '/shop';
+                        return;
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Action failed', 'error');
+
+                    try {
+                        const response = await fetch(`/shop/cart/${productId}${variantId ? '?variantId=' + variantId : ''}`, {
+                            method: 'POST'
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Added to Cart',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                            if (window.updateCartCount) window.updateCartCount(data.cartCount);
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', 'Action failed', 'error');
+                    }
                 }
-            }
-        </script>
+            </script>
 </body>
 
 </html>

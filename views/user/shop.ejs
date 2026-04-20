@@ -32,30 +32,43 @@
             font-family: 'Inter', sans-serif;
         }
 
+        html,
         body {
+            width: 100%;
+            max-width: 100%;
             background-color: var(--deep-black);
             color: var(--white);
-            overflow-x: hidden;
+            overflow-x: clip;
             line-height: 1.6;
         }
 
         /* --- Shop Section --- */
         .shop-container {
-            padding: 160px 5% 80px;
-            min-height: 100vh;
+            padding: 130px 4% 72px;
+            min-height: 100dvh;
         }
 
         .shop-layout {
             display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 3rem;
-            max-width: 1400px;
+            grid-template-columns: minmax(250px, 290px) minmax(0, 1fr);
+            gap: 2rem;
+            max-width: 1440px;
+            width: 100%;
             margin: 0 auto;
+            align-items: start;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1280px) {
+            .shop-layout {
+                grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+                gap: 1.4rem;
+            }
+        }
+
+        @media (max-width: 980px) {
             .shop-layout {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
         }
 
@@ -64,15 +77,44 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 24px;
-            padding: 2.5rem;
+            padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             height: min-content;
             position: sticky;
-            top: 120px;
+            top: 110px;
+            max-height: calc(100dvh - 130px);
+            overflow: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 90, 31, 0.75) rgba(255, 255, 255, 0.08);
+        }
+
+        .filters-sidebar::-webkit-scrollbar {
+            width: 9px;
+        }
+
+        .filters-sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        .filters-sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff6f3f 0%, #ff5a1f 100%);
+            border-radius: 999px;
+            border: 2px solid rgba(15, 15, 15, 0.35);
+        }
+
+        .filters-sidebar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #ff8258 0%, #ff5a1f 100%);
         }
 
         .filter-section {
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
         }
 
         .filter-section h4 {
@@ -117,17 +159,23 @@
         /* Product Grid */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .shop-content {
+            min-width: 0;
         }
 
         .product-card {
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 24px;
+            border-radius: 18px;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: var(--transition);
             position: relative;
+            min-width: 0;
         }
 
         .product-card:hover {
@@ -143,7 +191,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 1rem;
             position: relative;
         }
 
@@ -189,7 +237,7 @@
         }
 
         .product-info {
-            padding: 1.5rem;
+            padding: 1rem;
         }
 
         .p-cat {
@@ -202,7 +250,7 @@
         }
 
         .p-title {
-            font-size: 1.1rem;
+            font-size: 0.98rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
             color: white;
@@ -217,7 +265,7 @@
         }
 
         .p-price {
-            font-size: 1.25rem;
+            font-size: 1.05rem;
             font-weight: 800;
         }
 
@@ -259,9 +307,37 @@
 
         .search-container {
             flex: 1;
-            max-width: 500px;
+            max-width: 560px;
             display: flex;
             gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .shop-head {
+            margin-bottom: 1.2rem;
+        }
+
+        .shop-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .filter-toggle-btn {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            width: fit-content;
+            padding: 0.55rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            cursor: pointer;
         }
 
         .search-wrapper {
@@ -345,6 +421,150 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        @media (max-width: 1280px) {
+            .product-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 980px) {
+            .shop-container {
+                padding: 102px 0.9rem 60px;
+            }
+
+            .filters-sidebar {
+                display: none;
+                position: static;
+                top: auto;
+                padding: 1.1rem;
+                border-radius: 16px;
+                max-height: none;
+            }
+
+            .filters-sidebar.active {
+                display: block;
+            }
+
+            .filter-toggle-btn {
+                display: inline-flex;
+            }
+
+            .filter-section {
+                margin-bottom: 1.2rem;
+            }
+
+            .filter-section h4 {
+                font-size: 0.9rem;
+                margin-bottom: 0.7rem;
+            }
+
+            .filter-item {
+                margin-bottom: 0;
+            }
+
+            .filter-item label {
+                font-size: 0.82rem;
+            }
+
+            .search-container {
+                min-width: 100%;
+                max-width: 100%;
+            }
+
+            .shop-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.8rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .shop-content > .shop-head {
+                margin-bottom: 1.2rem;
+                gap: 0.9rem;
+            }
+
+            .shop-content h1 {
+                font-size: 1.35rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+                min-width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .search-wrapper {
+                min-width: 100%;
+            }
+
+            .btn-search-action {
+                font-size: 0.72rem;
+                padding: 0.7rem 1rem;
+                flex: 1;
+                justify-content: center;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.65rem;
+            }
+
+            .product-card {
+                border-radius: 14px;
+            }
+
+            .img-container {
+                padding: 0.7rem;
+            }
+
+            .product-info {
+                padding: 0.85rem;
+            }
+
+            .p-title {
+                font-size: 0.9rem;
+                min-height: 36px;
+            }
+
+            .p-price {
+                font-size: 1rem;
+            }
+
+            .add-cart-btn {
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+            }
+
+            .wishlist-heart-btn {
+                width: 30px;
+                height: 30px;
+                top: 0.6rem;
+                right: 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .filter-list {
+                display: block;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .product-grid {
+                gap: 0.5rem;
+            }
+
+            .shop-container {
+                padding-left: 0.55rem;
+                padding-right: 0.55rem;
+            }
+        }
     </style>
 </head>
 
@@ -358,7 +578,7 @@
                         <main class="shop-container">
                             <div class="shop-layout">
                                 <!-- Sidebar -->
-                                <aside class="filters-sidebar hidden lg:block">
+                                <aside class="filters-sidebar" id="filtersSidebar">
                                     <form id="filterForm">
                                         <div class="filter-section">
                                             <h4>Categories</h4>
@@ -416,13 +636,16 @@
 
                                 <!-- Main Content -->
                                 <div class="shop-content">
-                                    <div class="flex justify-between items-center mb-12 flex-wrap gap-6">
-                                        <div>
+                                    <div class="shop-head flex justify-between items-center mb-12 flex-wrap gap-6">
+                                        <div class="shop-title-block">
                                             <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">
                                                 Explore</p>
                                             <h1 class="text-3xl font-extrabold">ZiGo <span
                                                     class="text-orange-500">Premium Tech</span></h1>
-
+                                            <button type="button" id="filterToggleBtn" class="filter-toggle-btn">
+                                                <i class="fas fa-sliders-h"></i>
+                                                Filters
+                                            </button>
                                         </div>
 
                                         <div class="search-container">
@@ -444,71 +667,100 @@
                                     <% if (products && products.length> 0) { %>
                                         <div class="product-grid">
                                             <% products.forEach((product, index)=> { %>
-                                                    <div class="product-card group reveal active" data-id="<%=product._id%>"
-                                                        data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
-                                                        
-                                                        <div class="img-container relative aspect-square overflow-hidden bg-[#0F0F0F]">
-                                                            <% 
-                                                                const listedVariants = product.variants.filter(v => v.isListed !== false);
-                                                                const displayVariant = listedVariants.length > 0 ? listedVariants[0] : (product.variants[0] || {});
-                                                                const firstVariantId = displayVariant._id ? displayVariant._id.toString() : "";
-                                                                const isWishlisted = userWishlist && userWishlist.includes(firstVariantId);
-                                                                const prodImg = (displayVariant.images && displayVariant.images[0]) ? displayVariant.images[0] : '/public/landing/no-image.png';
+                                                <div class="product-card group reveal active" data-id="<%=product._id%>"
+                                                    data-variant-id="<%= (product.variants && product.variants[0]) ? product.variants[0]._id : '' %>">
+
+                                                    <div
+                                                        class="img-container relative aspect-square overflow-hidden bg-[#0F0F0F]">
+                                                        <% const listedVariants=product.variants.filter(v=> v.isListed
+                                                            !== false);
+                                                            const displayVariant = listedVariants.length > 0 ?
+                                                            listedVariants[0] : (product.variants[0] || {});
+                                                            const firstVariantId = displayVariant._id ?
+                                                            displayVariant._id.toString() : "";
+                                                            const isWishlisted = userWishlist &&
+                                                            userWishlist.includes(firstVariantId);
+                                                            const prodImg = (displayVariant.images &&
+                                                            displayVariant.images[0]) ? displayVariant.images[0] :
+                                                            '/public/landing/no-image.png';
                                                             %>
-                                                            
+
                                                             <!-- Wishlist Button -->
-                                                            <button class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
+                                                            <button
+                                                                class="wishlist-heart-btn <%= isWishlisted ? 'active' : '' %>"
                                                                 title="Add to Wishlist"
                                                                 data-variant-id="<%= firstVariantId %>">
                                                                 <i class="fas fa-heart"></i>
                                                             </button>
 
                                                             <!-- Offer Badge -->
-                                                            <% if (product.offer && product.offerDiscount > 0 && displayVariant.price > 0) { %>
-                                                                <% const percentage = Math.round(((displayVariant.price - product.finalPrice) / displayVariant.price) * 100); %>
-                                                                <% if (percentage > 0) { %>
-                                                                    <div class="absolute top-4 left-4 bg-[#FF5A1F] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg z-10 uppercase tracking-widest">
-                                                                        <%= percentage %>% OFF
-                                                                    </div>
-                                                                <% } %>
-                                                            <% } %>
-
-                                                            <img src="<%= prodImg %>" alt="<%= product.productName %>" 
-                                                                class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110">
-                                                        </div>
-
-                                                        <div class="product-info p-6">
-                                                            <span class="p-cat text-[10px] text-[#FF5A1F] font-bold uppercase tracking-[3px] mb-2 block opacity-80">
-                                                                <%= product.category ? product.category.categoryName : 'Tech' %>
-                                                            </span>
-                                                            <a href="/productDetailse/<%= product._id %>" class="p-title text-white font-bold text-sm leading-snug line-clamp-2 min-h-[40px] hover:text-[#FF5A1F] transition-colors mb-4">
-                                                                <%= product.productName %>
-                                                            </a>
-                                                            
-                                                            <div class="flex items-center justify-between gap-4 mt-auto">
-                                                                <div class="flex flex-col">
-                                                                    <div class="flex items-center gap-2 flex-wrap">
-                                                                        <% if (product.offer && product.offerDiscount > 0 && displayVariant.price > 0) { %>
-                                                                            <span class="text-xs text-white/50 line-through mb-1">₹<%= displayVariant.price.toLocaleString() %></span>
-                                                                            <span class="text-lg font-black text-white">₹<%= product.finalPrice.toLocaleString() %></span>
-                                                                        <% } else { %>
-                                                                            <span class="text-lg font-black text-white">₹<%= displayVariant.price.toLocaleString() %></span>
+                                                            <% if (product.offer && product.offerDiscount> 0 &&
+                                                                displayVariant.price > 0) { %>
+                                                                <% const percentage=Math.round(((displayVariant.price -
+                                                                    product.finalPrice) / displayVariant.price) * 100);
+                                                                    %>
+                                                                    <% if (percentage> 0) { %>
+                                                                        <div
+                                                                            class="absolute top-4 left-4 bg-[#FF5A1F] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg z-10 uppercase tracking-widest">
+                                                                            <%= percentage %>% OFF
+                                                                        </div>
                                                                         <% } %>
-                                                                    </div>
-                                                                    <% if (displayVariant.stock <= 0) { %>
-                                                                        <span class="text-red-500 font-bold text-[10px] uppercase tracking-wider mt-1">Out of Stock</span>
-                                                                    <% } %>
-                                                                </div>
+                                                                            <% } %>
 
-                                                                <button class="add-cart-btn w-10 h-10 rounded-xl bg-[#FF5A1F] flex items-center justify-center text-white hover:bg-[#E44D18] hover:scale-110 transition-all shadow-lg shadow-[#FF5A1F]/20"
-                                                                    data-variant-id="<%= firstVariantId %>" 
-                                                                    <%= displayVariant.stock <= 0 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' %>>
-                                                                    <i class="fas fa-plus text-sm"></i>
-                                                                </button>
+                                                                                <img src="<%= prodImg %>"
+                                                                                    alt="<%= product.productName %>"
+                                                                                    class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110">
+                                                    </div>
+
+                                                    <div class="product-info">
+                                                        <span
+                                                            class="p-cat text-[10px] text-[#FF5A1F] font-bold uppercase tracking-[3px] mb-2 block opacity-80">
+                                                            <%= product.category ? product.category.categoryName
+                                                                : 'Tech' %>
+                                                        </span>
+                                                        <a href="/productDetailse/<%= product._id %>"
+                                                            class="p-title text-white font-bold text-sm leading-snug line-clamp-2 min-h-[40px] hover:text-[#FF5A1F] transition-colors mb-4">
+                                                            <%= product.productName %>
+                                                        </a>
+
+                                                        <div class="flex items-center justify-between gap-4 mt-auto">
+                                                            <div class="flex flex-col">
+                                                                <div class="flex items-center gap-2 flex-wrap">
+                                                                    <% if (product.offer && product.offerDiscount> 0 &&
+                                                                        displayVariant.price > 0) { %>
+                                                                        <span
+                                                                            class="text-xs text-white/50 line-through mb-1">₹
+                                                                            <%= displayVariant.price.toLocaleString() %>
+                                                                                </span>
+                                                                        <span class="text-lg font-black text-white">₹<%=
+                                                                                product.finalPrice.toLocaleString() %>
+                                                                                </span>
+                                                                        <% } else { %>
+                                                                            <span
+                                                                                class="text-lg font-black text-white">₹
+                                                                                <%= displayVariant.price.toLocaleString()
+                                                                                    %></span>
+                                                                            <% } %>
+                                                                </div>
+                                                                <% if (displayVariant.stock <=0) { %>
+                                                                    <span
+                                                                        class="text-red-500 font-bold text-[10px] uppercase tracking-wider mt-1">Out
+                                                                        of Stock</span>
+                                                                    <% } %>
                                                             </div>
+
+                                                            <button
+                                                                class="add-cart-btn w-10 h-10 rounded-xl bg-[#FF5A1F] flex items-center justify-center text-white hover:bg-[#E44D18] hover:scale-110 transition-all shadow-lg shadow-[#FF5A1F]/20"
+                                                                data-variant-id="<%= firstVariantId %>"
+                                                                <%=displayVariant.stock <=0
+                                                                ? 'disabled style="opacity:0.5; cursor:not-allowed;"'
+                                                                : '' %>>
+                                                                <i class="fas fa-plus text-sm"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                    <% }) %>
+                                                </div>
+                                                <% }) %>
                                         </div>
 
                                         <div class="mt-12">
@@ -575,6 +827,21 @@
                                     if (e.key === 'Enter') handleSearch();
                                 });
 
+                                const filterToggleBtn = document.getElementById('filterToggleBtn');
+                                const filtersSidebar = document.getElementById('filtersSidebar');
+
+                                if (filterToggleBtn && filtersSidebar) {
+                                    filterToggleBtn.addEventListener('click', () => {
+                                        filtersSidebar.classList.toggle('active');
+                                    });
+
+                                    window.addEventListener('resize', () => {
+                                        if (window.innerWidth > 980) {
+                                            filtersSidebar.classList.remove('active');
+                                        }
+                                    });
+                                }
+
                                 //select product
                                 if (productGrid) {
                                     productGrid.addEventListener("click", (event) => {
@@ -612,7 +879,7 @@
                                     try {
                                         const update = await fetch(`/shop/wishlist/${productId}?variantId=${variantId}`, {
                                             method: "PATCH",
-                                            headers: { 
+                                            headers: {
                                                 "Content-Type": "application/json",
                                                 "Accept": "application/json"
                                             }
@@ -674,7 +941,7 @@
                                         console.log(productId)
                                         let update = await fetch(`/shop/cart/${productId}?variantId=${variantId}`, {
                                             method: "POST",
-                                            headers: { 
+                                            headers: {
                                                 "Content-Type": "application/json",
                                                 "Accept": "application/json"
                                             }
@@ -736,3 +1003,4 @@
 </body>
 
 </html>
+

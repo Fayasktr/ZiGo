@@ -1,90 +1,138 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* --- THE ONLY FIX ADDED --- */
     *, *::before, *::after {
         box-sizing: border-box;
     }
+
     html, body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
         margin: 0;
         padding: 0;
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: hidden;
     }
-    /* -------------------------- */
 
     :root {
         --primary-orange: #FF5A1F;
         --primary-orange-hover: #E44D18;
         --deep-black: #0F0F0F;
         --white: #FFFFFF;
-        --transition: all 0.3s ease;
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     header {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
+        inset: 0 0 auto 0;
+        width: auto;
+        max-width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.8rem 5%;
+        padding: 1rem 5%;
         z-index: 1000;
-        background: rgba(15,15,15,0.7);
-        backdrop-filter: blur(8px);
+        background-color: rgba(15, 15, 15, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: var(--transition);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     header.scrolled {
-        background: rgba(15,15,15,0.95);
-        box-shadow: 0 4px 40px rgba(255, 90, 31, 0.4);
+        padding: 0.75rem 5%;
+        background-color: rgba(15, 15, 15, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .logo img.icon { height: 70px; }
-    .logo img.name { height: 30px; }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .logo:hover {
+        transform: scale(1.02);
+    }
+
+    .logo img.icon { height: 64px; width: auto; }
+    .logo img.name { height: 30px; width: auto; margin-top: 2px; }
 
     .nav-links {
         display: flex;
         gap: 2rem;
         list-style: none;
+        margin: 0 auto;
     }
 
     .nav-links a {
         color: white;
         text-decoration: none;
-        opacity: 0.8;
+        font-weight: 500;
+        font-size: 0.9rem;
+        opacity: 0.7;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-orange);
+        transition: var(--transition);
+    }
+
+    .nav-links a:hover {
+        opacity: 1;
+        color: var(--primary-orange);
+    }
+
+    .nav-links a:hover::after {
+        width: 100%;
     }
 
     .header-actions {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
-    .cart-btn, .wishlist-btn {
+    .action-icon {
         position: relative;
         color: white;
-        font-size: 1.4rem;
+        font-size: 1.25rem;
+        text-decoration: none;
         transition: var(--transition);
         display: flex;
         align-items: center;
         justify-content: center;
+        opacity: 0.8;
     }
 
-    .cart-btn:hover, .wishlist-btn:hover {
+    .action-icon:hover {
+        opacity: 1;
         color: var(--primary-orange);
-        transform: scale(1.1);
+        transform: translateY(-2px);
     }
 
-    .cart-count, .wishlist-count {
+    .badge {
         position: absolute;
-        top: -5px;
-        right: -8px;
+        top: -8px;
+        right: -10px;
         background: var(--primary-orange);
+        color: white;
         font-size: 0.65rem;
         font-weight: 800;
-        width: 18px;
+        min-width: 18px;
         height: 18px;
+        padding: 0 4px;
         border-radius: 50%;
         display: flex;
         justify-content: center;
@@ -93,15 +141,17 @@
     }
 
     .profile-avatar {
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        border: 2px solid var(--primary-orange);
+        border: 2px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
         transition: var(--transition);
+        background: rgba(255, 255, 255, 0.05);
     }
 
     .profile-avatar:hover {
+        border-color: var(--primary-orange);
         transform: scale(1.1);
         box-shadow: 0 0 15px rgba(255, 90, 31, 0.3);
     }
@@ -109,25 +159,119 @@
     .profile-avatar img {
         width: 100%;
         height: 100%;
+        object-fit: cover;
     }
 
-    /* MOBILE */
-    @media (max-width:768px){
-        .nav-links{ display:none; }
-        .logo img.icon { height: 50px; }
-        .header-actions { gap: 0.75rem; }
-        header { padding: 0.8rem 3%; }
+    .menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: white;
+        transition: var(--transition);
     }
+
+    /* Breakpoints */
+    @media (max-width: 1024px) {
+        .nav-links { display: none; }
+        .menu-btn { display: flex; }
+        header { padding: 0.8rem 4%; }
+        .logo img.icon { height: 50px; }
+        .logo img.name { height: 24px; }
+    }
+
+    @media (max-width: 640px) {
+        .header-actions { gap: 1rem; }
+        .logo img.name { display: none; }
+        .action-icon { font-size: 1.15rem; }
+        .profile-avatar { width: 34px; height: 34px; }
+    }
+
+    /* Mobile Menu Drawer */
+    .mobile-menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+    }
+
+    .mobile-menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        right: -300px;
+        width: 280px;
+        height: 100%;
+        background: #0F0F0F;
+        z-index: 2001;
+        padding: 6rem 2rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-menu-overlay.active .mobile-sidebar {
+        right: 0;
+    }
+
+    .mobile-sidebar a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 500;
+        opacity: 0.8;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mobile-sidebar a:hover {
+        color: var(--primary-orange);
+        opacity: 1;
+        padding-left: 8px;
+    }
+
+    .close-menu {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: var(--transition);
+    }
+
+    .close-menu:hover {
+        opacity: 1;
+        transform: rotate(90deg);
+        color: var(--primary-orange);
+    }
+
 </style>
 
 <header id="main-header">
-    <a href="/" class="logo flex items-center gap-2">
-        <img src="/public/public/logo-icon.png" class="icon">
-        <img src="/public/public/logo-name.png" class="name">
+    <a href="/" class="logo">
+        <img src="/public/public/logo-icon.png" class="icon" alt="ZiGo Icon">
+        <img src="/public/public/logo-name.png" class="name" alt="ZiGo">
     </a>
 
-    <!-- DESKTOP NAV -->
-    <ul class="nav-links hidden lg:flex">
+    <ul class="nav-links">
         <li><a href="/">Home</a></li>
         <li><a href="/shop">Shop</a></li>
         <li><a href="/user/orders">Orders</a></li>
@@ -136,94 +280,103 @@
     </ul>
 
     <div class="header-actions">
-
-        <!-- Cart -->
-        <a href="/user/cart" class="cart-btn">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count" id="cart-count-badge"><%= typeof cartCount !== 'undefined' ? cartCount : 0 %></span>
+        <!-- Wishlist -->
+        <a href="/user/wishlist" class="action-icon" title="Wishlist">
+            <i class="fas fa-heart"></i>
+            <span class="badge" id="wishlist-count-badge"><%= typeof wishlistCount !== 'undefined' ? wishlistCount : 0 %></span>
         </a>
 
-        <!-- Wishlist -->
-        <a href="/user/wishlist" class="wishlist-btn">
-            <i class="fas fa-heart"></i>
-            <span class="wishlist-count" id="wishlist-count-badge"><%= typeof wishlistCount !== 'undefined' ? wishlistCount : 0 %></span>
+        <!-- Cart -->
+        <a href="/user/cart" class="action-icon" title="Shopping Cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="badge" id="cart-count-badge"><%= typeof cartCount !== 'undefined' ? cartCount : 0 %></span>
         </a>
 
         <!-- Profile -->
-        <a href="/user/profile" class="profile-avatar">
-            <img src="https://ui-avatars.com/api/?name=<%= user?.userName || 'User' %>&background=FF5A1F&color=fff">
+        <a href="/user/profile" class="profile-avatar" title="Account Status">
+            <img src="https://ui-avatars.com/api/?name=<%= user?.userName || 'User' %>&background=FF5A1F&color=fff" alt="Profile">
         </a>
 
-        <!-- HAMBURGER -->
-        <button id="menu-btn" class="lg:hidden text-white text-xl">
-            ☰
+        <button id="menu-btn" class="menu-btn" aria-label="Open navigation menu">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
         </button>
     </div>
 </header>
 
-<!-- MOBILE MENU -->
-<div id="mobile-menu" class="fixed top-0 left-0 w-full h-full bg-black/80 hidden z-[999]">
-
-    <div class="bg-[#0F0F0F] w-[75%] max-w-[280px] h-full pt-24 p-6 flex flex-col gap-6">
-
-        <a href="/" class="text-white text-lg">Home</a>
-        <a href="/shop" class="text-white text-lg">Shop</a>
-        <a href="/user/orders" class="text-white text-lg">Orders</a>
-        <a href="/about" class="text-white text-lg">About</a>
-        <a href="/contact" class="text-white text-lg">Contact</a>
-
-        <hr class="border-gray-700">
-
-        <!-- LOGOUT MOVED HERE -->
-        <a href="/logout" class="text-red-400">Logout</a>
-    </div>
+<div id="mobile-menu-overlay" class="mobile-menu-overlay">
+    <aside class="mobile-sidebar" id="mobile-sidebar">
+        <button id="close-menu" class="close-menu">&times;</button>
+        <a href="/">Home <i class="fas fa-chevron-right text-[10px] opacity-30"></i></a>
+        <a href="/shop">Shop <i class="fas fa-chevron-right text-[10px] opacity-30"></i></a>
+        <a href="/user/orders">Orders <i class="fas fa-chevron-right text-[10px] opacity-30"></i></a>
+        <a href="/about">About <i class="fas fa-chevron-right text-[10px] opacity-30"></i></a>
+        <a href="/contact">Contact <i class="fas fa-chevron-right text-[10px] opacity-30"></i></a>
+        <hr class="border-white/5 my-2">
+        <a href="/user/profile">My Profile <i class="fas fa-user-circle text-sm opacity-50"></i></a>
+        <a href="/logout" class="text-red-500 hover:text-red-400">Logout <i class="fas fa-sign-out-alt text-sm opacity-50"></i></a>
+    </aside>
 </div>
 
 <script>
-    const header = document.getElementById('main-header');
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
+    (function() {
+        const header = document.getElementById('main-header');
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-menu');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const sidebar = document.getElementById('mobile-sidebar');
 
-    window.addEventListener('scroll', () => {
-        window.scrollY > 50
-            ? header.classList.add('scrolled')
-            : header.classList.remove('scrolled');
-    });
-
-    menuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    mobileMenu.addEventListener('click', (e) => {
-        if (e.target === mobileMenu) {
-            mobileMenu.classList.add('hidden');
-        }
-    });
-
-    document.querySelectorAll('#mobile-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
+        // Scroll Effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 30) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         });
-    });
 
-    // --- CART & WISHLIST COUNT UPDATERS ---
-    window.updateCartCount = function(count) {
-        const badge = document.getElementById('cart-count-badge');
-        if (badge) {
-            badge.innerText = count;
-            // Optional: Add a small animation on change
-            badge.style.transform = 'scale(1.2)';
-            setTimeout(() => badge.style.transform = 'scale(1)', 200);
-        }
-    };
+        // Initialize scroll state
+        if (window.scrollY > 30) header.classList.add('scrolled');
 
-    window.updateWishlistCount = function(count) {
-        const badge = document.getElementById('wishlist-count-badge');
-        if (badge) {
-            badge.innerText = count;
-            badge.style.transform = 'scale(1.2)';
-            setTimeout(() => badge.style.transform = 'scale(1)', 200);
-        }
-    };
+        // Menu Toggle Logic
+        const toggleMenu = (show) => {
+            overlay.classList.toggle('active', show);
+            document.body.style.overflow = show ? 'hidden' : '';
+        };
+
+        menuBtn.addEventListener('click', () => toggleMenu(true));
+        closeBtn.addEventListener('click', () => toggleMenu(false));
+        
+        // Close on overlay click (outside sidebar)
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) toggleMenu(false);
+        });
+
+        // Close on link click
+        overlay.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => toggleMenu(false));
+        });
+
+        // --- CART & WISHLIST COUNT UPDATERS ---
+        window.updateCartCount = function(count) {
+            const badge = document.getElementById('cart-count-badge');
+            if (badge) {
+                badge.innerText = count;
+                badge.style.transform = 'scale(1.2)';
+                setTimeout(() => badge.style.transform = 'scale(1)', 200);
+            }
+        };
+
+        window.updateWishlistCount = function(count) {
+            const badge = document.getElementById('wishlist-count-badge');
+            if (badge) {
+                badge.innerText = count;
+                badge.style.transform = 'scale(1.2)';
+                setTimeout(() => badge.style.transform = 'scale(1)', 200);
+            }
+        };
+    })();
 </script>

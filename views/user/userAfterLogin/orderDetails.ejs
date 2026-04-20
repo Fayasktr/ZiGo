@@ -287,6 +287,7 @@
             }
         }
 
+
         textarea {
             width: 100%;
             padding: 1rem;
@@ -296,6 +297,69 @@
             outline: none;
             resize: none;
             margin-top: 1rem;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 1024px) {
+            .details-container {
+                padding: 100px 4% 60px;
+                max-width: 100%;
+            }
+            .details-header, .details-body {
+                padding: 1.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .details-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.25rem;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .item-thumb {
+                width: 80px;
+                height: 80px;
+            }
+            .order-item .text-right {
+                text-align: left !important;
+                width: 100%;
+                border-top: 1px solid var(--gray-light);
+                padding-top: 1rem;
+                align-items: flex-start !important;
+            }
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .details-container {
+                padding: 80px 0.75rem 40px;
+            }
+            .details-card {
+                border-radius: 20px;
+            }
+            .details-header, .details-body {
+                padding: 1.25rem;
+            }
+            .timeline-step {
+                gap: 1.25rem;
+            }
+            .step-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -307,11 +371,11 @@
         <div class="details-card">
             <div class="details-header">
                 <div>
-                    <h1 class="text-3xl font-extrabold mb-1">Order #<%= order.orderNumber %></h1>
-                    <p class="opacity-50">Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></p>
+                    <h1 class="text-xl md:text-3xl font-extrabold mb-1">Order #<%= order.orderNumber %></h1>
+                    <p class="text-xs md:text-sm opacity-50">Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span class="order-status-badge status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus.toUpperCase() %></span>
+                    <span class="order-status-badge status-<%= order.orderStatus.toLowerCase() %> text-xs md:text-sm"><%= order.orderStatus.toUpperCase() %></span>
                 </div>
             </div>
 
@@ -320,7 +384,7 @@
                     <div class="info-box">
                         <h4>Shipping Address</h4>
                         <% if (order.shippingAddress) { %>
-                            <p class="font-bold text-lg mb-1"><%= order.shippingAddress.fullName %></p>
+                            <p class="font-bold text-md md:text-lg mb-1"><%= order.shippingAddress.fullName %></p>
                             <p class="opacity-60 whitespace-pre-line leading-relaxed"><%= order.shippingAddress.addressLine %></p>
                             <p class="opacity-60"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %></p>
                             <p class="opacity-60"><%= order.shippingAddress.country %></p>
@@ -366,7 +430,7 @@
                                     <span class="font-bold">- ₹<%= order.pricing.couponDiscount.toLocaleString() %></span>
                                 </div>
                             <% } %>
-                            <div class="flex justify-between text-lg text-orange-500 font-black mt-2 pt-2 border-t">
+                            <div class="flex justify-between text-md md:text-lg text-orange-500 font-black mt-2 pt-2 border-t">
                                 <span>Grand Total</span>
                                 <span>₹<%= order.pricing.total.toLocaleString() %></span>
                             </div>
@@ -374,18 +438,18 @@
                     </div>
                 </div>
 
-                <h3 class="text-xl font-extrabold mb-6">Items in this Order</h3>
+                <h3 class="text-lg md:text-xl font-extrabold mb-6">Items in this Order</h3>
                 <% order.items.forEach(item => { %>
                     <div class="order-item">
-                        <div class="item-thumb">
+                        <div class="item-thumb shadow-sm border border-gray-50 flex-shrink-0">
                             <% if (item.image) { %>
                                 <img src="<%= item.image %>" alt="<%= item.productName %>">
                             <% } else { %>
                                 <img src="/public/landing/no-image.png" alt="No image">
                             <% } %>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold"><%= item.productName %></h4>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-md md:text-lg font-bold truncate"><%= item.productName %></h4>
                             <p class="opacity-50 text-sm">
                                 Quantity: <%= item.quantity %>
                                 <% if (item.cancelledQuantity > 0) { %> 

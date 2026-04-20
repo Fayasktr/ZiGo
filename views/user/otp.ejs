@@ -7,8 +7,7 @@
     <title>ZiGo | Verify Your Email</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/public/public/favicon.png">
@@ -21,7 +20,7 @@
             --dark-navy: #1E293B;
             --gray-light: #E2E8F0;
             --white: #FFFFFF;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -31,92 +30,58 @@
             font-family: 'Inter', sans-serif;
         }
 
+        html,
         body {
+            width: 100%;
+            height: 100%;
             background-color: var(--deep-black);
             color: var(--white);
-            overflow-x: hidden;
+            overflow-x: clip;
             line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* --- Global Header --- */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 5%;
-            z-index: 1000;
-            transition: var(--transition);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .logo img.icon {
-            height: 95px;
-            width: auto;
-        }
-
-        .logo img.name {
-            height: 47px;
-            width: auto;
-            margin-top: 2px;
-        }
-
-        /* --- OTP Section --- */
         .otp-container {
-            flex: 1;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             background-color: var(--deep-black);
             padding: 2rem;
             position: relative;
-            z-index: 1;
+            padding-top: clamp(82px, 10vh, 110px);
+            overflow: hidden;
         }
 
-        .glow {
+        .otp-container::before {
+            content: '';
             position: absolute;
-            width: 600px;
-            height: 600px;
+            width: 80vw;
+            height: 80vw;
+            max-width: 1200px;
+            max-height: 1200px;
             background: radial-gradient(circle, rgba(255, 90, 31, 0.08) 0%, transparent 70%);
-            z-index: -1;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-        }
-
-        .glow-2 {
-            top: 10%;
-            left: 80%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 90, 31, 0.05) 0%, transparent 70%);
+            z-index: 1;
+            pointer-events: none;
         }
 
         .otp-card {
             width: 100%;
             max-width: 500px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 40px;
-            padding: 4rem 3rem;
+            padding: 3.5rem 2.5rem;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .otp-card.active {
@@ -124,11 +89,7 @@
             transform: translateY(0);
         }
 
-        .otp-header {
-            margin-bottom: 2.5rem;
-        }
-
-        .otp-header .icon-box {
+        .otp-icon {
             width: 80px;
             height: 80px;
             background: rgba(255, 90, 31, 0.1);
@@ -143,38 +104,38 @@
         }
 
         .otp-header h2 {
-            font-size: 2.4rem;
-            font-weight: 900;
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: 800;
             margin-bottom: 0.75rem;
-            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.5) 100%);
+            background: linear-gradient(135deg, #fff 0%, var(--primary-orange) 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            letter-spacing: -0.02em;
         }
 
         .otp-header p {
-            color: rgba(255, 255, 255, 0.5);
+            opacity: 0.5;
+            margin-bottom: 2.5rem;
             font-size: 0.95rem;
             line-height: 1.6;
-            max-width: 80%;
-            margin: 0 auto;
         }
 
         .otp-inputs {
             display: flex;
-            gap: 1.25rem;
+            gap: 1rem;
             justify-content: center;
             margin-bottom: 2.5rem;
         }
 
         .otp-field {
-            width: 65px;
-            height: 75px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            font-size: 2rem;
-            font-weight: 800;
+            width: clamp(50px, 12vw, 65px);
+            height: clamp(60px, 15vw, 75px);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            font-size: 1.75rem;
+            font-weight: 700;
             color: white;
             text-align: center;
             outline: none;
@@ -183,8 +144,8 @@
 
         .otp-field:focus {
             border-color: var(--primary-orange);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 5px rgba(255, 90, 31, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.15);
             transform: translateY(-2px);
         }
 
@@ -193,128 +154,118 @@
             background: var(--primary-orange);
             color: white;
             border: none;
-            padding: 1.25rem;
-            border-radius: 18px;
-            font-size: 1.1rem;
-            font-weight: 800;
+            padding: 1.2rem;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
             margin-bottom: 2rem;
-            box-shadow: 0 10px 20px -5px rgba(255, 90, 31, 0.4);
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            box-shadow: 0 8px 25px rgba(255, 90, 31, 0.3);
         }
 
         .verify-btn:hover {
             background: var(--primary-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(255, 90, 31, 0.5);
+            box-shadow: 0 12px 30px rgba(255, 90, 31, 0.4);
         }
 
-        .verify-btn:active {
-            transform: translateY(0);
-        }
-
-        .resend-text {
-            font-size: 0.95rem;
+        .timer-container {
+            font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 1rem;
+        }
+
+        #timer {
+            color: var(--primary-orange);
+            font-weight: 700;
         }
 
         .resend-link {
             color: var(--primary-orange);
             text-decoration: none;
             font-weight: 700;
-            margin-left: 0.5rem;
+            font-size: 0.95rem;
             transition: var(--transition);
         }
 
-        .resend-link:hover {
-            opacity: 0.8;
+        .resend-link:hover:not(.disabled) {
             text-decoration: underline;
+            color: var(--primary-orange-hover);
         }
 
         .resend-link.disabled {
             opacity: 0.3;
             cursor: not-allowed;
             pointer-events: none;
-            text-decoration: none;
         }
 
-        #timer {
-            font-weight: 800;
-            color: white;
-            margin-left: 4px;
-        }
-
-        .error-toast {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-            padding: 1rem;
-            border-radius: 16px;
-            margin-top: 1.5rem;
+        .error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            color: #ef4444;
+            font-size: 0.85rem;
             font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 68, 68, 0.2);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             animation: shake 0.5s ease-in-out;
         }
 
         @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            75% {
-                transform: translateX(5px);
-            }
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
-        .hidden {
-            display: none;
+        /* Responsive */
+        @media (max-width: 640px) {
+            .otp-container { padding: 1.5rem; padding-top: 80px; }
+            .otp-card { padding: 2.5rem 1.5rem; border-radius: 32px; border: none; background: transparent; backdrop-filter: none; box-shadow: none; }
+            .otp-inputs { gap: 0.75rem; }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <a href="/" class="logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo Icon" class="icon">
-            <img src="/public/public/logo-name.png" alt="ZiGo" class="name">
-        </a>
-    </header>
+    <%- include('../partials/headerBeforeLogin') %>
 
     <div class="otp-container">
-        <div class="glow"></div>
-        <div class="glow glow-2"></div>
-
         <div class="otp-card" id="otpCard">
+            <div class="otp-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            
             <div class="otp-header">
-                <div class="icon-box">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
                 <h2>Verify Email</h2>
                 <p>We've sent a 4-digit code to your email. Enter it below to secure your account.</p>
-                <% if (error && error.length> 0) { %>
-                    <div class="error-toast">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <%= error %>
+                
+                <% if (error && error.length > 0) { %>
+                    <div class="error-alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><%= error %></span>
                     </div>
-                    <% } %>
-                <div id="clientError" class="error-toast hidden">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span id="clientErrorMessage">only numbers allow..</span>
+                <% } %>
+                
+                <div id="clientError" class="error-alert hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="clientErrorMessage">Numbers only allowed.</span>
                 </div>
             </div>
 
             <form id="otpForm" action="<%= locals.verifyAction || '/verifyOtp' %>" method="POST">
                 <div class="otp-inputs">
-                    <input type="text" class="otp-field otp-input" maxlength="1" pattern="\d" required
-                        autocomplete="one-time-code">
+                    <input type="text" class="otp-field otp-input" maxlength="1" pattern="\d" required autocomplete="one-time-code">
                     <input type="text" class="otp-field otp-input" maxlength="1" pattern="\d" required>
                     <input type="text" class="otp-field otp-input" maxlength="1" pattern="\d" required>
                     <input type="text" class="otp-field otp-input" maxlength="1" pattern="\d" required>
@@ -325,9 +276,10 @@
                 <button type="submit" class="verify-btn">Verify Account</button>
             </form>
 
-            <span id="timerBox">Resend in <span id="timer">01:00</span></span>
-            <a href="<%= locals.resendAction || '/resendOtp' %>" class="resend-link disabled" id="resendBtn">Resend
-                Code</a>
+            <div class="timer-container" id="timerBox">
+                Resend code in <span id="timer">01:00</span>
+            </div>
+            <a href="<%= locals.resendAction || '/resendOtp' %>" class="resend-link disabled" id="resendBtn">Resend Code</a>
         </div>
     </div>
 
@@ -370,9 +322,8 @@
 
         function startTimer() {
             resendBtn.classList.add('disabled');
-            timerBox.classList.remove('hidden');
+            timerBox.style.display = 'block';
 
-            // Calculate initial time left in seconds
             const expiryTime = Number("<%=otpTime%>");
             const currentTime = Date.now();
             timeLeft = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
@@ -387,7 +338,7 @@
                     clearInterval(countdown);
                     timeLeft = 0;
                     updateTimerDisplay();
-                    timerBox.classList.add('hidden');
+                    timerBox.style.display = 'none';
                     resendBtn.classList.remove('disabled');
                 } else {
                     updateTimerDisplay();
@@ -406,7 +357,6 @@
                 const val = e.target.value;
                 const clientError = document.getElementById('clientError');
                 
-                // Allow only numbers
                 if (val && !/^\d$/.test(val)) {
                     e.target.value = '';
                     clientError.classList.remove('hidden');
@@ -451,3 +401,4 @@
 </body>
 
 </html>
+
