@@ -67,7 +67,7 @@ export const signUp = asyncHandler(async (req, res) => {
 
     if (password != confirmPassword) {
       req.flash('error', 'conform password is not equal');
-      return res.redirect('signUp');
+      return res.redirect('/signUp');
     }
     userName = userName.trim();
     email = email.trim().toLowerCase();
@@ -75,7 +75,7 @@ export const signUp = asyncHandler(async (req, res) => {
 
     if (!userName || !email || !password) {
       req.flash('error', 'invalid credentials');
-      return res.redirect('signUp');
+      return res.redirect('/signUp');
     }
     let newUser = await userServises.userSignUp(userName, email, password);
 
