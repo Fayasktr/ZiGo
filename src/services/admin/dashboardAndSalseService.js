@@ -498,12 +498,20 @@ export const reportData = async (filters = {}) => {
       },
     ]);
 
+    const detailedOrders = await orderModel
+      .find({
+        createdAt: { $gte: dateRange.start, $lte: dateRange.end },
+      })
+      .populate('userId', 'userName email')
+      .sort({ createdAt: -1 });
+
     return {
       metrics: overallMetrics[0] || getDefaultMetrics(),
       salesOverTime,
       topProducts,
       categoryWiseSales,
       paymentMethodBreakdown,
+      detailedOrders,
     };
   } catch (error) {
     console.error('Report generation error:', error);
@@ -612,53 +620,132 @@ export const exportSalesExcel = async (req, res) => {
     const data = await reportData({ period, startDate, endDate });
 
     const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'ZiGo Admin';
+    workbook.lastModifiedBy = 'ZiGo Admin';
+    workbook.created = new Date();
 
-    const summarySheet = workbook.addWorksheet('Summary');
-    summarySheet.columns = [
-      { header: 'Metric', key: 'metric', width: 25 },
-      { header: 'Value', key: 'value', width: 20 },
-    ];
-    summarySheet.addRows([
-      ['Total Revenue', `₹${Math.round(data.metrics.totalRevenue)}`],
-      ['Total Orders', data.metrics.totalOrders],
-      ['Avg Order Value', `₹${Math.round(data.metrics.avgOrderValue)}`],
-      ['Items Sold', data.metrics.totalItemsSold],
-      ['Items Returned', data.metrics.totalItemsReturned],
-      ['Items Cancelled', data.metrics.totalItemsCancelled],
+    // Helper for professional styling
+    const applyHeaderStyle = (sheet, columns) => {
+      sheet.columns = columns;
+      const headerRow = sheet.getRow(1);
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFF5A1F' }, // ZiGo Orange
+      };
+      headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+      headerRow.height = 25;
+    };
+
+    // 1. Summary Sheet
+    const summarySheet = workbook.addWorksheet('Business Overview');
+    applyHeaderStyle(summarySheet, [
+      { header: 'Metric Name', key: 'metric', width: 35 },
+      { header: 'Value', key: 'value', width: 25 },
     ]);
-    summarySheet.getRow(1).font = { bold: true };
 
+    summarySheet.addRows([
+      ['Report Period', period.toUpperCase()],
+      ['Generated On', new Date().toLocaleString()],
+      ['', ''], // Spacer
+      ['TOTAL REVENUE', `₹${Math.round(data.metrics.totalRevenue || 0).toLocaleString()}`],
+      ['GROSS REVENUE', `₹${Math.round(data.metrics.grossRevenue || 0).toLocaleString()}`],
+      ['TOTAL ORDERS', data.metrics.totalOrders || 0],
+      ['AVERAGE ORDER VALUE', `₹${Math.round(data.metrics.avgOrderValue || 0).toLocaleString()}`],
+      ['ITEMS SOLD', data.metrics.totalItemsSold || 0],
+      ['ITEMS RETURNED', data.metrics.totalItemsReturned || 0],
+      ['ITEMS CANCELLED', data.metrics.totalItemsCancelled || 0],
+      ['COUPON DISCOUNTS', `₹${Math.round(data.metrics.totalCouponDiscount || 0).toLocaleString()}`],
+      ['PROMOTIONAL DISCOUNTS', `₹${Math.round(data.metrics.totalDiscount || 0).toLocaleString()}`],
+    ]);
+
+    // 2. Detailed Orders Sheet
+    const orderSheet = workbook.addWorksheet('Sales Transactions');
+    applyHeaderStyle(orderSheet, [
+      { header: 'Date', key: 'date', width: 20 },
+      { header: 'Order ID', key: 'id', width: 20 },
+      { header: 'Customer', key: 'customer', width: 25 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Items', key: 'itemCount', width: 10 },
+      { header: 'Subtotal', key: 'subtotal', width: 15 },
+      { header: 'Coupon', key: 'coupon', width: 15 },
+      { header: 'Total', key: 'total', width: 15 },
+      { header: 'Method', key: 'method', width: 15 },
+      { header: 'Status', key: 'status', width: 15 },
+    ]);
+
+    data.detailedOrders.forEach(order => {
+      const row = orderSheet.addRow({
+        date: new Date(order.createdAt).toLocaleDateString(),
+        id: order.orderNumber,
+        customer: order.shippingAddress?.fullName || order.userId?.userName || 'N/A',
+        email: order.userId?.email || 'N/A',
+        itemCount: order.items.length,
+        subtotal: order.pricing.subTotal,
+        coupon: order.pricing.couponDiscount,
+        total: order.pricing.total,
+        method: order.paymentMethod?.toUpperCase(),
+        status: order.orderStatus?.toUpperCase()
+      });
+
+      // Conditional formatting for status
+      const statusCell = row.getCell('status');
+      if (order.orderStatus === 'delivered') statusCell.font = { color: { argb: 'FF10B981' }, bold: true };
+      if (order.orderStatus === 'cancelled') statusCell.font = { color: { argb: 'FFEF4444' }, bold: true };
+    });
+
+    // 3. Top Products Sheet
     const productSheet = workbook.addWorksheet('Top Products');
-    productSheet.columns = [
-      { header: 'Product Name', key: 'name', width: 30 },
+    applyHeaderStyle(productSheet, [
+      { header: 'Rank', key: 'rank', width: 10 },
+      { header: 'Product Name', key: 'name', width: 40 },
       { header: 'Category', key: 'category', width: 20 },
       { header: 'Units Sold', key: 'sold', width: 15 },
-      { header: 'Revenue', key: 'revenue', width: 20 },
-    ];
-    data.topProducts.forEach((p) => {
+      { header: 'Revenue (₹)', key: 'revenue', width: 20 },
+    ]);
+
+    data.topProducts.forEach((p, idx) => {
       productSheet.addRow([
+        idx + 1,
         p.productName,
-        p.category,
+        p.category || 'N/A',
         p.unitsSold,
-        Math.round(p.revenue),
+        Math.round(p.revenue)
       ]);
     });
-    productSheet.getRow(1).font = { bold: true };
 
-    const categorySheet = workbook.addWorksheet('Category Sales');
-    categorySheet.columns = [
-      { header: 'Category', key: 'name', width: 25 },
-      { header: 'Items Sold', key: 'sold', width: 15 },
-      { header: 'Revenue', key: 'revenue', width: 20 },
-    ];
-    data.categoryWiseSales.forEach((c) => {
-      categorySheet.addRow([
+    // 4. Category Sales
+    const catSheet = workbook.addWorksheet('Category Performance');
+    applyHeaderStyle(catSheet, [
+      { header: 'Category Name', key: 'name', width: 30 },
+      { header: 'Volume (Items)', key: 'sold', width: 20 },
+      { header: 'Revenue (₹)', key: 'revenue', width: 25 },
+    ]);
+
+    data.categoryWiseSales.forEach(c => {
+      catSheet.addRow([
         c.category || 'Uncategorized',
         c.itemsSold,
-        Math.round(c.revenue),
+        Math.round(c.revenue)
       ]);
     });
-    categorySheet.getRow(1).font = { bold: true };
+
+    // Apply Zebra Striping and alignment to all sheets
+    workbook.eachSheet(sheet => {
+      sheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+          if (rowNumber % 2 === 0) {
+            row.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFF9FAFB' }
+            };
+          }
+          row.alignment = { vertical: 'middle', horizontal: 'left' };
+        }
+      });
+    });
 
     res.setHeader(
       'Content-Type',
@@ -666,13 +753,13 @@ export const exportSalesExcel = async (req, res) => {
     );
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename=sales-report-${period}.xlsx`
+      `attachment; filename=ZiGo-Sales-Report-${period}-${new Date().getTime()}.xlsx`
     );
 
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
     console.error('Excel Export Error:', error);
-    res.status(500).send('Error generating Excel report');
+    res.status(500).send('Error generating professional Excel report');
   }
 };

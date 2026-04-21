@@ -2,305 +2,31 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Product</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <%- include('../partials/admin/head') %>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar Styles --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .nav-item.active {
-            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #FF4757;
-            background: rgba(255, 71, 87, 0.05);
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        /* --- Form Styling --- */
-        .form-card {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 3rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 2rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.4;
-            margin-bottom: 0.75rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 1.2rem 1.5rem;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.02);
-            color: white;
-            font-weight: 600;
-            outline: none;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary-orange);
-            background: rgba(255, 90, 31, 0.05);
-        }
-
-        select.form-input option {
-            background: #f3f4f6;
-            /* Light gray background */
-            color: #000000;
-            /* Black text */
-            font-weight: 500;
-        }
-
-        .image-upload-box {
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .image-upload-box:hover {
-            border-color: var(--primary-orange);
-            background: rgba(255, 90, 31, 0.02);
-        }
-
-        .btn-submit {
-            background: var(--primary-orange);
-            color: white;
-            padding: 1.2rem 3rem;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 1rem;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-        }
-
-        .btn-submit:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
-        }
-
-        .variant-box {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 24px;
-            padding: 2.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 2rem;
-            width: 100%;
-        }
-
-        .variant-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        .variant-table th {
-            text-align: left;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.4;
-            padding: 0 1.5rem;
-        }
-
-        .variant-row {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            transition: var(--transition);
-        }
-
-        .variant-row:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .variant-row td {
-            padding: 1.25rem 1.5rem;
-        }
-
-        .variant-row td:first-child {
-            border-top-left-radius: 16px;
-            border-bottom-left-radius: 16px;
-        }
-
-        .variant-row td:last-child {
-            border-top-right-radius: 16px;
-            border-bottom-right-radius: 16px;
-        }
-
-        .image-chip {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    </style>
+    <title>ZiGo Admin | <%= locals.isEdit ? 'Edit' : 'Add New' %> Product</title>
 </head>
+    <style>
+        .form-card { background: var(--glass); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 2.5rem; padding: 1.5rem; }
+        @media (min-width: 768px) { .form-card { padding: 3rem; } }
+
+        .variant-box { background: rgba(255, 255, 255, 0.02); border-radius: 2rem; padding: 1.25rem; border: 1px solid rgba(255, 255, 255, 0.05); }
+        @media (min-width: 768px) { .variant-box { padding: 2.5rem; } }
+
+        .variant-table { width: 100%; border-collapse: separate; border-spacing: 0 0.5rem; min-width: 800px; }
+        .variant-table th { padding: 1rem; text-align: left; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: 0.3; }
+        .variant-table td { padding: 1rem; background: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .variant-table td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-radius: 12px 0 0 12px; }
+        .variant-table td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-radius: 0 12px 12px 0; }
+        
+        .image-chip { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
 
 <body>
-    <aside class="admin-sidebar">
-        <a href="/admin/ard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item active">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/category" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/reports" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'products' }) %>
 
     <main class="admin-main">
-        <header class="mb-12">
-            <a href="/admin/products"
-                class="text-xs font-bold opacity-40 uppercase tracking-widest hover:text-orange-500 transition mb-4 inline-block">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Catalog
-            </a>
-            <h1 class="text-4xl font-black">
-                <%= locals.isEdit ? 'Update' : 'Add New' %> <span class="text-orange-500">Product</span>
-            </h1>
-        </header>
+        <%- include('../partials/admin/pageHeader', { title: (locals.isEdit ? 'Update' : 'Add New'), accentTitle: 'Product', subtitle: 'CATALOG' }) %>
 
         <form class="form-card" action="<%= locals.isEdit ? '/admin/products/update' : '/admin/addProducts/add' %>"
             method="POST" enctype="multipart/form-data">
@@ -366,8 +92,8 @@
 
                     <div class="form-group">
                         <label class="form-label">Availability & Listing</label>
-                        <div class="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-[85px]">
-                            <label class="relative inline-flex items-center cursor-pointer group">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5 h-auto sm:h-[85px]">
+                            <label class="relative inline-flex items-center cursor-pointer group w-fit">
                                 <input type="checkbox" name="isListed" <%=(locals.isEdit && !product.isListed) ? ''
                                     : 'checked' %> class="sr-only peer">
                                 <div
@@ -434,12 +160,12 @@
                     </div>
 
                     <!-- Footer Actions -->
-                    <div class="mt-8 flex justify-start gap-4">
-                        <button type="submit" class="btn-submit !w-auto !px-[60px]">
+                    <div class="mt-12 flex flex-col sm:flex-row justify-start gap-4">
+                        <button type="submit" class="btn-submit !w-full sm:!w-auto sm:!px-[60px]">
                             <%= locals.isEdit ? 'Update Product' : 'Publish Product' %>
                         </button>
                         <button type="button" onclick="window.history.back()"
-                            class="bg-white/5 text-white font-bold px-10 py-4 rounded-32 hover:bg-white/10 transition">Cancel</button>
+                            class="bg-white/5 text-white font-bold px-10 py-4 rounded-[16px] hover:bg-white/10 transition order-last sm:order-none">Cancel</button>
                     </div>
 
                     <!-- Hidden input for JSON data -->

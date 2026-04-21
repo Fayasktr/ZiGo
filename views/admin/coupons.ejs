@@ -2,427 +2,114 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | Marketing & Coupons</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* --- Admin Sidebar --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .nav-item.active {
-            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #FF4757;
-            background: rgba(255, 71, 87, 0.05);
-        }
-
-        .logout-btn:hover {
-            background: #FF4757;
-            color: white;
-        }
-
-        /* --- Main Content --- */
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-
-        .page-header-info h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .btn-add {
-            background: var(--primary-orange);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: var(--transition);
-        }
-
-        .btn-add:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
-        }
-
-        /* --- Coupons Grid --- */
-        .grid-coupons {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .coupon-card {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 28px;
-            padding: 2.5rem 2rem;
-            border-left: 4px solid var(--primary-orange);
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .coupon-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-5px);
-            border-color: rgba(255, 90, 31, 0.3);
-        }
-
-        .coupon-card:after {
-            content: '';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            width: 30px;
-            height: 30px;
-            background: var(--deep-black);
-            border-radius: 50%;
-            transform: translateY(-50%);
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1.25rem;
-        }
-
-        .type-percentage {
-            background: rgba(46, 213, 115, 0.1);
-            color: #2ED573;
-        }
-
-        .type-fixed {
-            background: rgba(51, 149, 255, 0.1);
-            color: #3395FF;
-        }
-
-        .coupon-code {
-            font-size: 1.75rem;
-            font-weight: 900;
-            color: var(--primary-orange);
-            letter-spacing: 2px;
-            margin-bottom: 0.5rem;
-        }
-
-        .coupon-desc {
-            font-size: 0.85rem;
-            opacity: 0.5;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
-
-        .coupon-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .meta-box h5 {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            opacity: 0.3;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        .meta-box p {
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 5rem 2rem;
-            background: var(--glass);
-            border-radius: 32px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/category" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item active">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/reports" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'coupons' }) %>
 
     <!-- Main Content -->
     <main class="admin-main">
-        <header class="admin-header">
-            <div class="page-header-info">
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Incentives</p>
-                <h1>Marketing <span class="text-orange-500">Suite</span></h1>
-            </div>
+        <%- include('../partials/admin/pageHeader', { title: 'Marketing', accentTitle: 'Suite', subtitle: 'INCENTIVES' }) %>
 
-            <div class="flex items-center gap-6">
-                <!-- User Profile -->
-                <div class="text-right hidden md:block">
-                    <p class="font-bold text-sm">Fayas Admin</p>
-                    <p class="text-xs opacity-40">System Architect</p>
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+            <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+                <div class="relative flex-1 sm:w-80">
+                    <input type="text" id="couponSearch" value="<%= locals.search || '' %>" placeholder="Search campaigns..." class="w-full bg-white/5 border border-white/10 px-12 py-3 rounded-xl outline-none text-sm focus:border-orange-500 transition-all">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-orange-500/50"></i>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white font-black text-xl">
-                    F
-                </div>
-                
-                <a href="/admin/coupon/addEditPage" class="btn-add ml-4">
-                    <i class="fas fa-plus"></i> Launch Campaign
-                </a>
-            </div>
-
-            <div class="text-right ml-8 border-l border-white/10 pl-8">
-                <p class="text-2xl font-black">
-                    <%= locals.totalCount || 0 %>
-                </p>
-                <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Total Coupons</p>
-            </div>
-        </header>
-
-        <div class="marketing-container">
-            <div class="search-row flex gap-4 mb-8 items-center justify-between">
-                <div class="flex gap-4 flex-1 max-w-xl">
-                    <div class="relative flex-1">
-                        <input type="text" id="couponSearch" value="<%= locals.search || '' %>" placeholder="Search by code or description..."
-                            class="w-full bg-white/5 border border-white/10 p-3 pl-10 rounded-xl text-sm outline-none focus:border-orange-500 transition">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 opacity-20"></i>
-                    </div>
-                    <button onclick="triggerSearch()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 rounded-xl font-bold text-sm transition">
-                        SEARCH
-                    </button>
-                    <button onclick="clearSearch()" class="bg-white/5 hover:bg-white/10 text-white/60 px-6 rounded-xl font-bold text-sm transition border border-white/10">
-                        CLEAR
-                    </button>
+                <div class="flex gap-2">
+                    <button onclick="triggerSearch()" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold transition-all text-xs uppercase tracking-widest flex items-center justify-center min-w-[100px]">Search</button>
+                    <button onclick="clearSearch()" class="bg-white/5 hover:bg-white/10 text-white/50 px-5 py-3 rounded-xl font-bold transition-all text-xs uppercase tracking-widest flex items-center justify-center min-w-[100px]">Clear</button>
                 </div>
             </div>
+            <a href="/admin/coupon/addEditPage" class="w-full xl:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20">
+                <i class="fas fa-plus"></i> LAUNCH CAMPAIGN
+            </a>
+        </div>
 
-            <h3 class="flex items-center gap-3 text-xl font-bold mb-8 italic opacity-60">
+        <div class="mb-10">
+            <h3 class="flex items-center gap-3 text-lg font-black italic opacity-40 uppercase tracking-widest">
                 <i class="fas fa-ticket-alt text-orange-500"></i> Active Redemption Channels
             </h3>
+        </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <% if (locals.coupons && coupons.length > 0) { %>
-                <div class="grid-coupons">
-                    <% coupons.forEach(coupon => { 
-                        const isExpired = coupon.expiresAt ? (new Date(coupon.expiresAt) < new Date()) : false;
-                        const isInactive = !coupon.isActive;
-                    %>
-                        <div class="coupon-card <%= (isExpired || isInactive) ? 'opacity-60 grayscale-[0.5]' : '' %>" 
-                             style="border-left-color: <%= coupon.discountType === 'percentage' ? '#2ED573' : '#3395FF' %>;">
-                            
-                            <div class="flex justify-between items-start mb-4">
-                                <span class="type-badge <%= coupon.discountType === 'percentage' ? 'type-percentage' : 'type-fixed' %>">
-                                    <%= coupon.discountType === 'percentage' ? 'Percentage Off' : 'Flat Discount' %>
+                <% coupons.forEach(coupon => { 
+                    const isExpired = coupon.expiresAt ? (new Date(coupon.expiresAt) < new Date()) : false;
+                    const isInactive = !coupon.isActive;
+                    const color = coupon.discountType === 'percentage' ? '#2ED573' : '#3395FF';
+                %>
+                    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden group hover:border-orange-500/20 transition-all <%= (isExpired || isInactive) ? 'opacity-50' : '' %>" style="border-left: 4px solid <%= color %>">
+                        <!-- Perforation dots for ticket look -->
+                        <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full"></div>
+                        <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full"></div>
+
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest" style="background: <%= color %>10; color: <%= color %>">
+                                <%= coupon.discountType === 'percentage' ? 'Percentage Off' : 'Flat Discount' %>
+                            </span>
+                            <% if (isInactive || isExpired) { %>
+                                <span class="text-[9px] font-black bg-red-500 text-white px-2 py-1 rounded-md uppercase tracking-wider shadow-lg shadow-red-500/20">
+                                    <%= isInactive ? 'INACTIVE' : 'EXPIRED' %>
                                 </span>
-                                <% if (isInactive) { %>
-                                    <span class="text-[10px] font-black bg-red-500/20 text-red-500 px-2 py-1 rounded">INACTIVE</span>
-                                <% } else if (isExpired) { %>
-                                    <span class="text-[10px] font-black bg-gray-500/20 text-gray-400 px-2 py-1 rounded">EXPIRED</span>
-                                <% } %>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <p class="coupon-code text-2xl font-black tracking-tighter" style="color: <%= coupon.discountType === 'percentage' ? '#2ED573' : '#3395FF' %>;">
-                                    <%= coupon.code %>
-                                </p>
-                                <p class="text-xl font-bold text-white/90">
-                                    <% if (coupon.discountType === 'percentage') { %>
-                                        <%= coupon.discountValue %>% <span class="text-xs opacity-40">OFF</span>
-                                    <% } else { %>
-                                        ₹<%= coupon.discountValue %> <span class="text-xs opacity-40">OFF</span>
-                                    <% } %>
-                                </p>
-                            </div>
+                            <% } %>
+                        </div>
 
-                            <p class="coupon-desc text-white/60 text-sm line-clamp-2">
-                                <%= coupon.description %>
+                        <div class="mb-6">
+                            <p class="text-3xl font-black tracking-tighter mb-1 uppercase" style="color: <%= color %>">
+                                <%= coupon.code %>
                             </p>
-                            
-                            <div class="coupon-meta mt-6 pt-4 border-t border-white/5">
-                                <div class="meta-box">
-                                    <h5>Redemptions</h5>
-                                    <p>
-                                        <%= coupon.usedCount || 0 %> <span class="opacity-30">/</span> <%= coupon.usageLimit || '∞' %>
-                                    </p>
-                                </div>
-                                <div class="meta-box text-right">
-                                    <h5>Ends On</h5>
-                                    <p class="<%= isExpired ? 'text-red-500' : '' %>">
-                                        <%= coupon.expiresAt ? new Date(coupon.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Lifetime' %>
-                                    </p>
-                                </div>
-                            </div>
+                            <p class="text-4xl font-extrabold text-white/90">
+                                <% if (coupon.discountType === 'percentage') { %>
+                                    <%= coupon.discountValue %><span class="text-xl opacity-30">%</span>
+                                <% } else { %>
+                                    <span class="text-xl opacity-30">₹</span><%= coupon.discountValue %>
+                                <% } %>
+                                <span class="text-[10px] font-black uppercase tracking-[4px] opacity-20 ml-2">SAVINGS</span>
+                            </p>
+                        </div>
 
-                            <div class="mt-6 flex gap-2 justify-end">
-                                <a href="/admin/coupon/addEditPage?couponId=<%= coupon._id %>" class="bg-white/5 hover:bg-white/10 p-2 px-4 rounded-xl transition">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </a>
-                                <button onclick="deleteCoupon('<%= coupon._id %>', '<%= coupon.code %>')" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-2 px-4 rounded-xl transition">
-                                    <i class="fas fa-trash text-xs"></i>
-                                </button>
+                        <p class="text-sm text-white/40 mb-8 line-clamp-2 italic font-medium leading-relaxed">
+                            "<%= coupon.description %>"
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/5 mb-8">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[9px] font-black uppercase tracking-widest opacity-20">Redemptions</span>
+                                <span class="text-sm font-bold text-white/80"><%= coupon.usedCount || 0 %> / <%= coupon.usageLimit || '∞' %></span>
+                            </div>
+                            <div class="flex flex-col gap-1 text-right">
+                                <span class="text-[9px] font-black uppercase tracking-widest opacity-20">Ends On</span>
+                                <span class="text-sm font-bold <%= isExpired ? 'text-red-500/80' : 'text-white/80' %>">
+                                    <%= coupon.expiresAt ? new Date(coupon.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'Lifetime' %>
+                                </span>
                             </div>
                         </div>
-                    <% }) %>
-                </div>
 
-                <div class="mt-12">
-                    <%- include('../partials/admin/pagination.ejs') %>
-                </div>
-
-            <% } else { %>
-                <div class="empty-state">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-500">
-                        <i class="fas fa-ticket-alt text-2xl"></i>
+                        <div class="flex gap-2 mt-auto">
+                            <a href="/admin/coupon/addEditPage?couponId=<%= coupon._id %>" class="flex-1 bg-white/5 hover:bg-white/10 py-3 rounded-xl transition-all text-center">
+                                <i class="fas fa-edit text-xs"></i>
+                            </a>
+                            <button onclick="deleteCoupon('<%= coupon._id %>', '<%= coupon.code %>')" class="flex-1 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-3 rounded-xl transition-all">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
                     </div>
-                    <h4 class="font-bold text-lg mb-2">No Campaigns Found</h4>
-                    <p class="text-sm opacity-40 mb-6">Launch a new marketing campaign or adjust your filters.</p>
-                    <a href="/admin/coupons/add" class="text-orange-500 font-bold border-b border-orange-500 pb-1">Create Your First Coupon</a>
+                <% }) %>
+            <% } else { %>
+                <div class="col-span-full py-32 flex flex-col items-center justify-center opacity-20 italic">
+                    <i class="fas fa-ticket-alt text-6xl mb-6"></i>
+                    <p class="text-xl font-black uppercase tracking-widest">No active campaigns</p>
                 </div>
             <% } %>
+        </div>
+
+        <div class="mt-12">
+            <%- include('../partials/admin/pagination.ejs') %>
         </div>
     </main>
 
@@ -447,14 +134,14 @@
 
         async function deleteCoupon(id, code) {
             const confirmed = await Swal.fire({
-                title: `Delete Coupon ${code}?`,
-                text: "This campaign will be permanently removed from circulation.",
+                title: `Remove ${code}?`,
+                text: "This coupon campaign will be permanently destroyed.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#FF4757',
-                cancelButtonColor: '#334155',
+                confirmButtonColor: '#FF5A1F',
+                cancelButtonColor: 'rgba(255,255,255,0.05)',
                 confirmButtonText: 'Yes, delete it',
-                background: '#1A1A1A',
+                background: '#121212',
                 color: '#FFFFFF'
             });
 
@@ -466,32 +153,23 @@
                     if (res.success) {
                         Swal.fire({
                             toast: true,
-                            position: 'top',
+                            position: 'top-end',
                             icon: 'success',
-                            title: 'Coupon deleted successfully',
+                            title: 'Coupon successfully removed',
                             showConfirmButton: false,
-                            timer: 1500,
-                            timerProgressBar: true,
-                            background: '#1A1A1A',
+                            timer: 2000,
+                            background: '#121212',
                             color: '#FFFFFF'
                         });
-                        setTimeout(() => location.reload(), 1500);
+                        setTimeout(() => location.reload(), 2000);
                     } else {
                         throw new Error(res.message);
                     }
                 } catch (error) {
-                    Swal.fire({
-                        position: 'top',
-                        icon: 'error',
-                        title: 'Deletion Failed',
-                        text: error.message,
-                        background: '#1A1A1A',
-                        color: '#FFFFFF'
-                    });
+                    Swal.fire({ icon: 'error', title: 'Action Failed', text: error.message });
                 }
             }
         }
     </script>
 </body>
-
 </html>

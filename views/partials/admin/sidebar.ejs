@@ -1,0 +1,78 @@
+<!-- views/partials/admin/sidebar.ejs -->
+<aside class="admin-sidebar" id="adminSidebar">
+    <div class="flex justify-between items-center mb-10">
+        <a href="/admin/dashboard" class="admin-logo mb-0">
+            <img src="/public/public/logo-icon.png" alt="ZiGo">
+            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
+        </a>
+        <button id="closeSidebar" class="lg:hidden text-white/50 hover:text-white transition-colors">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+    </div>
+
+    <nav class="admin-nav">
+        <a href="/admin/dashboard" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'dashboard' ? 'active' : '' %>">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="/admin/products" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'products' ? 'active' : '' %>">
+            <i class="fas fa-box"></i> Products
+        </a>
+        <a href="/admin/orders" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'orders' ? 'active' : '' %>">
+            <i class="fas fa-shopping-cart"></i> Orders
+        </a>
+        <a href="/admin/users" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'users' ? 'active' : '' %>">
+            <i class="fas fa-users"></i> Users
+        </a>
+        <a href="/admin/category" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'categories' ? 'active' : '' %>">
+            <i class="fas fa-tags"></i> Categories
+        </a>
+        <a href="/admin/coupons" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'coupons' ? 'active' : '' %>">
+            <i class="fas fa-ticket-alt"></i> Coupons
+        </a>
+        <a href="/admin/banners" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'banners' ? 'active' : '' %>">
+            <i class="fas fa-image"></i> Banners
+        </a>
+        <a href="/admin/offers" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'offers' ? 'active' : '' %>">
+            <i class="fas fa-percent"></i> Offers
+        </a>
+        <a href="/admin/reports" class="nav-item <%= typeof activeTab !== 'undefined' && activeTab === 'reports' ? 'active' : '' %>">
+            <i class="fas fa-file-invoice-dollar"></i> Sales Report
+        </a>
+    </nav>
+
+    <a href="/admin/logout" class="nav-item logout-btn mt-auto">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+    </a>
+</aside>
+
+<!-- Sidebar Overlay -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] hidden lg:hidden transition-all duration-300 opacity-0"></div>
+
+<script>
+    (function() {
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('closeSidebar');
+        const openBtn = document.getElementById('openSidebar'); // This will be in the page header
+
+        function toggleSidebar(show) {
+            if (show) {
+                sidebar.classList.add('mobile-active');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.remove('mobile-active');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+        if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
+        
+        // Listen for open event from header
+        window.addEventListener('openAdminSidebar', () => toggleSidebar(true));
+    })();
+</script>

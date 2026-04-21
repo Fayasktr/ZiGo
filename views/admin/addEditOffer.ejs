@@ -2,307 +2,51 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | <%= locals.offer ? 'Edit Offer' : 'Create New Offer' %></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar Styles --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* --- Form Styling --- */
-        .offer-form-card {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 3.5rem;
-            width: 100%;
-            max-width: 700px;
-            position: relative;
-        }
-
-        .form-group {
-            margin-bottom: 2rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.4;
-            margin-bottom: 0.8rem;
-        }
-
-        .form-input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 1.2rem 1.5rem;
-            border-radius: 20px;
-            color: #FFFFFF;
-            font-weight: 600;
-            outline: none;
-            transition: 0.3s;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1.5rem center;
-            background-size: 1.2rem;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary-orange);
-            background: #0F0F0F;
-            color: #FFFFFF;
-        }
-
-        .btn-submit {
-            width: 100%;
-            background: var(--primary-orange);
-            color: white;
-            padding: 1.2rem;
-            border-radius: 20px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 1rem;
-        }
-
-        .btn-submit:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 90, 31, 0.2);
-        }
-
-        .error-message {
-            color: #FF4757;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        select.form-input option {
-            background-color: #0F0F0F;
-            color: #FFFFFF;
-        }
-
-        select.form-input:focus option {
-            background-color: #1A1A1A;
-        }
-
-        /* --- Premium Toggle Button --- */
-        .toggle-btn {
-            width: 100%;
-            padding: 1.2rem;
-            border-radius: 20px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .toggle-btn.is-active {
-            background: rgba(46, 213, 115, 0.1);
-            color: #2ed573;
-            border-color: rgba(46, 213, 115, 0.2);
-        }
-
-        .toggle-btn.is-inactive {
-            background: rgba(255, 71, 87, 0.1);
-            color: #ff4757;
-            border-color: rgba(255, 71, 87, 0.2);
-        }
-
-        .toggle-btn:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.2);
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/categories" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item active">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/sales-report" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'offers' }) %>
 
     <main class="admin-main">
-        <div class="offer-form-card">
-            <a href="/admin/offers" class="absolute top-8 left-8 text-white/30 hover:text-white transition">
-                <i class="fas fa-arrow-left"></i>
-            </a>
+        <%- include('../partials/admin/pageHeader', { title: (locals.offer ? 'Update' : 'Launch New'), accentTitle: 'Offer', subtitle: 'CAMPAIGN SETUP' }) %>
 
-            <div class="text-center mb-10">
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-[10px] mb-2">Campaign Setup</p>
-                <h2 class="text-2xl font-black">
-                    <%= locals.offer ? 'Update' : 'Launch New' %> <span class="text-orange-500">Offer</span>
-                </h2>
-            </div>
+        <div class="max-w-3xl mx-auto">
+            <form id="offerForm" action="<%= locals.offer ? `/admin/offer/edit/${offer._id}?_method=PUT` : '/admin/offer/add' %>" class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6 lg:p-12 space-y-8 shadow-2xl relative overflow-hidden">
+                <!-- Back Button -->
+                <a href="/admin/offers" class="absolute top-6 left-6 text-white/20 hover:text-orange-500 transition-all">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
 
-            <form id="offerForm" action="<%= locals.offer ? `/admin/offer/edit/${offer._id}?_method=PUT` : '/admin/offer/add' %>">
                 <div class="form-group">
-                    <label class="form-label">Campaign Name</label>
-                    <input type="text" name="name" id="offerName" class="form-input" 
-                        placeholder="e.g. Diwali Super Sale" value="<%= locals.offer ? offer.name : '' %>">
-                    <p id="error-name" class="error-message">Campaign name is required</p>
+                    <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Campaign Name</label>
+                    <input type="text" name="name" id="offerName" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all" placeholder="e.g. Diwali Super Sale" value="<%= locals.offer ? offer.name : '' %>">
+                    <p id="error-name" class="text-red-500 text-[10px] font-bold mt-2 hidden uppercase tracking-widest">Name Required</p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div class="form-group">
-                        <label class="form-label">Offer Type</label>
-                        <select name="type" id="offerType" class="form-input" onchange="toggleTarget(this.value)">
+                        <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Offer Type</label>
+                        <select name="type" id="offerType" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all [color-scheme:dark]" onchange="toggleTarget(this.value)">
                             <option value="category" <%= (locals.offer && offer.type === 'category') ? 'selected' : '' %>>Category Based</option>
                             <option value="product" <%= (locals.offer && offer.type === 'product') ? 'selected' : '' %>>Product Based</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Discount Percentage (%)</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Discount (%)</label>
                         <div class="relative">
-                            <input type="number" name="discountValue" id="discountValue" class="form-input pr-12" 
-                                placeholder="10" value="<%= locals.offer ? offer.discountValue : '' %>">
-                            <span class="absolute right-6 top-1/2 -translate-y-1/2 text-orange-500 font-bold">%</span>
+                            <input type="number" name="discountValue" id="discountValue" class="w-full bg-white/5 border border-white/10 p-4 pr-12 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all" placeholder="10" value="<%= locals.offer ? offer.discountValue : '' %>">
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 text-orange-500 font-black">%</span>
                         </div>
-                        <p id="error-discount" class="error-message">Enter a valid percentage (1-99)</p>
+                        <p id="error-discount" class="text-red-500 text-[10px] font-bold mt-2 hidden uppercase tracking-widest">1-99 Range Required</p>
                     </div>
                 </div>
 
                 <div class="form-group" id="categoryTarget" style="display: <%= (locals.offer && offer.type === 'product') ? 'none' : 'block' %>">
-                    <label class="form-label">Select Target Category</label>
-                    <select name="categoryId" id="categoryId" class="form-input">
+                    <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Target Category</label>
+                    <select name="categoryId" id="categoryId" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all [color-scheme:dark]">
                         <option value="">-- Choose Category --</option>
                         <% if(locals.categories) { %>
                             <% categories.forEach(cat => { %>
@@ -310,12 +54,12 @@
                             <% }) %>
                         <% } %>
                     </select>
-                    <p id="error-category" class="error-message">Please select a category</p>
+                    <p id="error-category" class="text-red-500 text-[10px] font-bold mt-2 hidden uppercase tracking-widest">Select category</p>
                 </div>
 
                 <div class="form-group" id="productTarget" style="display: <%= (locals.offer && offer.type === 'product') ? 'block' : 'none' %>">
-                    <label class="form-label">Select Target Product</label>
-                    <select name="productId" id="productId" class="form-input">
+                    <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Target Product</label>
+                    <select name="productId" id="productId" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all [color-scheme:dark]">
                         <option value="">-- Choose Product --</option>
                         <% if(locals.products) { %>
                             <% products.forEach(prod => { %>
@@ -323,34 +67,33 @@
                             <% }) %>
                         <% } %>
                     </select>
-                    <p id="error-product" class="error-message">Please select a product</p>
+                    <p id="error-product" class="text-red-500 text-[10px] font-bold mt-2 hidden uppercase tracking-widest">Select product</p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div class="form-group">
-                        <label class="form-label">Expiry Date</label>
-                        <input type="date" name="expireAt" id="expireAt" class="form-input" 
-                            value="<%= locals.offer ? new Date(offer.expireAt).toISOString().split('T')[0] : '' %>">
-                        <p id="error-expiry" class="error-message">Valid expiry date is required</p>
+                        <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Expiry Date</label>
+                        <input type="date" name="expireAt" id="expireAt" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 transition-all [color-scheme:dark]" value="<%= locals.offer ? new Date(offer.expireAt).toISOString().split('T')[0] : '' %>">
+                        <p id="error-expiry" class="text-red-500 text-[10px] font-bold mt-2 hidden uppercase tracking-widest">Date Required</p>
                     </div>
-                    <div class="form-group flex flex-col justify-end">
-                        <label class="form-label">Offer Campaign Status</label>
+                    
+                    <div class="form-group">
+                        <label class="block text-[10px] font-black uppercase tracking-widest opacity-20 mb-3">Campaign Status</label>
                         <input type="hidden" name="isActive" id="isActiveInput" value="<%= (!locals.offer || offer.isActive) ? 'true' : 'false' %>">
-                        <div id="statusToggleBtn" class="toggle-btn <%= (!locals.offer || offer.isActive) ? 'is-active' : 'is-inactive' %>" onclick="toggleStatus()">
+                        <button type="button" onclick="toggleStatus()" id="statusToggleBtn" class="w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-[2px] border transition-all flex items-center justify-center gap-3 <%= (!locals.offer || offer.isActive) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20' %>">
                             <i class="fas <%= (!locals.offer || offer.isActive) ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
-                            <span id="statusText"><%= (!locals.offer || offer.isActive) ? 'Active Strategy' : 'Strategy Paused' %></span>
-                        </div>
+                            <span id="statusText"><%= (!locals.offer || offer.isActive) ? 'Strategy Active' : 'Strategy Paused' %></span>
+                        </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    <%= locals.offer ? 'Update Campaign Strategy' : 'Finalize & Launch Offer' %>
+                <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:scale-[1.01] active:scale-[0.99] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[4px] transition-all shadow-xl shadow-orange-500/20">
+                    <%= locals.offer ? 'Push Update' : 'Finalize & Launch' %>
                 </button>
             </form>
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function toggleTarget(type) {
             const catGroup = document.getElementById('categoryTarget');
@@ -381,40 +124,34 @@
             input.value = newState;
 
             if (newState) {
-                btn.className = 'toggle-btn is-active';
+                btn.className = 'w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-[2px] border transition-all flex items-center justify-center gap-3 bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
                 icon.className = 'fas fa-check-circle';
-                text.innerText = 'Active Strategy';
+                text.innerText = 'Strategy Active';
             } else {
-                btn.className = 'toggle-btn is-inactive';
+                btn.className = 'w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-[2px] border transition-all flex items-center justify-center gap-3 bg-red-500/10 text-red-500 border-red-500/20';
                 icon.className = 'fas fa-times-circle';
                 text.innerText = 'Strategy Paused';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const initialType = document.getElementById('offerType').value;
-            toggleTarget(initialType);
-        });
-
         document.getElementById('offerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             let hasError = false;
             const name = document.getElementById('offerName').value.trim();
             const type = document.getElementById('offerType').value;
             const discount = parseFloat(document.getElementById('discountValue').value);
             const expiry = document.getElementById('expireAt').value;
             
-            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('[id^="error-"]').forEach(el => el.classList.add('hidden'));
 
-            if (!name) { document.getElementById('error-name').style.display = 'block'; hasError = true; }
-            if (isNaN(discount) || discount <= 0 || discount >= 100) { document.getElementById('error-discount').style.display = 'block'; hasError = true; }
-            if (!expiry) { document.getElementById('error-expiry').style.display = 'block'; hasError = true; }
+            if (!name) { document.getElementById('error-name').classList.remove('hidden'); hasError = true; }
+            if (isNaN(discount) || discount <= 0 || discount >= 100) { document.getElementById('error-discount').classList.remove('hidden'); hasError = true; }
+            if (!expiry) { document.getElementById('error-expiry').classList.remove('hidden'); hasError = true; }
             
             if (type === 'category') {
-                if (!document.getElementById('categoryId').value) { document.getElementById('error-category').style.display = 'block'; hasError = true; }
+                if (!document.getElementById('categoryId').value) { document.getElementById('error-category').classList.remove('hidden'); hasError = true; }
             } else {
-                if (!document.getElementById('productId').value) { document.getElementById('error-product').style.display = 'block'; hasError = true; }
+                if (!document.getElementById('productId').value) { document.getElementById('error-product').classList.remove('hidden'); hasError = true; }
             }
 
             if (hasError) return;
@@ -422,10 +159,7 @@
             try {
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData.entries());
-                
-                // Read from our new hidden input
                 data.isActive = document.getElementById('isActiveInput').value === 'true';
-
                 const method = this.action.includes('_method=PUT') ? 'PUT' : 'POST';
 
                 const response = await fetch(this.action, {
@@ -433,43 +167,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
-                const text = await response.text();
-                let result;
-                try {
-                    result = JSON.parse(text);
-                } catch(err) {
-                    throw new Error("Server returned HTML instead of JSON. Check your controller.");
-                }
-
+                const result = await response.json();
                 if (result.success) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: result.message || 'Updated Successfully',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true,
-                        background: '#1A1A1A',
-                        color: '#FFFFFF'
-                    });
-                    setTimeout(() => window.location.href = '/admin/offers', 2000);
-                } else {
-                    throw new Error(result.message || 'Operation failed');
-                }
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Strategy Synced', showConfirmButton: false, timer: 1500, background: '#121212', color: '#fff' });
+                    setTimeout(() => window.location.href = '/admin/offers', 1500);
+                } else { throw new Error(result.message); }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: error.message,
-                    confirmButtonColor: '#FF5A1F',
-                    background: '#1A1A1A',
-                    color: '#FFFFFF'
-                });
+                Swal.fire({ icon: 'error', title: 'Sync Error', text: error.message, background: '#121212', color: '#fff' });
             }
         });
     </script>
 </body>
-
 </html>

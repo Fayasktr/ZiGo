@@ -26,7 +26,7 @@ router.put('/admin/category/edit/:id', cateAndProdController.updateCategory);
 
 router.get('/admin/products', cateAndProdController.productPage);
 router.patch(
-  '/admin/products/:id/:isListed',
+  '/admin/products/status/:id',
   cateAndProdController.listAndUnlistProduct
 );
 router.get('/admin/addProducts', cateAndProdController.addProductPage);

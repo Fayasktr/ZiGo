@@ -2,364 +2,65 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | Order Fulfillment</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar Styles --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .nav-item.active {
-            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 3rem;
-        }
-
-        /* --- Orders Styling --- */
-        .orders-container {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 2.5rem;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 2rem;
-        }
-
-        .tab-item {
-            padding: 1rem 0;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.4);
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-
-        .tab-item:hover {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .tab-item.active {
-            color: var(--primary-orange);
-            border-color: var(--primary-orange);
-        }
-
-        .return-badge {
-            background: #FF4757;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 6px;
-            margin-left: 6px;
-            font-weight: 800;
-            vertical-align: middle;
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
-        }
-
-        .order-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .order-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .order-table th {
-            text-align: left;
-            padding: 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            opacity: 0.4;
-            letter-spacing: 1px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .order-table td {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            vertical-align: middle;
-        }
-
-        .status-badge {
-            padding: 5px 14px;
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .st-processing { background: rgba(255, 159, 67, 0.1); color: #FF9F43; }
-        .st-shipped { background: rgba(51, 149, 255, 0.1); color: #3395FF; }
-        .st-delivered { background: rgba(46, 213, 115, 0.1); color: #2ED573; }
-        .st-cancelled { background: rgba(255, 71, 87, 0.1); color: #FF4757; }
-        .st-returned { background: rgba(168, 85, 247, 0.1); color: #A855F7; }
-        .st-pending { background: rgba(255, 255, 255, 0.05); color: #FFFFFF; opacity: 0.5; }
-
-        .action-link {
-            font-weight: 800;
-            color: var(--primary-orange);
-            font-size: 0.8rem;
-            border-bottom: 1px solid transparent;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-
-        .action-link:hover {
-            border-color: var(--primary-orange);
-        }
-
-        /* Pagination Styles */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 2.5rem;
-        }
-
-        .pagination-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: var(--transition);
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .pagination-btn:hover {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-            border-color: rgba(255, 90, 31, 0.2);
-        }
-
-        .pagination-btn.active {
-            background: var(--primary-orange);
-            color: white;
-            border-color: var(--primary-orange);
-            box-shadow: 0 8px 20px rgba(255, 90, 31, 0.2);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #FF4757;
-            background: rgba(255, 71, 87, 0.05);
-        }
-
-        .logout-btn:hover {
-            background: #FF4757;
-            color: white;
-        }
-
-        select {
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-        }
-
-        select option {
-            background: #FFFFFF;
-            color: #000000;
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item active">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/category" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/reports" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'orders' }) %>
 
     <main class="admin-main">
-        <header class="page-header">
-            <div>
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Logistics</p>
-                <h1 class="text-3xl font-extrabold">Order <span class="text-orange-500">Fulfillment</span></h1>
-            </div>
-            <form action="/admin/orders" method="GET" class="flex items-center gap-4">
-                <input type="text" name="search" placeholder="Search Order #..." value="<%= typeof search !== 'undefined' ? search : '' %>"
-                    class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl outline-none text-sm w-64 focus:border-orange-500 transition-colors">
+        <%- include('../partials/admin/pageHeader', { title: 'Order', accentTitle: 'Fulfillment', subtitle: 'LOGISTICS' }) %>
+
+        <div class="mb-8">
+            <form action="/admin/orders" method="GET" class="flex flex-col md:flex-row items-center gap-4">
+                <div class="relative w-full max-w-md">
+                    <input type="text" name="search" placeholder="Search Order #..." value="<%= typeof search !== 'undefined' ? search : '' %>"
+                        class="w-full bg-white/5 border border-white/10 px-12 py-4 rounded-2xl outline-none text-sm focus:border-orange-500 transition-all font-medium">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-orange-500"></i>
+                </div>
                 <% if (typeof status !== 'undefined') { %>
                     <input type="hidden" name="status" value="<%= status %>">
                 <% } %>
-                <button type="submit" class="bg-white/5 p-3 rounded-xl hover:bg-white/10 transition"><i class="fas fa-search text-orange-500"></i></button>
+                <button type="submit" class="w-full md:w-auto bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-orange-500/20">
+                    FIND ORDER
+                </button>
             </form>
-        </header>
+        </div>
 
-        <div class="orders-container">
+        <div class="bg-white/5 border border-white/5 rounded-[2rem] p-4 sm:p-8">
             <% 
                const statuses = ['all','pending', 'processing', 'shipped', 'delivered', 'cancelled'];
                const currentStatus = (typeof status !== 'undefined' && status) ? status.toLowerCase() : 'all';
             %>
-            <div class="filter-tabs">
+            <div class="flex flex-wrap gap-2 md:gap-8 border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
                 <% statuses.forEach(s => { %>
-                    <a href="/admin/orders?status=<%= s %>" class="tab-item <%= currentStatus === s ? 'active' : '' %>"><%= s.charAt(0).toUpperCase() + s.slice(1) %> Orders</a>
+                    <a href="/admin/orders?status=<%= s %>" class="pb-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap <%= currentStatus === s ? 'text-orange-500 border-b-2 border-orange-500' : 'text-white/20 hover:text-white/60' %>">
+                        <%= s %>
+                    </a>
                 <% }) %>
-                <a href="/admin/orders?status=returns" class="tab-item <%= currentStatus === 'returns' ? 'active' : '' %>">
+                <a href="/admin/orders?status=returns" class="pb-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap <%= currentStatus === 'returns' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-white/20 hover:text-white/60' %>">
                     Return Requests
                     <% if (typeof returnRequested !== 'undefined' && returnRequested.length > 0) { %>
-                        <span class="return-badge"><%= returnRequested.length %></span>
+                        <span class="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[9px] shadow-lg shadow-red-500/20 animate-pulse"><%= returnRequested.length %></span>
                     <% } %>
                 </a>
             </div>
 
-            <div class="order-table-wrapper">
-                <table class="order-table">
+            <div class="data-table-wrapper">
+                <table class="w-full border-collapse">
                     <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Total Amount</th>
-                            <th>Placed On</th>
-                            <th>Status</th>
-                            <th class="text-right">Actions</th>
+                        <tr class="text-left">
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30">ID</th>
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30">Customer</th>
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30">Total</th>
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30">Date</th>
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30">Status</th>
+                            <th class="p-4 text-[10px] font-bold uppercase tracking-widest opacity-30 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-white/5">
                         <% 
                            let displayOrders = (typeof orders !== 'undefined' ? orders : []);
                            if (currentStatus === 'returns' && typeof returnRequested !== 'undefined') {
@@ -368,37 +69,49 @@
                         %>
                         <% if (displayOrders.length > 0) { %>
                             <% displayOrders.forEach(order => { %>
-                                <tr>
-                                    <td class="font-bold">#<%= order.orderNumber %></td>
-                                    <td>
-                                        <p class="font-bold"><%= order.userId ? order.shippingAddress.fullName : 'Unknown User' %></p>
-                                        <p class="text-[10px] opacity-40"><%= order.userId ? order.userId.email : 'N/A' %></p>
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td class="p-4"><span class="font-bold text-white/90">#<%= order.orderNumber %></span></td>
+                                    <td class="p-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-sm text-white/80"><%= order.userId ? order.shippingAddress.fullName : 'Guest' %></span>
+                                            <span class="text-[10px] opacity-40"><%= order.userId ? order.userId.email : 'N/A' %></span>
+                                        </div>
                                     </td>
-                                    <td><span class="font-black">₹<%= order.pricing.total.toLocaleString() %></span></td>
-                                    <td><span class="text-sm opacity-60"><%= new Date(order.createdAt).toLocaleDateString() %></span></td>
-                                    <td>
-                                        <span class="status-badge st-<%= order.orderStatus.toLowerCase() %>">
-                                            <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
+                                    <td class="p-4"><span class="font-black text-sm">₹<%= order.pricing.total.toLocaleString() %></span></td>
+                                    <td class="p-4 text-xs text-white/50"><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                    <td class="p-4">
+                                        <% 
+                                           const stClasses = {
+                                               processing: 'bg-orange-500/10 text-orange-500',
+                                               shipped: 'bg-blue-500/10 text-blue-500',
+                                               delivered: 'bg-emerald-500/10 text-emerald-500',
+                                               cancelled: 'bg-red-500/10 text-red-500',
+                                               returned: 'bg-purple-500/10 text-purple-500',
+                                               pending: 'bg-white/5 text-white/40'
+                                           };
+                                           const cls = stClasses[order.orderStatus.toLowerCase()] || stClasses.pending;
+                                        %>
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest <%= cls %>">
+                                            <%= order.orderStatus %>
                                         </span>
                                     </td>
-                                    <td class="text-right">
-                                        <a href="/admin/orderDetails/<%= order._id %>" class="action-link">Edit Order</a>
+                                    <td class="p-4 text-right">
+                                        <a href="/admin/orderDetails/<%= order._id %>" class="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-white transition-all underline underline-offset-4"> Manage</a>
                                     </td>
                                 </tr>
                             <% }) %>
                         <% } else { %>
                             <tr>
-                                <td colspan="6" class="text-center py-12 opacity-40">No orders found for the selected filter.</td>
+                                <td colspan="6" class="p-20 text-center text-white/20 font-bold italic">No records found for this filter.</td>
                             </tr>
                         <% } %>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination -->
             <%- include('../partials/admin/pagination.ejs') %>
         </div>
     </main>
+    <%- include('../partials/flashAlert') %>
 </body>
-
 </html>

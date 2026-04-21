@@ -125,8 +125,11 @@ export const addProductPage = asynchandler(async (req, res) => {
 export const listAndUnlistProduct = asynchandler(async (req, res) => {
   try {
     const productId = req.params.id;
-    const isListed = req.params.isListed == 'true';
-    console.log(isListed);
+    const isListed = req.body.isListed !== undefined 
+      ? req.body.isListed 
+      : req.params.isListed == 'true';
+      
+    console.log(`Updating product ${productId} listed status to: ${isListed}`);
     const update = await serviceOfProductAndCategory.listAndUnlistProduct(
       productId,
       isListed

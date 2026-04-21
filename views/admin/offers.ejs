@@ -2,438 +2,108 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | Offers Management</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar Styles --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .logout-btn:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        /* --- Tabs --- */
-        .offers-tabs {
-            display: flex;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 0.5rem;
-            border-radius: 20px;
-            width: fit-content;
-            margin-bottom: 2.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .tab-btn {
-            padding: 0.8rem 2rem;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: var(--transition);
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .tab-btn.active {
-            background: var(--primary-orange);
-            color: white;
-            box-shadow: 0 8px 15px rgba(255, 90, 31, 0.2);
-        }
-
-        /* --- Table Styling --- */
-        .offers-card {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 2.5rem;
-        }
-
-        .offers-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 12px;
-        }
-
-        .offers-table th {
-            padding: 0 1.5rem 1rem;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-            opacity: 0.3;
-            text-align: left;
-        }
-
-        .offers-table td {
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.02);
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .offers-table tr td:first-child {
-            border-radius: 20px 0 0 20px;
-            border-left: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .offers-table tr td:last-child {
-            border-radius: 0 20px 20px 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .offers-table tr:hover td {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 90, 31, 0.2);
-        }
-
-        .discount-badge {
-            background: rgba(46, 213, 115, 0.1);
-            color: #2ED573;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 800;
-        }
-
-        .status-pill {
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .status-active {
-            background: rgba(46, 213, 115, 0.1);
-            color: #2ED573;
-        }
-
-        .status-expired {
-            background: rgba(255, 71, 87, 0.1);
-            color: #FF4757;
-        }
-
-        .btn-add {
-            background: var(--primary-orange);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-add:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-2px);
-        }
-
-        .action-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            transition: 0.3s;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-
-        .action-icon:hover {
-            background: var(--primary-orange);
-            color: white;
-        }
-
-        .action-delete:hover {
-            background: #FF4757;
-        }
-
-        /* --- Search Area --- */
-        .search-container {
-            position: relative;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 450px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            padding: 4px;
-            transition: 0.3s;
-        }
-
-        .search-container:focus-within {
-            border-color: var(--primary-orange);
-            background: rgba(255, 90, 31, 0.05);
-        }
-
-        .search-input {
-            background: none;
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            width: 100%;
-            outline: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .search-btn {
-            background: var(--primary-orange);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 0.8rem;
-            transition: 0.3s;
-        }
-
-        .clear-btn {
-            color: rgba(255, 255, 255, 0.3);
-            margin-right: 15px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: 0.3s;
-        }
-
-        .clear-btn:hover {
-            color: white;
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/categories" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item active">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/reports" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'offers' }) %>
 
     <main class="admin-main">
-        <header class="flex justify-between items-end mb-10">
-            <div>
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Incentives</p>
-                <h1 class="text-3xl font-extrabold">Offers <span class="text-orange-500">Management</span></h1>
-            </div>
+        <%- include('../partials/admin/pageHeader', { title: 'Offers', accentTitle: 'Management', subtitle: 'INCENTIVES' }) %>
 
-            <!-- Search Area -->
-            <div class="search-container">
-                <input type="text" id="offerSearch" class="search-input" placeholder="Search campaign name..." value="<%= locals.search || '' %>">
-                <% if(locals.search) { %>
-                    <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
-                <% } %>
-                <button onclick="triggerSearch()" class="search-btn">SEARCH</button>
+        <div class="flex flex-col sm:flex-row justify-between items-start xl:items-center gap-6 mb-8">
+            <div class="search-row !mb-0 w-full xl:w-auto">
+                <div class="search-wrapper">
+                    <input type="text" id="offerSearch" value="<%= locals.search || '' %>" placeholder="Search campaigns..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="triggerSearch()" class="btn-search-panel btn-search-submit">SEARCH</button>
+                    <button onclick="clearSearch()" class="btn-search-panel btn-search-clear">CLEAR</button>
+                </div>
             </div>
-
-            <a href="/admin/offer/addEditPage" class="btn-add">
-                <i class="fas fa-plus"></i> Create New Offer
+            <a href="/admin/offer/addEditPage" class="w-full xl:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20">
+                <i class="fas fa-plus"></i> CREATE NEW OFFER
             </a>
-        </header>
-
-        <div class="offers-tabs">
-            <div class="tab-btn <%= (locals.offerType === 'category' || !locals.offerType) ? 'active' : '' %>" onclick="switchTab('category')">Category Offers</div>
-            <div class="tab-btn <%= locals.offerType === 'product' ? 'active' : '' %>" onclick="switchTab('product')">Product Offers</div>
         </div>
 
-        <!-- Offers Section -->
-        <section class="offers-card">
-            <table class="offers-table">
-                <thead>
-                    <tr>
-                        <th>Offer Name</th>
-                        <th><%= (locals.offerType === 'product') ? 'Product' : 'Category' %></th>
-                        <th>Discount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if(locals.offers && offers.length > 0) { %>
-                        <% offers.forEach(offer => { %>
-                            <tr>
-                                <td class="text-sm font-black"><%= offer.name %></td>
-                                <td class="opacity-60">
-                                    <%= (locals.offerType === 'product') ? (offer.productId ? offer.productId.productName : 'Unknown Product') : (offer.categoryId ? offer.categoryId.categoryName : 'Unknown Category') %>
-                                </td>
-                                <td>
-                                    <span class="discount-badge">
-                                        <%= offer.discountValue %><%= (offer.discountType === 'percentage') ? '%' : ' OFF' %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <% 
-                                        const now = new Date();
-                                        const isExpired = new Date(offer.expireAt) < now;
-                                    %>
-                                    <span class="status-pill <%= (offer.isActive && !isExpired) ? 'status-active' : 'status-expired' %>">
-                                        <%= (offer.isActive && !isExpired) ? 'Active' : (isExpired ? 'Expired' : 'Inactive') %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="/admin/offer/addEditPage?offerId=<%= offer._id %>" class="action-icon">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <div class="action-icon action-delete" onclick="deleteOffer('<%= offer._id %>', '<%= offer.name %>')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="5" class="text-center py-10 opacity-30 italic">No offers found in this segment.</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
+        <div class="flex flex-wrap gap-2 p-1 bg-white/5 rounded-2xl w-fit mb-10 border border-white/5">
+            <button onclick="switchTab('category')" class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all <%= (locals.offerType === 'category' || !locals.offerType) ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-white/20 hover:text-white/40' %>">
+                Category Offers
+            </button>
+            <button onclick="switchTab('product')" class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all <%= locals.offerType === 'product' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-white/20 hover:text-white/40' %>">
+                Product Offers
+            </button>
+        </div>
 
-            <!-- Pagination Partial -->
+        <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-4 sm:p-8">
+            <div class="data-table-wrapper">
+                <table class="w-full border-separate border-spacing-y-3">
+                    <thead>
+                        <tr class="text-left font-bold text-[10px] uppercase tracking-widest opacity-30">
+                            <th class="px-6 pb-4">Offer Name</th>
+                            <th class="px-6 pb-4"><%= (locals.offerType === 'product') ? 'Product' : 'Category' %></th>
+                            <th class="px-6 pb-4">Discount</th>
+                            <th class="px-6 pb-4">Status</th>
+                            <th class="px-6 pb-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(locals.offers && offers.length > 0) { %>
+                            <% offers.forEach(offer => { %>
+                                <tr class="group hover:scale-[1.01] transition-all duration-300">
+                                    <td class="px-6 py-5 bg-white/[0.02] rounded-l-2xl border-y border-l border-white/5 group-hover:border-orange-500/20 group-hover:bg-white/[0.04]">
+                                        <p class="font-bold text-white/90"><%= offer.name %></p>
+                                    </td>
+                                    <td class="px-6 py-5 bg-white/[0.02] border-y border-white/5 group-hover:border-orange-500/20 group-hover:bg-white/[0.04]">
+                                        <span class="text-xs lg:text-sm text-white/40 font-medium">
+                                            <%= (locals.offerType === 'product') ? (offer.productId ? offer.productId.productName : 'Unknown Product') : (offer.categoryId ? offer.categoryId.categoryName : 'Unknown Category') %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-5 bg-white/[0.02] border-y border-white/5 group-hover:border-orange-500/20 group-hover:bg-white/[0.04]">
+                                        <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                                            <%= offer.discountValue %><%= (offer.discountType === 'percentage') ? '%' : ' OFF' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-5 bg-white/[0.02] border-y border-white/5 group-hover:border-orange-500/20 group-hover:bg-white/[0.04]">
+                                        <% 
+                                            const now = new Date();
+                                            const isExpired = new Date(offer.expireAt) < now;
+                                            const activeClass = (offer.isActive && !isExpired) ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20';
+                                        %>
+                                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border <%= activeClass %>">
+                                            <%= (offer.isActive && !isExpired) ? 'Active' : (isExpired ? 'Expired' : 'Inactive') %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-5 bg-white/[0.02] rounded-r-2xl border-y border-r border-white/5 group-hover:border-orange-500/20 group-hover:bg-white/[0.04] text-right">
+                                        <div class="flex gap-2 justify-end">
+                                            <a href="/admin/offer/addEditPage?offerId=<%= offer._id %>" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-orange-500 hover:text-white transition-all">
+                                                <i class="fas fa-edit text-xs"></i>
+                                            </a>
+                                            <button onclick="deleteOffer('<%= offer._id %>', '<%= offer.name %>')" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500 hover:text-white transition-all">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="py-20 text-center text-white/20 font-bold italic">No offers found in this segment.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="mt-8">
                 <%- include('../partials/admin/pagination.ejs') %>
             </div>
-        </section>
+        </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function triggerSearch() {
             const query = document.getElementById('offerSearch').value.trim();
@@ -463,14 +133,14 @@
 
         async function deleteOffer(id, name) {
             const confirmed = await Swal.fire({
-                title: `Delete ${name}?`,
-                text: "This discount will be permanently removed from all targeted items.",
+                title: `Remove ${name}?`,
+                text: "This offer details will be permanently wiped.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#FF4757',
-                cancelButtonColor: '#334155',
+                confirmButtonColor: '#FF5A1F',
+                cancelButtonColor: 'rgba(255,255,255,0.05)',
                 confirmButtonText: 'Yes, delete it',
-                background: '#1A1A1A',
+                background: '#121212',
                 color: '#FFFFFF'
             });
 
@@ -478,36 +148,15 @@
                 try {
                     const response = await fetch(`/admin/offer/delete/${id}`, { method: 'DELETE' });
                     const res = await response.json();
-                    
                     if (res.success) {
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Offer deleted successfully',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            timerProgressBar: true,
-                            background: '#1A1A1A',
-                            color: '#FFFFFF'
-                        });
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Offer removed', showConfirmButton: false, timer: 1500, background: '#121212', color: '#FFFFFF' });
                         setTimeout(() => location.reload(), 1500);
-                    } else {
-                        throw new Error(res.message);
-                    }
+                    } else { throw new Error(res.message); }
                 } catch (error) {
-                    Swal.fire({
-                        position: 'top',
-                        icon: 'error',
-                        title: 'Deletion Failed',
-                        text: error.message,
-                        background: '#1A1A1A',
-                        color: '#FFFFFF'
-                    });
+                    Swal.fire({ icon: 'error', title: 'Error', text: error.message });
                 }
             }
         }
     </script>
 </body>
-
 </html>

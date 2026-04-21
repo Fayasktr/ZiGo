@@ -2,368 +2,71 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | Sales Overview</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar Styles --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .logout-btn:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        /* --- Dashboard Specific Styles --- */
-        .glass-card {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            padding: 1.5rem;
-            transition: var(--transition);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(255, 90, 31, 0.2);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .metric-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-bottom: 0.5rem;
-        }
-
-        .metric-value {
-            font-size: 1.75rem;
-            font-weight: 800;
-        }
-
-        .metric-trend {
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-        }
-
-        .trend-up {
-            background: rgba(46, 213, 115, 0.1);
-            color: #2ED573;
-        }
-
-        .trend-down {
-            background: rgba(255, 71, 87, 0.1);
-            color: #FF4757;
-        }
-
-        .filter-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: var(--primary-orange);
-            color: white;
-            border-color: var(--primary-orange);
-        }
-
-        .export-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-
-        .export-btn:hover {
-            background: white;
-            color: black;
-            border-color: white;
-        }
-
-        /* --- Table Styling --- */
-        .report-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        .report-table th {
-            padding: 0 1.5rem 1rem;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.3;
-            text-align: left;
-        }
-
-        .report-table td {
-            padding: 1.2rem 1.5rem;
-            background: rgba(255, 255, 255, 0.02);
-            font-weight: 600;
-        }
-
-        .report-table tr td:first-child {
-            border-radius: 16px 0 0 16px;
-        }
-
-        .report-table tr td:last-child {
-            border-radius: 0 16px 16px 0;
-        }
-
-        .product-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: white;
-            padding: 4px;
-            object-fit: contain;
-        }
-
-        canvas {
-            filter: drop-shadow(0 0 10px rgba(255, 90, 31, 0.1));
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/category" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/offers" class="nav-item">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/banners" class="nav-item">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/reports" class="nav-item active">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'reports' }) %>
 
     <main class="admin-main">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Analytics</p>
-                <h1 class="text-3xl font-extrabold">Sales <span class="text-orange-500">Overview</span></h1>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="exportReport('pdf')" class="export-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-                <button onclick="exportReport('excel')" class="export-btn"><i class="fas fa-file-excel"></i> Export excel</button>
-            </div>
-        </header>
+        <%- include('../partials/admin/pageHeader', { title: 'Sales', accentTitle: 'Overview', subtitle: 'ANALYTICS' }) %>
 
-        <!-- Filters -->
-        <div class="flex flex-wrap gap-3 mb-10 items-center">
-            <button class="filter-btn active" data-period="today">Today</button>
-            <button class="filter-btn" data-period="week">Last 7 Days</button>
-            <button class="filter-btn" data-period="month">Last 30 Days</button>
-            <button class="filter-btn" data-period="year">Yearly</button>
-            <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1">
-                <input type="date" id="startDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
-                <span class="text-white/20">to</span>
-                <input type="date" id="endDate" class="bg-transparent text-xs text-white/60 outline-none border-none">
-                <button onclick="applyCustomRange()" class="ml-2 text-orange-500 hover:text-white transition-colors">
-                    <i class="fas fa-arrow-right"></i>
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+            <div class="flex flex-wrap gap-2 sm:gap-3 items-center">
+                <button class="filter-btn px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active bg-orange-500 text-white" data-period="today">Today</button>
+                <button class="filter-btn px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white/20 hover:text-white/40" data-period="week">Week</button>
+                <button class="filter-btn px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white/20 hover:text-white/40" data-period="month">Month</button>
+                <button class="filter-btn px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white/20 hover:text-white/40" data-period="year">Year</button>
+                
+                <div class="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-3 py-2 ml-auto xl:ml-0">
+                    <input type="date" id="startDate" class="bg-transparent text-[10px] text-white/60 outline-none border-none [color-scheme:dark]">
+                    <span class="text-white/10 text-[10px]">to</span>
+                    <input type="date" id="endDate" class="bg-transparent text-[10px] text-white/60 outline-none border-none [color-scheme:dark]">
+                    <button onclick="applyCustomRange()" class="ml-2 text-orange-500 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-3 w-full xl:w-auto">
+                <button onclick="exportReport('pdf')" class="flex-1 xl:flex-none flex items-center justify-center gap-2 bg-white/5 border border-white/5 hover:bg-white/10 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    <i class="fas fa-file-pdf text-red-500"></i> PDF
+                </button>
+                <button onclick="exportReport('excel')" class="flex-1 xl:flex-none flex items-center justify-center gap-2 bg-white/5 border border-white/5 hover:bg-white/10 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    <i class="fas fa-file-excel text-emerald-500"></i> EXCEL
                 </button>
             </div>
         </div>
 
         <!-- Metrics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            <div class="glass-card">
-                <p class="metric-title">Total Revenue</p>
-                <p class="metric-value" id="totalRevenue">₹0</p>
-                <span class="metric-trend trend-up">
-                    <i class="fas fa-arrow-up"></i> Collected
-                </span>
-                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="bg-white/5 border border-white/5 rounded-[2rem] p-8 group hover:border-orange-500/20 transition-all">
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-20 mb-2">Total Revenue</p>
+                <p class="text-2xl font-black text-white/90 mb-4" id="totalRevenue">₹0</p>
+                <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-orange-500 w-[75%] rounded-full shadow-[0_0_10px_rgba(255,90,31,0.5)]"></div>
                 </div>
             </div>
-            <div class="glass-card">
-                <p class="metric-title">Total Orders</p>
-                <p class="metric-value" id="totalOrders">0</p>
-                <span class="metric-trend trend-down">
-                    <i class="fas fa-shopping-bag"></i> Count
-                </span>
-                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div class="bg-white/5 border border-white/5 rounded-[2rem] p-8 group hover:border-blue-500/20 transition-all">
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-20 mb-2">Total Orders</p>
+                <p class="text-2xl font-black text-white/90 mb-4" id="totalOrders">0</p>
+                <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-blue-500 w-[60%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
                 </div>
             </div>
-            <div class="glass-card">
-                <p class="metric-title">Avg. Order Value</p>
-                <p class="metric-value" id="avgOrderValue">₹0</p>
-                <span class="metric-trend trend-up">
-                    <i class="fas fa-chart-bar"></i> Efficiency
-                </span>
-                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div class="h-full bg-green-500 w-[85%] rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+            <div class="bg-white/5 border border-white/5 rounded-[2rem] p-8 group hover:border-emerald-500/20 transition-all">
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-20 mb-2">Avg. Order Value</p>
+                <p class="text-2xl font-black text-white/90 mb-4" id="avgOrderValue">₹0</p>
+                <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 w-[85%] rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                 </div>
             </div>
-            <div class="glass-card">
-                <p class="metric-title">Items Sold</p>
-                <p class="metric-value" id="totalItemsSold">0</p>
-                <span class="metric-trend trend-up">
-                    <i class="fas fa-box-open"></i> Volume
-                </span>
-                <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div class="bg-white/5 border border-white/5 rounded-[2rem] p-8 group hover:border-purple-500/20 transition-all">
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-20 mb-2">Items Sold</p>
+                <p class="text-2xl font-black text-white/90 mb-4" id="totalItemsSold">0</p>
+                <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                     <div class="h-full bg-purple-500 w-[45%] rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
                 </div>
             </div>
@@ -371,48 +74,41 @@
 
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div class="lg:col-span-2 glass-card p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <div>
-                        <h2 class="text-xl font-black">Sales over Time</h2>
-                        <p class="text-xs opacity-40 mt-1">Revenue performance for current period</p>
-                    </div>
-                </div>
+            <div class="lg:col-span-2 bg-white/5 border border-white/5 rounded-[2.5rem] p-8">
+                <h2 class="text-xl font-black mb-1">Sales Stream</h2>
+                <p class="text-[10px] font-bold opacity-20 uppercase tracking-widest mb-10">Performance for current range</p>
                 <div class="h-[300px]">
                     <canvas id="salesChart"></canvas>
                 </div>
             </div>
-            <div class="glass-card p-8">
-                <h2 class="text-xl font-black mb-8">Sales by Category</h2>
-                <div class="h-[250px] relative">
+            <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-8 flex flex-col">
+                <h2 class="text-xl font-black mb-10">Market Share</h2>
+                <div class="h-48 relative mb-10">
                     <canvas id="categoryChart"></canvas>
                 </div>
-                <div class="mt-8 space-y-3" id="categoryBreakdown">
+                <div class="mt-auto space-y-3" id="categoryBreakdown">
                     <!-- Dynamic Categories -->
                 </div>
             </div>
         </div>
 
         <!-- Top Selling Products -->
-        <div class="glass-card mb-12">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xl font-black">Top Selling Products</h2>
-                <a href="/admin/products"
-                    class="text-orange-500 text-xs font-bold uppercase tracking-widest hover:underline">View All
-                    Products</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="report-table">
+        <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-4 sm:p-8">
+            <h2 class="text-xl font-black mb-1">Top Selling Products</h2>
+            <p class="text-[10px] font-bold opacity-20 uppercase tracking-widest mb-8">Performance leaders by volume and value</p>
+            
+            <div class="data-table-wrapper">
+                <table class="w-full border-collapse">
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Units Sold</th>
-                            <th>Revenue</th>
-                            <th>Current Stock</th>
+                        <tr class="text-left font-bold text-[10px] uppercase tracking-widest opacity-30 border-b border-white/5">
+                            <th class="p-4">Product Name</th>
+                            <th class="p-4">Category</th>
+                            <th class="p-4">Units Sold</th>
+                            <th class="p-4">Revenue</th>
+                            <th class="p-4">Current Stock</th>
                         </tr>
                     </thead>
-                    <tbody id="topSellingTableBody">
+                    <tbody id="topSellingTableBody" class="divide-y divide-white/5 text-sm font-medium text-white/80">
                         <!-- Dynamic Rows -->
                     </tbody>
                 </table>
@@ -430,11 +126,14 @@
             initCharts();
             fetchReportData('today');
 
-            // Filter Click Handlers
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('active', 'bg-orange-500', 'text-white');
+                        b.classList.add('text-white/20', 'hover:text-white/40');
+                    });
+                    btn.classList.add('active', 'bg-orange-500', 'text-white');
+                    btn.classList.remove('text-white/20', 'hover:text-white/40');
                     const period = btn.getAttribute('data-period');
                     if(period) fetchReportData(period);
                 });
@@ -453,9 +152,18 @@
                         borderColor: '#FF5A1F',
                         borderWidth: 4,
                         pointBackgroundColor: '#FF5A1F',
+                        pointBorderColor: '#000',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
                         tension: 0.4,
                         fill: true,
-                        backgroundColor: 'rgba(255, 90, 31, 0.05)'
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(255, 90, 31, 0.2)');
+                            gradient.addColorStop(1, 'rgba(255, 90, 31, 0)');
+                            return gradient;
+                        }
                     }]
                 },
                 options: {
@@ -463,8 +171,22 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)' } },
-                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)' } }
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.02)' }, 
+                            ticks: { 
+                                color: 'rgba(255,255,255,0.2)',
+                                font: { size: 10, weight: 'bold' },
+                                callback: val => '₹' + (val >= 1000 ? (val/1000)+'k' : val)
+                            } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: 'rgba(255,255,255,0.2)',
+                                font: { size: 10, weight: 'bold' }
+                            } 
+                        }
                     }
                 }
             });
@@ -476,14 +198,15 @@
                     labels: [],
                     datasets: [{
                         data: [],
-                        backgroundColor: ['#FF5A1F', '#3B82F6', '#A855F7', '#2ED573', '#FF4757'],
-                        borderWidth: 0
+                        backgroundColor: ['#FF5A1F', '#3B82F6', '#10B981', '#A855F7', '#EC4899', '#F59E0B'],
+                        borderWidth: 0,
+                        hoverOffset: 15
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '85%',
+                    cutout: '80%',
                     plugins: { legend: { display: false } }
                 }
             });
@@ -491,7 +214,6 @@
 
         async function fetchReportData(period, start = null, end = null) {
             try {
-                // Update local state
                 currentPeriod = period;
                 currentStartDate = start;
                 currentEndDate = end;
@@ -503,75 +225,66 @@
                 const response = await fetch(`/admin/api/reportData?${query.toString()}`);
                 const result = await response.json();
 
-                if (result.success) {
-                    updateDashboard(result.data);
-                } else {
-                    console.error('Error:', result.message);
-                }
-            } catch (error) {
-                console.error('Fetch Error:', error);
-            }
+                if (result.success) updateDashboard(result.data);
+            } catch (error) { console.error('Fetch Error:', error); }
         }
 
         function applyCustomRange() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
             if (!start || !end) {
-                Swal.fire('Oops!', 'Please select both start and end dates', 'warning');
+                Swal.fire({ icon: 'warning', title: 'Missing Dates', text: 'Select both start and end dates' });
                 return;
             }
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             fetchReportData('custom', start, end);
         }
 
         function updateDashboard(data) {
             const { metrics, salesOverTime, topProducts, categoryWiseSales } = data;
 
-            // 1. Update Metrics
             document.getElementById('totalRevenue').innerText = `₹${Math.round(metrics.totalRevenue).toLocaleString()}`;
             document.getElementById('totalOrders').innerText = metrics.totalOrders;
             document.getElementById('avgOrderValue').innerText = `₹${Math.round(metrics.avgOrderValue).toLocaleString()}`;
             document.getElementById('totalItemsSold').innerText = metrics.totalItemsSold;
 
-            // 2. Update Sales Chart
             salesChart.data.labels = salesOverTime.map(d => d.date);
             salesChart.data.datasets[0].data = salesOverTime.map(d => d.revenue);
             salesChart.update();
 
-            // 3. Update Category Chart & Breakdown
-            categoryChart.data.labels = categoryWiseSales.map(c => c.category || 'Uncategorized');
+            categoryChart.data.labels = categoryWiseSales.map(c => c.category || 'Other');
             categoryChart.data.datasets[0].data = categoryWiseSales.map(c => c.revenue);
             categoryChart.update();
 
             const breakdownHtml = categoryWiseSales.map((c, i) => `
-                <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                <div class="flex justify-between items-center bg-white/[0.02] p-4 rounded-2xl border border-white/5">
                     <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full" style="background: ${categoryChart.data.datasets[0].backgroundColor[i % 5]}"></div>
-                        <span class="text-xs font-bold">${c.category || 'Uncategorized'}</span>
+                        <div class="w-1.5 h-1.5 rounded-full" style="background: ${categoryChart.data.datasets[0].backgroundColor[i % 6]}"></div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-white/60">${c.category || 'Other'}</span>
                     </div>
-                    <span class="text-xs font-black">₹${Math.round(c.revenue).toLocaleString()}</span>
+                    <span class="text-xs font-black text-white/90">₹${Math.round(c.revenue).toLocaleString()}</span>
                 </div>
             `).join('');
             document.getElementById('categoryBreakdown').innerHTML = breakdownHtml;
 
-            // 4. Update Top Products Table
             const tableBody = document.getElementById('topSellingTableBody');
             tableBody.innerHTML = topProducts.map(p => `
-                <tr>
-                    <td>
+                <tr class="group hover:bg-white/[0.01] transition-colors">
+                    <td class="p-4">
                         <div class="flex items-center gap-4">
-                            <img src="${p.image || '/public/landing/watch_pro.png'}" alt="Product" class="product-thumb">
-                            <span class="font-bold">${p.productName}</span>
+                            <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center p-1.5 border border-white/5">
+                                <img src="${p.image || '/public/landing/no-image.png'}" alt="" class="max-w-full max-h-full object-contain">
+                            </div>
+                            <span class="font-bold text-white/90">${p.productName}</span>
                         </div>
                     </td>
-                    <td class="opacity-40 font-bold text-xs uppercase tracking-widest">${p.category || 'Uncategorized'}</td>
-                    <td class="font-black">${p.unitsSold}</td>
-                    <td class="text-orange-500 font-black">₹${Math.round(p.revenue).toLocaleString()}</td>
-                    <td>
+                    <td class="p-4 text-[10px] font-black uppercase tracking-widest text-white/30">${p.category || 'Uncategorized'}</td>
+                    <td class="p-4 font-black">${p.unitsSold}</td>
+                    <td class="p-4 text-orange-500 font-extrabold text-sm">₹${Math.round(p.revenue).toLocaleString()}</td>
+                    <td class="p-4">
                         <div class="flex items-center gap-3">
-                            <span class="font-black text-sm">${p.stock}</span>
-                            <span class="px-2 py-0.5 ${p.stock > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} text-[8px] font-black rounded uppercase">
-                                ${p.stock > 0 ? 'In Stock' : 'Out'}
+                            <span class="font-black text-xs">${p.stock}</span>
+                            <span class="px-2 py-0.5 ${p.stock > 0 ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'} text-[8px] font-black rounded-md uppercase tracking-widest">
+                                ${p.stock > 0 ? 'AVAILABLE' : 'OUT'}
                             </span>
                         </div>
                     </td>
@@ -580,29 +293,23 @@
         }
 
         function exportReport(format) {
-            const query = new URLSearchParams({ 
-                period: currentPeriod 
-            });
+            const query = new URLSearchParams({ period: currentPeriod });
             if (currentStartDate) query.append('startDate', currentStartDate);
             if (currentEndDate) query.append('endDate', currentEndDate);
-
-            const exportUrl = `/export/${format}?${query.toString()}`;
             
             Swal.fire({
-                title: `Export as ${format.toUpperCase()}?`,
-                text: "Generating your report based on the current filters...",
-                icon: 'info',
-                showCancelButton: true,
+                title: `Export ${format.toUpperCase()}?`,
+                text: "Generating detailed analytical report...",
+                background: '#121212',
+                color: '#fff',
                 confirmButtonColor: '#FF5A1F',
-                confirmButtonText: 'Download',
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    window.location.href = exportUrl;
-                    return true;
-                }
+                showCancelButton: true,
+                confirmButtonText: 'Start Download'
+            }).then(result => {
+                if(result.isConfirmed) window.location.href = `/export/${format}?${query.toString()}`;
             });
         }
     </script>
+    <%- include('../partials/flashAlert') %>
 </body>
-
 </html>

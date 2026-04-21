@@ -1,0 +1,25 @@
+<!-- views/partials/admin/pageHeader.ejs -->
+<header class="admin-header">
+    <div class="flex items-center gap-4">
+        <button id="openSidebar" class="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-orange-500 border border-white/10" onclick="window.dispatchEvent(new CustomEvent('openAdminSidebar'))">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-title">
+            <p class="text-orange-500 font-bold uppercase tracking-[4px] text-[10px] sm:text-xs mb-1"><%= typeof subtitle !== 'undefined' ? subtitle : 'OVERVIEW' %></p>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+                <%= typeof title !== 'undefined' ? title : 'Command' %> 
+                <span class="text-orange-500"><%= typeof accentTitle !== 'undefined' ? accentTitle : 'Center' %></span>
+            </h1>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3 sm:gap-6">
+        <div class="text-right hidden sm:block">
+            <p class="font-bold text-sm">Fayas Admin</p>
+            <p class="text-[10px] opacity-40 uppercase tracking-wider">System Architect</p>
+        </div>
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg shadow-orange-500/20">
+            F
+        </div>
+    </div>
+</header>

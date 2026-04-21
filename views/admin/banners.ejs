@@ -2,396 +2,65 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('../partials/admin/head') %>
     <title>ZiGo Admin | Banner Management</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="icon" type="image/png" href="/public/public/favicon.png">
-    <style>
-        :root {
-            --primary-orange: #FF5A1F;
-            --primary-orange-hover: #E44D18;
-            --deep-black: #0F0F0F;
-            --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--deep-black);
-            color: var(--white);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* --- Admin Sidebar --- */
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 90, 31, 0.2);
-            border-radius: 10px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3rem;
-            text-decoration: none;
-        }
-
-        .admin-logo img {
-            height: 48px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 90, 31, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .nav-item.active {
-            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.1);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #FF4757;
-            background: rgba(255, 71, 87, 0.05);
-        }
-
-        .logout-btn:hover {
-            background: #FF4757;
-            color: white;
-        }
-
-        /* --- Main Content --- */
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2.5rem 3.5rem;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-
-        .page-header-info h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .btn-add {
-            background: var(--primary-orange);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: var(--transition);
-        }
-
-        .btn-add:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 90, 31, 0.2);
-        }
-
-        /* --- Banner Grid --- */
-        .banners-container {
-            background: var(--glass);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 2.5rem;
-        }
-
-        .banner-card {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 28px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 2.5rem;
-            transition: var(--transition);
-            margin-bottom: 1.5rem;
-        }
-
-        .banner-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 90, 31, 0.3);
-            transform: translateX(10px);
-        }
-
-        .banner-preview {
-            width: 280px;
-            height: 140px;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-        }
-
-        .banner-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: 0.5s ease;
-        }
-
-        .banner-card:hover .banner-preview img {
-            transform: scale(1.1);
-        }
-
-        .banner-info h3 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: var(--white);
-        }
-
-        .banner-slot {
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--primary-orange);
-            background: rgba(255, 90, 31, 0.1);
-            padding: 4px 12px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        .btn-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-icon:hover {
-            background: white;
-            color: black;
-            transform: translateY(-3px);
-        }
-
-        .btn-delete:hover {
-            background: #FF4757;
-            color: white;
-            border-color: #FF4757;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 5rem 2rem;
-            background: var(--glass);
-            border-radius: 32px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-
-        /* --- Toggle Switch --- */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: var(--primary-orange);
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(20px);
-        }
-    </style>
 </head>
 
 <body>
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <a href="/admin/dashboard" class="admin-logo">
-            <img src="/public/public/logo-icon.png" alt="ZiGo">
-            <img src="/public/public/logo-name.png" alt="ZiGo" style="height: 24px;">
-        </a>
-        <nav class="admin-nav">
-            <a href="/admin/dashboard" class="nav-item">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="/admin/products" class="nav-item">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/orders" class="nav-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            <a href="/admin/users" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="/admin/category" class="nav-item">
-                <i class="fas fa-tags"></i> Categories
-            </a>
-            <a href="/admin/coupons" class="nav-item">
-                <i class="fas fa-ticket-alt"></i> Coupons
-            </a>
-            <a href="/admin/banners" class="nav-item active">
-                <i class="fas fa-image"></i> Banners
-            </a>
-            <a href="/admin/offers" class="nav-item">
-                <i class="fas fa-percent"></i> Offers
-            </a>
-            <a href="/admin/reports" class="nav-item">
-                <i class="fas fa-file-invoice-dollar"></i> Sales Report
-            </a>
-        </nav>
-        <a href="/admin/logout" class="nav-item logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
+    <%- include('../partials/admin/sidebar', { activeTab: 'banners' }) %>
 
     <main class="admin-main">
-        <header class="admin-header">
-            <div class="page-header-info">
-                <p class="text-orange-500 font-bold uppercase tracking-[4px] text-xs mb-1">Visuals</p>
-                <h1>Banner <span class="text-orange-500">Management</span></h1>
-            </div>
-            <a href="/admin/banners/addEditPage" class="btn-add">
-                <i class="fas fa-plus"></i> Upload New Banner
-            </a>
-        </header>
+        <%- include('../partials/admin/pageHeader', { title: 'Banner', accentTitle: 'Management', subtitle: 'VISUALS' }) %>
 
-        <div class="banners-container">
+        <div class="flex justify-end mb-8">
+            <a href="/admin/banners/addEditPage" class="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20">
+                <i class="fas fa-upload"></i> UPLOAD NEW BANNER
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
             <% if (locals.banners && banners.length > 0) { %>
                 <% banners.forEach((banner, index) => { %>
-                    <div class="banner-card">
-                        <div class="banner-preview">
-                            <img src="<%= banner.image %>" alt="<%= banner.name %>">
+                    <div class="bg-white/5 border border-white/5 rounded-[2.5rem] p-6 hover:border-orange-500/30 transition-all group flex flex-col h-full">
+                        <div class="w-full aspect-[21/9] sm:aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 group-hover:border-orange-500/20 transition-all mb-6">
+                            <img src="<%= banner.image %>" alt="<%= banner.name %>" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         </div>
-                        <div class="flex-1">
-                            <span class="banner-slot">Slot: <%= banner.slot || 'N/A' %></span>
-                            <h3 class="font-bold text-xl mb-2 text-white"><%= banner.name %></h3>
-                            <div class="flex items-center gap-2">
-                                <label class="switch">
-                                    <input type="checkbox" <%= banner.isActive ? 'checked' : '' %>
-                                           onchange="changeStatus('<%= banner._id %>', this)">
-                                    <span class="slider"></span>
-                                </label>
-                                <span class="status-label text-[10px] opacity-40 font-bold uppercase">
-                                    <%= banner.isActive ? 'Active' : 'Inactive' %>
-                                </span>
+                        
+                        <div class="flex-1 flex flex-col">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex-1 mr-4">
+                                    <span class="bg-orange-500/10 text-orange-500 text-[10px] lg:text-xs font-black uppercase tracking-widest px-3 py-1 rounded-lg mb-2 inline-block">Slot: <%= banner.slot || 'N/A' %></span>
+                                    <h3 class="text-lg lg:text-xl font-black text-white/90 group-hover:text-orange-500 transition-colors line-clamp-1"><%= banner.name %></h3>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" <%= banner.isActive ? 'checked' : '' %> class="sr-only peer" onchange="changeStatus('<%= banner._id %>', this)">
+                                        <div class="w-10 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                                    </label>
+                                    <span class="text-[9px] lg:text-[11px] font-black uppercase tracking-widest <%= banner.isActive ? 'text-orange-500' : 'text-white/20' %>">
+                                        <%= banner.isActive ? 'Active' : 'Inactive' %>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <a href="/admin/banners/addEditPage?id=<%= banner._id %>" class="btn-icon" title="Edit Metadata">
-                                <i class="fas fa-pen text-sm"></i>
-                            </a>
-                            <button onclick="confirmDelete('<%= banner._id %>', '<%= banner.name %>')" class="btn-icon btn-delete" title="Delete">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
+                            
+                            <div class="flex items-center gap-3 mt-auto pt-6 border-t border-white/5">
+                                <a href="/admin/banners/addEditPage?id=<%= banner._id %>" class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-center text-[10px] lg:text-xs font-bold uppercase tracking-widest">
+                                    <i class="fas fa-edit mr-2"></i> Edit
+                                </a>
+                                <button onclick="confirmDelete('<%= banner._id %>', '<%= banner.name %>')" class="flex-1 px-4 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all text-center text-[10px] lg:text-xs font-bold uppercase tracking-widest">
+                                    <i class="fas fa-trash mr-2"></i> Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 <% }) %>
             <% } else { %>
-                <div class="empty-state">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-500">
-                        <i class="fas fa-image text-2xl"></i>
-                    </div>
-                    <h4 class="font-bold text-lg mb-2">No Banners Found</h4>
-                    <p class="text-sm opacity-40 mb-6">Create promotional banners to highlight your latest products and offers.</p>
-                    <a href="/admin/banners/addEditPage" class="text-orange-500 font-bold border-b border-orange-500 pb-1 italic">
-                        Upload Your First Banner
-                    </a>
+                <div class="col-span-full py-24 text-center bg-white/5 border border-white/5 border-dashed rounded-[3rem] opacity-30">
+                    <i class="fas fa-image text-5xl mb-6"></i>
+                    <h4 class="text-xl font-black mb-2">No Banners Found</h4>
+                    <p class="text-sm font-medium mb-8 max-w-xs mx-auto">Upload eye-catching promotional banners to boost your conversion rates.</p>
+                    <a href="/admin/banners/addEditPage" class="inline-block text-orange-500 font-black border-b-2 border-orange-500 pb-1">Begin Upload</a>
                 </div>
             <% } %>
         </div>
@@ -401,13 +70,13 @@
         async function confirmDelete(id, name) {
             const result = await Swal.fire({
                 title: `Remove ${name}?`,
-                text: "This banner will be permanently deleted from the landing page.",
+                text: "This banner will be permanently deleted from the store.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#FF4757',
+                confirmButtonColor: '#FF5A1F',
                 cancelButtonColor: 'rgba(255,255,255,0.05)',
                 confirmButtonText: 'Yes, delete it',
-                background: '#0F0F0F',
+                background: '#121212',
                 color: '#FFFFFF'
             });
 
@@ -425,7 +94,7 @@
                             icon: 'success',
                             title: 'Deleted!',
                             text: 'Banner removed successfully.',
-                            background: '#0F0F0F',
+                            background: '#121212',
                             color: '#FFFFFF',
                             showConfirmButton: false,
                             timer: 1500
@@ -439,7 +108,7 @@
                         icon: 'error',
                         title: 'Oops...',
                         text: error.message || 'Something went wrong!',
-                        background: '#0F0F0F',
+                        background: '#121212',
                         color: '#FFFFFF'
                     });
                 }
@@ -463,43 +132,37 @@
                         title: 'Status Updated',
                         showConfirmButton: false,
                         timer: 2000,
-                        background: '#0F0F0F',
+                        background: '#121212',
                         color: '#FFFFFF'
                     });
                     
-                    // IF WE ACTIVATED THIS BANNER: Deactivate all others on the UI
                     if (checked) {
-                        const allSwitches = document.querySelectorAll('.switch input');
+                        const allSwitches = document.querySelectorAll('input[type="checkbox"]');
                         allSwitches.forEach(sw => {
                             if (sw !== element) {
                                 sw.checked = false;
-                                // Update accompanying label
-                                const otherLabel = sw.closest('.flex').querySelector('.status-label');
-                                if (otherLabel) otherLabel.textContent = 'Inactive';
+                                const otherLabel = sw.parentElement.nextElementSibling;
+                                if (otherLabel) {
+                                    otherLabel.textContent = 'Inactive';
+                                    otherLabel.className = 'text-[9px] font-black uppercase tracking-widest text-white/20';
+                                }
                             }
                         });
                     }
 
-                    // Update current label text
-                    const label = element.closest('.flex').querySelector('.status-label');
+                    const label = element.parentElement.nextElementSibling;
                     if (label) {
                         label.textContent = checked ? 'Active' : 'Inactive';
+                        label.className = `text-[9px] font-black uppercase tracking-widest ${checked ? 'text-orange-500' : 'text-white/20'}`;
                     }
                 } else {
                     throw new Error(data.message);
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Failed to update status',
-                    background: '#0F0F0F',
-                    color: '#FFFFFF'
-                });
+                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to update status' });
                 element.checked = !checked;
             }
         }
     </script>
 </body>
-
 </html>
