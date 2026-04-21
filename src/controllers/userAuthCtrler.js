@@ -58,7 +58,7 @@ export const loadContactPage = asyncHandler(async (req, res) => {
 });
 
 export const loadSignUp = asyncHandler(async (req, res) => {
-  res.render('user/signUp');
+  res.render('user/signup');
 });
 
 export const signUp = asyncHandler(async (req, res) => {

@@ -10,6 +10,8 @@
         overflow-x: hidden;
         margin: 0;
         padding: 0;
+        /* Fix for content going under the fixed header */
+        padding-top: 50px;
     }
 
     :root {
@@ -28,22 +30,22 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.25rem 5%;
+        padding: 1.25rem 6%;
         z-index: 1000;
-        background-color: rgba(15, 15, 15, 0.95);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background-color: rgba(15, 15, 15, 0.75);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
         transition: var(--transition);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     header.scrolled {
-        padding: 0.85rem 5%;
+        padding: 0.85rem 6%;
         background-color: rgba(15, 15, 15, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 90, 31, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
     .logo {
@@ -115,25 +117,27 @@
 
     .login-link {
         color: white;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
     }
 
     .login-link:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
     }
 
     .signup-link {
         background: var(--primary-orange);
         color: white;
-        box-shadow: 0 4px 15px rgba(255, 90, 31, 0.2);
+        box-shadow: 0 8px 25px rgba(255, 90, 31, 0.25);
     }
 
     .signup-link:hover {
         background: var(--primary-orange-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 90, 31, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(255, 90, 31, 0.45);
     }
 
     .menu-btn {

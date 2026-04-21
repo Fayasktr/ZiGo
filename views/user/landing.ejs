@@ -31,7 +31,8 @@
             font-family: 'Inter', sans-serif;
         }
 
-        html, body {
+        html,
+        body {
             max-width: 100%;
             overflow-x: clip;
             background-color: var(--off-white);
@@ -114,8 +115,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-25px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-25px);
+            }
         }
 
         /* --- Category Showcase --- */
@@ -239,20 +247,43 @@
 
         /* --- Responsive Refinements --- */
         @media (max-width: 1024px) {
-            .hero { padding-top: 120px; min-height: auto; }
-            .hero-content h1 { font-size: 4.5rem; }
+            .hero {
+                padding-top: 120px;
+                min-height: auto;
+            }
+
+            .hero-content h1 {
+                font-size: 4.5rem;
+            }
         }
 
         @media (max-width: 768px) {
-            .hero-content h1 { font-size: 3.5rem; }
-            .hero-btns { flex-direction: column; width: 100%; }
-            .btn { width: 100%; }
+            .hero-content h1 {
+                font-size: 3.5rem;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
-            .hero-content h1 { font-size: 2.75rem; }
-            .category-card { padding: 1.5rem; }
-            .category-image { height: 140px; }
+            .hero-content h1 {
+                font-size: 2.75rem;
+            }
+
+            .category-card {
+                padding: 1.5rem;
+            }
+
+            .category-image {
+                height: 140px;
+            }
         }
     </style>
 </head>
@@ -261,193 +292,218 @@
 
     <%- include('../partials/headerBeforeLogin') %>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero overflow-hidden">
-            <div class="max-w-7xl mx-auto px-6 py-20 w-full flex flex-col lg:flex-row items-center gap-16">
-                <div class="hero-content flex-1 text-center lg:text-left z-10">
-                    <h1 class="text-5xl md:text-7xl xl:text-8xl font-black leading-[1] mb-8 tracking-tighter">
-                        Next-Gen Tech. <span>Smart Prices.</span>
-                    </h1>
-                    <p class="text-lg md:text-xl text-white/60 mb-12 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
-                        The ultimate destination for premium gadgets. iPhones, smart watches & audio gear — curated for those who don't compromise.
-                    </p>
-                    <div class="hero-btns flex flex-wrap gap-5 justify-center lg:justify-start">
-                        <a href="/shop" class="btn btn-primary">Shop Now</a>
-                        <a href="/shop" class="btn btn-secondary">Explore Collections</a>
+        <main>
+            <!-- Hero Section -->
+            <section class="hero overflow-hidden">
+                <div class="max-w-7xl mx-auto px-6 py-20 w-full flex flex-col lg:flex-row items-center gap-16">
+                    <div class="hero-content flex-1 text-center lg:text-left z-10">
+                        <h1 class="text-5xl md:text-7xl xl:text-8xl font-black leading-[1] mb-8 tracking-tighter">
+                            Next-Gen Tech. <span>Smart Prices.</span>
+                        </h1>
+                        <p
+                            class="text-lg md:text-xl text-white/60 mb-12 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
+                            The ultimate destination for premium gadgets. iPhones, smart watches & audio gear — curated
+                            for those who don't compromise.
+                        </p>
+                        <div class="hero-btns flex flex-wrap gap-5 justify-center lg:justify-start">
+                            <a href="/shop" class="btn btn-primary">Shop Now</a>
+                            <a href="/shop" class="btn btn-secondary">Explore Collections</a>
+                        </div>
+                    </div>
+                    <div class="hero-visual flex-1 w-full max-w-2xl z-10">
+                        <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>"
+                            alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
+                            class="w-full">
                     </div>
                 </div>
-                <div class="hero-visual flex-1 w-full max-w-2xl z-10">
-                    <img src="<%= locals.activeBanner ? activeBanner.image : '/public/landing/hero_premium.png' %>" 
-                         alt="<%= locals.activeBanner ? activeBanner.name : 'Premium Tech Showcase' %>"
-                         class="w-full">
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Brands Strip -->
-        <section class="py-12 bg-white border-b border-gray-100">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="flex flex-wrap justify-center md:justify-between items-center gap-10 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-                    <span class="text-2xl font-black">APPLE</span>
-                    <span class="text-2xl font-black">SAMSUNG</span>
-                    <span class="text-2xl font-black">SONY</span>
-                    <span class="text-2xl font-black">BOSE</span>
-                    <span class="text-2xl font-black">ONEPLUS</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Category Showcase -->
-        <section class="py-32 reveal">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-20">
-                    <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">Shop by Category</h2>
-                    <p class="text-gray-500 text-lg max-w-2xl mx-auto">Precision engineered tech, organized for your discovery.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <a href="/shop?category=Smartphones" class="category-card group">
-                        <div class="category-image">
-                            <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=500&auto=format&fit=crop" alt="Smartphones">
-                        </div>
-                        <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">Smartphones</h3>
-                    </a>
-                    
-                    <a href="/shop?category=Smart%20Watches" class="category-card group">
-                        <div class="category-image">
-                            <img src="/public/landing/watch.png" alt="Smart Watches">
-                        </div>
-                        <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">Smart Watches</h3>
-                    </a>
-                    
-                    <a href="/shop?category=Headsets" class="category-card group">
-                        <div class="category-image">
-                            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=500&auto=format&fit=crop" alt="Headsets">
-                        </div>
-                        <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">Headsets</h3>
-                    </a>
-                    
-                    <a href="/shop?category=AirPods" class="category-card group">
-                        <div class="category-image">
-                            <img src="https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?q=80&w=500&auto=format&fit=crop" alt="AirPods">
-                        </div>
-                        <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">AirPods</h3>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Products -->
-        <section class="py-32 bg-gray-50 reveal">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-                    <div class="max-w-xl text-center md:text-left">
-                        <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">Trending Now</h2>
-                        <p class="text-gray-500 text-lg">Handpicked premium tech selected by our curators for the ultimate experience.</p>
+            <!-- Brands Strip -->
+            <section class="py-12 bg-white border-b border-gray-100">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div
+                        class="flex flex-wrap justify-center md:justify-between items-center gap-10 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                        <span class="text-2xl font-black">APPLE</span>
+                        <span class="text-2xl font-black">SAMSUNG</span>
+                        <span class="text-2xl font-black">SONY</span>
+                        <span class="text-2xl font-black">BOSE</span>
+                        <span class="text-2xl font-black">ONEPLUS</span>
                     </div>
-                    <a href="/shop" class="text-[#FF5A1F] font-bold text-lg flex items-center gap-3 hover:translate-x-2 transition-transform">
-                        View All Products <i class="fas fa-arrow-right"></i>
-                    </a>
                 </div>
+            </section>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <% if (locals.showProducts && showProducts.length > 0) { %>
-                        <% showProducts.forEach(product => { %>
-                            <% if (product) { %>
-                                <div class="product-card group relative">
-                                    <a href="/productDetailse/<%= product._id %>">
-                                        <div class="product-img-wrapper">
-                                            <% const displayImg = (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images[0]) ? product.variants[0].images[0] : '/public/landing/no-image.png' %>
-                                            <img src="<%= displayImg %>" alt="<%= product.productName %>">
-                                        </div>
-                                    </a>
-                                    <div class="p-8">
-                                        <% let catName = product.category ? (product.category.categoryName || 'Tech') : 'Premium' %>
-                                        <span class="text-xs font-black uppercase tracking-[3px] text-[#FF5A1F] mb-3 block opacity-80"><%= catName %></span>
-                                        <h3 class="text-2xl font-black mb-6 line-clamp-1"><%= product.productName || 'ZiGo Premium' %></h3>
-                                        
-                                        <div class="flex justify-between items-center mt-auto">
-                                            <% let displayPrice = (product.variants && product.variants[0] && product.variants[0].price != null) ? product.variants[0].price.toLocaleString('en-IN') : '0' %>
-                                            <div class="flex flex-col">
-                                                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Starting from</span>
-                                                <p class="text-2xl font-black tracking-tight">₹<%= displayPrice %></p>
+            <!-- Category Showcase -->
+            <section class="py-32 reveal">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="text-center mb-20">
+                        <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">Shop by Category</h2>
+                        <p class="text-gray-500 text-lg max-w-2xl mx-auto">Precision engineered tech, organized for your
+                            discovery.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <a href="/shop?category=iPhone" class="category-card group">
+                            <div class="category-image">
+                                <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=500&auto=format&fit=crop"
+                                    alt="iPhones">
+                            </div>
+                            <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">iPhones</h3>
+                        </a>
+
+                        <a href="/shop?category=headset" class="category-card group">
+                            <div class="category-image">
+                                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=500&auto=format&fit=crop"
+                                    alt="Headsets">
+                            </div>
+                            <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">Headsets</h3>
+                        </a>
+
+                        <a href="/shop?category=smart watch" class="category-card group">
+                            <div class="category-image">
+                                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=500&auto=format&fit=crop"
+                                    alt="Smart Watches">
+                            </div>
+                            <h3 class="text-xl font-bold group-hover:text-[#FF5A1F] transition-colors">Smart Watches</h3>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Featured Products -->
+            <section class="py-32 bg-gray-50 reveal">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                        <div class="max-w-xl text-center md:text-left">
+                            <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">Trending Now</h2>
+                            <p class="text-gray-500 text-lg">Handpicked premium tech selected by our curators for the
+                                ultimate experience.</p>
+                        </div>
+                        <a href="/shop"
+                            class="text-[#FF5A1F] font-bold text-lg flex items-center gap-3 hover:translate-x-2 transition-transform">
+                            View All Products <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <% if (locals.showProducts && showProducts.length> 0) { %>
+                            <% showProducts.forEach(product=> { %>
+                                <% if (product) { %>
+                                    <div class="product-card group relative">
+                                        <a href="/productDetailse/<%= product._id %>">
+                                            <div class="product-img-wrapper">
+                                                <% const displayImg=(product.variants && product.variants[0] &&
+                                                    product.variants[0].images && product.variants[0].images[0]) ?
+                                                    product.variants[0].images[0] : '/public/landing/no-image.png' %>
+                                                    <img src="<%= displayImg %>" alt="<%= product.productName %>">
                                             </div>
-                                            <button class="add-to-cart-btn flex items-center justify-center">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
+                                        </a>
+                                        <div class="p-8">
+                                            <% let catName=product.category ? (product.category.categoryName || 'Tech' )
+                                                : 'Premium' %>
+                                                <span
+                                                    class="text-xs font-black uppercase tracking-[3px] text-[#FF5A1F] mb-3 block opacity-80">
+                                                    <%= catName %>
+                                                </span>
+                                                <h3 class="text-2xl font-black mb-6 line-clamp-1">
+                                                    <%= product.productName || 'ZiGo Premium' %>
+                                                </h3>
+
+                                                <div class="flex justify-between items-center mt-auto">
+                                                    <% let displayPrice=(product.variants && product.variants[0] &&
+                                                        product.variants[0].price !=null) ?
+                                                        product.variants[0].price.toLocaleString('en-IN') : '0' %>
+                                                        <div class="flex flex-col">
+                                                            <span
+                                                                class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Starting
+                                                                from</span>
+                                                            <p class="text-2xl font-black tracking-tight">₹<%=
+                                                                    displayPrice %>
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            class="add-to-cart-btn flex items-center justify-center">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                </div>
                                         </div>
                                     </div>
-                                </div>
-                            <% } %>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="col-span-full py-32 text-center">
-                            <div class="animate-pulse flex flex-col items-center">
-                                <div class="w-16 h-16 bg-gray-200 rounded-full mb-6"></div>
-                                <p class="text-xl font-bold text-gray-300">Curating trending products...</p>
-                            </div>
+                                    <% } %>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <div class="col-span-full py-32 text-center">
+                                                    <div class="animate-pulse flex flex-col items-center">
+                                                        <div class="w-16 h-16 bg-gray-200 rounded-full mb-6"></div>
+                                                        <p class="text-xl font-bold text-gray-300">Curating trending
+                                                            products...</p>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why ZiGo -->
+            <section class="why-zigo reveal">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="text-center mb-20">
+                        <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">The ZiGo Difference</h2>
+                        <p class="text-white/50 text-lg max-w-2xl mx-auto">Beyond the hardware, it's about a seamless
+                            tech lifestyle.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
+                        <div class="text-center">
+                            <div class="why-icon">⚡</div>
+                            <h3 class="text-2xl font-bold mb-4">Insane Delivery Speed</h3>
+                            <p class="text-white/60 leading-relaxed">Our optimized logistics network means your new gear
+                                reaches you faster than you can find a charger.</p>
                         </div>
-                    <% } %>
-                </div>
-            </div>
-        </section>
 
-        <!-- Why ZiGo -->
-        <section class="why-zigo reveal">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-20">
-                    <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">The ZiGo Difference</h2>
-                    <p class="text-white/50 text-lg max-w-2xl mx-auto">Beyond the hardware, it's about a seamless tech lifestyle.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
-                    <div class="text-center">
-                        <div class="why-icon">⚡</div>
-                        <h3 class="text-2xl font-bold mb-4">Insane Delivery Speed</h3>
-                        <p class="text-white/60 leading-relaxed">Our optimized logistics network means your new gear reaches you faster than you can find a charger.</p>
-                    </div>
-                    
-                    <div class="text-center">
-                        <div class="why-icon">🛡️</div>
-                        <h3 class="text-2xl font-bold mb-4">Certified Quality</h3>
-                        <p class="text-white/60 leading-relaxed">Every device undergoes a 50-point inspection in our warehouse before it gets the ZiGo seal of approval.</p>
-                    </div>
-                    
-                    <div class="text-center">
-                        <div class="why-icon">💎</div>
-                        <h3 class="text-2xl font-bold mb-4">Curated Selection</h3>
-                        <p class="text-white/60 leading-relaxed">We don't sell infinite clutter. We only stock the gear that we actually use and love ourselves.</p>
+                        <div class="text-center">
+                            <div class="why-icon">🛡️</div>
+                            <h3 class="text-2xl font-bold mb-4">Certified Quality</h3>
+                            <p class="text-white/60 leading-relaxed">Every device undergoes a 50-point inspection in our
+                                warehouse before it gets the ZiGo seal of approval.</p>
+                        </div>
+
+                        <div class="text-center">
+                            <div class="why-icon">💎</div>
+                            <h3 class="text-2xl font-bold mb-4">Curated Selection</h3>
+                            <p class="text-white/60 leading-relaxed">We don't sell infinite clutter. We only stock the
+                                gear that we actually use and love ourselves.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Newsletter -->
-        <section class="py-32 bg-[#FF5A1F]">
-            <div class="max-w-4xl mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">Stay Ahead. Join the List.</h2>
-                <p class="text-white/80 text-lg mb-12">Get first dibs on new drops and exclusive member-only pricing.</p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="email" placeholder="Enter your email" class="flex-1 px-8 py-5 rounded-2xl outline-none text-lg font-medium">
-                    <button class="bg-black text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-900 transition-colors">Subscribe</button>
+            <!-- Newsletter -->
+            <section class="py-32 bg-[#FF5A1F]">
+                <div class="max-w-4xl mx-auto px-6 text-center">
+                    <h2 class="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">Stay Ahead. Join the
+                        List.</h2>
+                    <p class="text-white/80 text-lg mb-12">Get first dibs on new drops and exclusive member-only
+                        pricing.</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="email" placeholder="Enter your email"
+                            class="flex-1 px-8 py-5 rounded-2xl outline-none text-lg font-medium">
+                        <button
+                            class="bg-black text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-900 transition-colors">Subscribe</button>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
+            </section>
+        </main>
 
-    <%- include('../partials/footer') %>
+        <%- include('../partials/footer') %>
 
-    <script>
-        // Scroll Reveal
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('active');
-            });
-        }, { threshold: 0.1 });
+            <script>
+                // Scroll Reveal
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) entry.target.classList.add('active');
+                    });
+                }, { threshold: 0.1 });
 
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-    </script>
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            </script>
 </body>
 
 </html>

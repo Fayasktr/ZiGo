@@ -37,7 +37,7 @@ export const getShopData = async (quary, userId) => {
 
   if (categoryArray.length > 0) {
     let categoryData = await categoryModel.find({
-      categoryName: { $in: categoryArray },
+      categoryName: { $in: categoryArray.map(c => new RegExp(`^${c}$`, 'i')) },
       isListed: true,
     });
     if (categoryData && categoryData.length > 0) {

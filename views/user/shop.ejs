@@ -583,17 +583,17 @@
                                         <div class="filter-section">
                                             <h4>Categories</h4>
                                             <ul class="filter-list">
-                                                <% categories.forEach(cat=> {
-                                                    const isChecked = Array.isArray(selectedCategory)
-                                                    ? selectedCategory.includes(cat.categoryName)
-                                                    : selectedCategory === cat.categoryName;
+                                                 <% categories.forEach(cat=> {
+                                                    // Case-insensitive check to handle 'watch' vs 'Watch'
+                                                    const selected = Array.isArray(selectedCategory) 
+                                                        ? selectedCategory.some(c => String(c).toLowerCase() === String(cat.categoryName).toLowerCase())
+                                                        : (String(selectedCategory).toLowerCase() === String(cat.categoryName).toLowerCase());
                                                     %>
                                                     <li class="filter-item">
-                                                        <label>
+                                                        <label style="text-transform: capitalize;">
                                                             <input type="checkbox" name="category"
-                                                                value="<%= cat.categoryName %>" <%=isChecked ? 'checked'
-                                                                : '' %>
-                                                            onchange="submitFilters()">
+                                                                value="<%= cat.categoryName %>" <%= selected ? 'checked' : '' %>
+                                                                onchange="submitFilters()">
                                                             <%= cat.categoryName %>
                                                         </label>
                                                     </li>
