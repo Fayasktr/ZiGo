@@ -315,7 +315,7 @@ export const checkoutPage = async (userId) => {
     );
 
     const couponsAvailable = await couponModel.find({
-      minOrderAmount: { $lte: mrpSubTotal },
+      $and:[{minOrderAmount:{ $lte: mrpSubTotal }},{expiresAt:{$gte:new Date()}}]
     });
 
     const taxableAmount = mrpSubTotal - totalSavings;

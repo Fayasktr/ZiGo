@@ -6,5 +6,5 @@ let PORT = process.env.PORT;
 connectDB();
 
 app.listen(PORT, () => {
-  console.log(`http://localhost:${PORT}/`);
+  console.log(`port ${PORT} is open now for zigo`);
 });
