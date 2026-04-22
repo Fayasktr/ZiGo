@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import sessionMiddleware from '../src/config/session.js';
 import flash from 'connect-flash';
 import passport from './config/passport.js';
+import vhost from 'vhost';
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.use((req, res, next) => {
 });
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(adminRoute);
+app.use(vhost("admin.zigo.buzz",adminRoute));
 app.use(shopRoute);
 app.use(authRoute);
 app.use(userRoute);

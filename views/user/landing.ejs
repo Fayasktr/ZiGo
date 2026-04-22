@@ -41,7 +41,8 @@
 
         /* --- Hero Section --- */
         .hero {
-            min-height: 80dvh;
+            padding-top: 130px;
+            min-height: 90dvh;
             background-color: var(--deep-black);
             background-image:
                 radial-gradient(circle at 80% 20%, rgba(255, 90, 31, 0.12) 0%, transparent 40%),
@@ -475,21 +476,7 @@
                 </div>
             </section>
 
-            <!-- Newsletter -->
-            <section class="py-32 bg-[#FF5A1F]">
-                <div class="max-w-4xl mx-auto px-6 text-center">
-                    <h2 class="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">Stay Ahead. Join the
-                        List.</h2>
-                    <p class="text-white/80 text-lg mb-12">Get first dibs on new drops and exclusive member-only
-                        pricing.</p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <input type="email" placeholder="Enter your email"
-                            class="flex-1 px-8 py-5 rounded-2xl outline-none text-lg font-medium">
-                        <button
-                            class="bg-black text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-900 transition-colors">Subscribe</button>
-                    </div>
-                </div>
-            </section>
+            
         </main>
 
         <%- include('../partials/footer') %>
