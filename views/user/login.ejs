@@ -381,6 +381,26 @@
     <%- include('../partials/flashAlert') %>
 
     <script>
+        // Check for 'Blocked' message specifically to show a premium popup
+        <% if (locals.error && error.includes('blocked')) { %>
+            Swal.fire({
+                title: 'Account Blocked',
+                text: '<%= error %>',
+                icon: 'error',
+                background: '#1a1a1a',
+                color: '#ffffff',
+                confirmButtonColor: '#FF5A1F',
+                confirmButtonText: 'Understood',
+                backdrop: `rgba(255, 90, 31, 0.1)`,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+        <% } %>
+
         function togglePassword() {
             const passwordInput = document.getElementById("password");
             const eyeOpen = document.getElementById("eye-open");

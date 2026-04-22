@@ -40,30 +40,25 @@ const checkBlocked = async (req, res, next) => {
         });
       }
 
-      req.session.user = null;
       req.flash('error', msg);
 
-      if (req.session.admin) {
-        console.log(
-          'Admin session detected, preserving session but cleared User data.'
-        );
-        res.locals.error = [msg];
-        return next();
+      req.session.user = undefined;
+      delete req.session.user;
+
+      if (req.session.passport) {
+        req.session.passport = undefined;
+        delete req.session.passport;
       }
 
-      if (req.logout) {
-        return req.logout((err) => {
-          req.flash('error', 'Your account is currently blocked by Admin.');
-          return res.redirect('/login');
-        });
-      }
-
-      req.flash('error', 'Your account is currently blocked by Admin.');
-      return res.redirect('/login');
+      return req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        return res.redirect('/login');
+      });
     }
 
     next();
   } catch (error) {
+    console.error('CheckBlocked Error:', error);
     next();
   }
 };
