@@ -408,7 +408,7 @@ export const getCartPage = async (userId) => {
 
       item.offer = bestOffer?.offer || null;
       item.offerDiscount = bestOffer?.discount || 0;
-      item.finalPrice = item.matchedVariant.price - item.offerDiscount; // The new discounted price
+      item.finalPrice = item.matchedVariant.price - item.offerDiscount; 
 
       return item;
     })
@@ -602,17 +602,61 @@ export const itemCancel = async (
       `You can only cancel ${cancellable} unit(s). ${alreadyCancelled} already cancelled`
     );
   }
-  let refundAmt = 0;
-  if (order.paymentStatus == 'paid') {
-    const itemGrossValue = item.price * qty;
-    const orderOriginalSubtotal = order.pricing.subTotal;
-    const itemWeight = itemGrossValue / orderOriginalSubtotal;
-    const totalOrderDiscounts =
-      order.pricing.discound + order.pricing.couponDiscount;
-    const itemDiscountShare = itemWeight * totalOrderDiscounts;
-    const itemTaxShare = itemWeight * order.pricing.tax;
-    refundAmt = Math.round(itemGrossValue - itemDiscountShare + itemTaxShare);
 
+  const oldTotal = order.pricing.total;
+
+  await productModel.updateOne(
+    { _id: item.productId, 'variants._id': item.variantId },
+    { $inc: { 'variants.$.stock': qty } }
+  );
+
+  item.cancelledQuantity = alreadyCancelled + qty;
+  item.cancelReason = reason;
+  item.comments = comments;
+
+  const totalAccountedFor = item.cancelledQuantity + alreadyReturned;
+  if (totalAccountedFor >= item.quantity) {
+    item.itemStatus = 'cancelled';
+  }
+
+  let summedSubtotal = 0;
+  let summedOfferDiscount = 0;
+
+  for (const i of order.items) {
+    const activeQty =
+      i.quantity - (i.cancelledQuantity || 0) - (i.returnedQuantity || 0);
+    if (activeQty > 0) {
+      summedSubtotal += i.price * activeQty;
+      summedOfferDiscount += (i.offerDiscount || 0) * activeQty;
+    }
+  }
+
+  const discountedSubtotal = summedSubtotal - summedOfferDiscount;
+
+  let newCouponDiscount = 0;
+  if (order.couponId && discountedSubtotal > 0) {
+    const coupon = await couponModel.findById(order.couponId);
+    if (coupon && coupon.isActive && discountedSubtotal >= coupon.minOrderAmount) {
+      if (coupon.discountType === 'percentage') {
+        newCouponDiscount = (discountedSubtotal * coupon.discountValue) / 100;
+        if (coupon.maxDiscount && newCouponDiscount > coupon.maxDiscount) {
+          newCouponDiscount = coupon.maxDiscount;
+        }
+      } else {
+        newCouponDiscount = coupon.discountValue;
+      }
+      newCouponDiscount = Math.min(newCouponDiscount, discountedSubtotal);
+    }
+  }
+
+  const taxableAmount = Math.max(0, discountedSubtotal - newCouponDiscount);
+  const tax = parseFloat((taxableAmount * 0.18).toFixed(2));
+  const shipping = taxableAmount < 1000 && taxableAmount > 0 ? 40 : 0;
+  const newTotal = parseFloat((taxableAmount + tax + shipping).toFixed(2));
+
+  const refundAmt = Math.max(0, oldTotal - newTotal);
+
+  if (order.paymentStatus === 'paid' && refundAmt > 0) {
     await walletModel.updateOne(
       { userId: order.userId },
       {
@@ -629,46 +673,14 @@ export const itemCancel = async (
       },
       { upsert: true }
     );
-
-    order.pricing.subTotal -= itemGrossValue;
-    order.pricing.discound -= itemWeight * order.pricing.discound;
-    order.pricing.couponDiscount -= itemWeight * order.pricing.couponDiscount;
-    order.pricing.tax -= itemTaxShare;
-    order.pricing.total -= refundAmt;
-
-    Object.keys(order.pricing).forEach((key) => {
-      if (order.pricing[key] < 0) order.pricing[key] = 0;
-    });
   }
 
-  await productModel.updateOne(
-    { _id: item.productId, 'variants._id': item.variantId },
-    { $inc: { 'variants.$.stock': qty } }
-  );
-
-  item.cancelledQuantity = alreadyCancelled + qty;
-  item.cancelReason = reason;
-  item.comments = comments;
-
-  const totalAccountedFor = item.cancelledQuantity + alreadyReturned;
-  if (totalAccountedFor >= item.quantity) {
-    item.itemStatus = 'cancelled';
-  }
-
-  order.pricing.subTotal = order.items.reduce((sum, i) => {
-    const activQty =
-      i.quantity - (i.cancelledQuantity || 0) - (i.returnedQuantity || 0);
-    return sum + i.price * Math.max(activQty, 0);
-  }, 0);
-
-  order.pricing.tax = parseFloat((order.pricing.subTotal * 0.18).toFixed(2));
-  order.pricing.total = parseFloat(
-    (
-      order.pricing.subTotal +
-      order.pricing.tax +
-      (order.pricing.shipping || 0)
-    ).toFixed(2)
-  );
+  order.pricing.subTotal = summedSubtotal;
+  order.pricing.discound = summedOfferDiscount;
+  order.pricing.couponDiscount = newCouponDiscount;
+  order.pricing.tax = tax;
+  order.pricing.shipping = shipping;
+  order.pricing.total = newTotal;
 
   const allCancelled = order.items.every((i) => {
     const accounted = (i.cancelledQuantity || 0) + (i.returnedQuantity || 0);
@@ -763,7 +775,6 @@ export const setupInvoice = async (orderId, userId) => {
   if (order.userId.toString() !== userId.toString())
     throw new Error('Unauthorized user');
 
-  // Convert logos to Base64 for PDF rendering
   const logoIconPath = path.join(process.cwd(), 'public/public/logo-icon.png');
   const logoNamePath = path.join(process.cwd(), 'public/public/logo-name.png');
 

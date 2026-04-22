@@ -121,39 +121,43 @@ export const orderStatusUpdate = async (orderId, newStatus, paymentStatus) => {
   if (newStatus === 'returned') {
     order.returnRequested = false;
     order.paymentStatus = 'refunded';
-    order.items.forEach((item) => {
-      if (item.itemStatus !== 'cancelled') {
+
+    let totalBulkRefund = 0;
+    if (order.paymentStatus !== 'refunded' && order.paymentStatus !== 'failed') {
+      totalBulkRefund = order.pricing.total;
+    }
+
+    for (const item of order.items) {
+      if (item.itemStatus === 'active' || item.itemStatus === 'delivered') {
+        const remainingQty =
+          item.quantity -
+          (item.cancelledQuantity || 0) -
+          (item.returnedQuantity || 0);
+
+        if (remainingQty > 0) {
+          await productModel.updateOne(
+            { _id: item.productId, 'variants._id': item.variantId },
+            { $inc: { 'variants.$.stock': remainingQty } }
+          );
+          item.returnedQuantity = (item.returnedQuantity || 0) + remainingQty;
+        }
+
         item.itemStatus = 'returned';
         item.returnStatus = 'approved';
-        item.returnedQuantity = item.quantity;
         item.pendingReturnQuantity = 0;
       }
-    });
-  }
-
-  if (newStatus === 'cancelled') {
-    for (const item of order.items) {
-      if (item.itemStatus === 'active') {
-        await productModel.updateOne(
-          { _id: item.productId, 'variants._id': item.variantId },
-          { $inc: { 'variants.$.stock': item.quantity } }
-        );
-        item.itemStatus = 'cancelled';
-      }
     }
-    let totalRefundAmt = 0;
-    if (order.paymentStatus == 'paid') {
-      totalRefundAmt = order.pricing.total - order.pricing.shipping;
 
+    if (totalBulkRefund > 0) {
       await walletModel.updateOne(
         { userId: order.userId },
         {
-          $inc: { balance: totalRefundAmt },
+          $inc: { balance: totalBulkRefund },
           $push: {
             transactions: {
-              amount: totalRefundAmt,
+              amount: totalBulkRefund,
               type: 'credit',
-              description: `Refund for cancellation: ${order.orderNumber}`,
+              description: `Bulk Refund for Order Return: ${order.orderNumber}`,
               orderId: order._id,
               date: new Date(),
             },
@@ -162,19 +166,72 @@ export const orderStatusUpdate = async (orderId, newStatus, paymentStatus) => {
         { upsert: true }
       );
     }
+    order.pricing.subTotal = 0;
+    order.pricing.tax = 0;
+    order.pricing.total = 0;
+    order.pricing.discound = 0;
+    order.pricing.couponDiscount = 0;
   }
 
-  if (newStatus == 'delivered') {
+  if (newStatus === 'cancelled') {
+    let totalBulkRefund = 0;
+    for (const item of order.items) {
+      if (item.itemStatus === 'active') {
+        const remainingQty =
+          item.quantity -
+          (item.cancelledQuantity || 0) -
+          (item.returnedQuantity || 0);
+
+        if (remainingQty > 0) {
+          await productModel.updateOne(
+            { _id: item.productId, 'variants._id': item.variantId },
+            { $inc: { 'variants.$.stock': remainingQty } }
+          );
+          item.cancelledQuantity = (item.cancelledQuantity || 0) + remainingQty;
+        }
+        item.itemStatus = 'cancelled';
+      }
+    }
+
+    if (order.paymentStatus === 'paid') {
+      totalBulkRefund = order.pricing.total - (order.pricing.shipping || 0);
+
+      if (totalBulkRefund > 0) {
+        await walletModel.updateOne(
+          { userId: order.userId },
+          {
+            $inc: { balance: totalBulkRefund },
+            $push: {
+              transactions: {
+                amount: totalBulkRefund,
+                type: 'credit',
+                description: `Bulk Refund for Order Cancellation: ${order.orderNumber}`,
+                orderId: order._id,
+                date: new Date(),
+              },
+            },
+          },
+          { upsert: true }
+        );
+      }
+    }
+    
+    order.pricing.subTotal = 0;
+    order.pricing.tax = 0;
+    order.pricing.total = order.pricing.shipping || 0;
+    order.pricing.discound = 0;
+    order.pricing.couponDiscount = 0;
+    order.paymentStatus = 'refunded';
+  }
+
+  if (newStatus === 'delivered') {
     order.paymentStatus = 'paid';
     order.items.forEach((item) => {
-      if (item.itemStatus == 'active') {
+      if (item.itemStatus === 'active') {
         item.itemStatus = 'delivered';
         item.deliveredDate = new Date();
       }
     });
-    if (!paymentStatus) {
-      order.paymentStatus = 'paid';
-    }
   }
   order.orderStatus = newStatus;
   if (paymentStatus) {
@@ -201,40 +258,16 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
   const pendingQty = item.pendingReturnQuantity || 0;
 
   if (action === 'approved') {
+    const oldTotal = order.pricing.total;
+
     await productModel.updateOne(
       { _id: item.productId, 'variants._id': item.variantId },
       { $inc: { 'variants.$.stock': pendingQty } }
     );
 
-    const itemGrossValue = item.price * pendingQty;
-    const orderOriginalSubtotal = order.pricing.subTotal;
-    const itemWeight = itemGrossValue / orderOriginalSubtotal;
-    const totalOrderDiscounts =
-      order.pricing.discound + order.pricing.couponDiscount;
-    const itemDiscountShare = itemWeight * totalOrderDiscounts;
-    const netAmount = itemGrossValue - itemDiscountShare;
-    const itemTaxShare = itemWeight * order.pricing.tax;
-    const refundAmount = Math.round(netAmount + itemTaxShare);
-
-    await walletModel.updateOne(
-      { userId: order.userId },
-      {
-        $inc: { balance: refundAmount },
-        $push: {
-          transactions: {
-            type: 'credit',
-            amount: refundAmount,
-            description: `Refund: ${pendingQty} unit(s) of ${item.productName} returned`,
-            orderId: order._id,
-            date: new Date(),
-          },
-        },
-      },
-      { upsert: true }
-    );
-
     item.returnedQuantity = (item.returnedQuantity || 0) + pendingQty;
     item.pendingReturnQuantity = 0;
+
     const totalAccountedFor =
       item.returnedQuantity + (item.cancelledQuantity || 0);
     if (totalAccountedFor >= item.quantity) {
@@ -243,6 +276,75 @@ export const handleReturnRequest = async (orderId, itemId, action) => {
     } else {
       item.returnStatus = 'none';
     }
+
+    let summedSubtotal = 0;
+    let summedOfferDiscount = 0;
+
+    for (const i of order.items) {
+      const activeQty =
+        i.quantity - (i.cancelledQuantity || 0) - (i.returnedQuantity || 0);
+      if (activeQty > 0) {
+        summedSubtotal += i.price * activeQty;
+        summedOfferDiscount += (i.offerDiscount || 0) * activeQty;
+      }
+    }
+
+    const discountedSubtotal = summedSubtotal - summedOfferDiscount;
+
+    let newCouponDiscount = 0;
+    if (order.couponId && discountedSubtotal > 0) {
+      const coupon = await couponModel.findById(order.couponId);
+      if (
+        coupon &&
+        coupon.isActive &&
+        discountedSubtotal >= coupon.minOrderAmount
+      ) {
+        if (coupon.discountType === 'percentage') {
+          newCouponDiscount = (discountedSubtotal * coupon.discountValue) / 100;
+          if (coupon.maxDiscount && newCouponDiscount > coupon.maxDiscount) {
+            newCouponDiscount = coupon.maxDiscount;
+          }
+        } else {
+          newCouponDiscount = coupon.discountValue;
+        }
+        newCouponDiscount = Math.min(newCouponDiscount, discountedSubtotal);
+      }
+    }
+
+
+    const taxableAmount = Math.max(0, discountedSubtotal - newCouponDiscount);
+    const tax = parseFloat((taxableAmount * 0.18).toFixed(2));
+    const shipping = taxableAmount < 1000 && taxableAmount > 0 ? 40 : 0;
+    const newTotal = parseFloat((taxableAmount + tax + shipping).toFixed(2));
+
+    const refundAmount = Math.max(0, oldTotal - newTotal);
+
+    if (order.paymentStatus === 'paid' && refundAmount > 0) {
+      await walletModel.updateOne(
+        { userId: order.userId },
+        {
+          $inc: { balance: refundAmount },
+          $push: {
+            transactions: {
+              type: 'credit',
+              amount: refundAmount,
+              description: `Refund: ${pendingQty} unit(s) of ${item.productName} returned`,
+              orderId: order._id,
+              date: new Date(),
+            },
+          },
+        },
+        { upsert: true }
+      );
+    }
+
+    order.pricing.subTotal = summedSubtotal;
+    order.pricing.discound = summedOfferDiscount;
+    order.pricing.couponDiscount = newCouponDiscount;
+    order.pricing.tax = tax;
+    order.pricing.shipping = shipping;
+    order.pricing.total = newTotal;
+
     const allDone = order.items.every((i) => {
       const accounted = (i.returnedQuantity || 0) + (i.cancelledQuantity || 0);
       return accounted >= i.quantity;
