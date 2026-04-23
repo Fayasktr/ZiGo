@@ -30,8 +30,8 @@ router.get(
 );
 
 router.get('/', userAuth.isLogin, userCntrl.landingBeforeLogin);
-router.get('/about', userAuth.isLogin, userCntrl.loadAboutPage);
-router.get('/contact', userAuth.isLogin, userCntrl.loadContactPage);
+router.get('/about', userCntrl.loadAboutPage);
+router.get('/contact', userCntrl.loadContactPage);
 router.get(
   '/login',
   userAuth.preventCache,
