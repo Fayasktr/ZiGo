@@ -20,12 +20,21 @@ export const getShopData = async (quary, userId) => {
   }
   if (price) {
     let [min, max] = price.split('-');
-    if (max == 'plus') {
-      filter['variants.price'] = { $gte: parseInt(min) };
+    const priceFilter = {};
+    
+    if (max === 'plus') {
+        priceFilter.$gte = parseInt(min);
     } else {
-      filter['variants.price'] = { $gte: parseInt(min), $lte: parseInt(max) };
+        priceFilter.$gte = parseInt(min);
+        priceFilter.$lte = parseInt(max);
     }
-  }
+    filter.variants = { 
+        $elemMatch: { 
+            price: priceFilter,
+            isListed: true
+        } 
+    };
+}
   let categories = await categoryModel
     .find({ isListed: true })
     .sort({ createdAt: -1 });

@@ -36,7 +36,8 @@ app.use((req, res, next) => {
 });
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(vhost("admin.zigo.buzz",adminRoute));
+app.use(adminRoute);
+// app.use(vhost("admin.zigo.buzz",adminRoute));
 app.use(shopRoute);
 app.use(authRoute);
 app.use(userRoute);
