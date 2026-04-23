@@ -120,12 +120,12 @@ export const orderStatusUpdate = async (orderId, newStatus, paymentStatus) => {
 
   if (newStatus === 'returned') {
     order.returnRequested = false;
-    order.paymentStatus = 'refunded';
 
     let totalBulkRefund = 0;
     if (order.paymentStatus !== 'refunded' && order.paymentStatus !== 'failed') {
       totalBulkRefund = order.pricing.total;
     }
+    order.paymentStatus = 'refunded';
 
     for (const item of order.items) {
       if (item.itemStatus === 'active' || item.itemStatus === 'delivered') {
