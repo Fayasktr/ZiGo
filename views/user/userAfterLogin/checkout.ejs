@@ -763,11 +763,16 @@
                                 <i class="fas fa-check-circle text-orange-500 check-icon hidden"></i>
                             </div>
 
-                            <div class="payment-method" onclick="selectPayment(this, 'razorpay')">
+                            <% const isRazorpayDisabled = totalAmount > 400000; %>
+                            <div class="payment-method <%= isRazorpayDisabled ? 'opacity-50 cursor-not-allowed grayscale pointer-events-none' : '' %>" 
+                                id="razorpayMethod"
+                                onclick="<%= isRazorpayDisabled ? '' : "selectPayment(this, 'razorpay')" %>">
                                 <div class="method-icon"><i class="fas fa-bolt"></i></div>
                                 <div class="flex-1">
                                     <p class="font-bold">Razorpay</p>
-                                    <p class="text-xs opacity-50">Cards, UPI, Netbanking</p>
+                                    <p class="text-xs opacity-50" id="razorpayStatusText">
+                                        <%= isRazorpayDisabled ? 'Only available for orders up to ₹4,00,000' : 'Cards, UPI, Netbanking' %>
+                                    </p>
                                 </div>
                                 <i class="fas fa-check-circle text-orange-500 check-icon hidden"></i>
                             </div>
@@ -1495,6 +1500,22 @@
 
                 const newTotal = originalTotal - discount;
                 totalEl.textContent = `₹${newTotal.toLocaleString('en-IN')}`;
+
+                // Dynamic Razorpay Limit Check
+                const razorpayMethod = document.getElementById('razorpayMethod');
+                const razorpayStatus = document.getElementById('razorpayStatusText');
+                if (newTotal > 400000) {
+                    razorpayMethod.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale', 'pointer-events-none');
+                    razorpayStatus.textContent = 'Only available for orders up to ₹4,00,000';
+                    if (document.getElementById('selectedPaymentMethod').value === 'razorpay') {
+                        // Switch to cash if razorpay becomes unavailable
+                        const cashMethod = document.querySelector('.payment-method[onclick*="cash"]');
+                        selectPayment(cashMethod, 'cash');
+                    }
+                } else {
+                    razorpayMethod.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale', 'pointer-events-none');
+                    razorpayStatus.textContent = 'Cards, UPI, Netbanking';
+                }
             }
 
             function resetCouponUI() {
@@ -1502,6 +1523,21 @@
                 document.getElementById('appliedCouponCodeInput').value = '';
                 document.getElementById('finalPayableAmount').textContent = `₹${originalTotal.toLocaleString('en-IN')}`;
                 document.querySelectorAll('.coupon-card').forEach(c => c.classList.remove('selected'));
+
+                // Reset Razorpay state to match original total
+                const razorpayMethod = document.getElementById('razorpayMethod');
+                const razorpayStatus = document.getElementById('razorpayStatusText');
+                if (originalTotal > 400000) {
+                    razorpayMethod.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale', 'pointer-events-none');
+                    razorpayStatus.textContent = 'Only available for orders up to ₹4,00,000';
+                    if (document.getElementById('selectedPaymentMethod').value === 'razorpay') {
+                        const cashMethod = document.querySelector('.payment-method[onclick*="cash"]');
+                        selectPayment(cashMethod, 'cash');
+                    }
+                } else {
+                    razorpayMethod.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale', 'pointer-events-none');
+                    razorpayStatus.textContent = 'Cards, UPI, Netbanking';
+                }
             }
 
             function toggleCoupon() {

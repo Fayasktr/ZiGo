@@ -175,6 +175,12 @@ export const placeOrder = asyncHandler(async (req, res) => {
         return sendError('Invalid order amount');
       }
 
+      if (paymentMethod === 'razorpay' && total > 400000) {
+        return sendError(
+          'Razorpay is only available for orders up to ₹4,00,000'
+        );
+      }
+
       if (paymentMethod === 'razorpay') {
         let order;
         if (productId && variantId) {
@@ -426,6 +432,13 @@ export const retryPayment = asyncHandler(async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: 'Order is already paid' });
+    }
+
+    if (order.pricing.total > 400000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Razorpay is only available for orders up to ₹4,00,000',
+      });
     }
 
     const data = await paymentService.createRazorpayOrder(order.pricing.total);
