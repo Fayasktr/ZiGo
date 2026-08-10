@@ -23,6 +23,12 @@ app.set('views', path.join(__dirname, '../views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, '../public')));
+app.get('/service-worker.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/service-worker.js'));
+});
+app.get('/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/manifest.json'));
+});
 app.use(express.json());
 
 app.use(sessionMiddleware);
