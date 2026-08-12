@@ -4,9 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js",
-    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
@@ -15,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
     "connect-flash": "^0.1.1",
@@ -46,7 +44,6 @@
     "vhost": "^3.0.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11",
-    "prettier": "^3.8.3"
+    "nodemon": "^3.1.11"
   }
 }
